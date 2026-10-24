@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+:root {
+  --background: #EFE8DD;
+  --foreground: #2B1A16;
+  --bg-primary: #EFE8DD;
+  --surface: #FBF7F0;
+  --text-main: #2B1A16;
+  --gold: #9A8029;
+  --gold-hover: #7F6A1F;
+  --border: #DDD2C0;
+  --sale-red: #B3402F;
+  --success: #4C7A34;
+}
+
+body {
+  background-color: #EFE8DD;
+  color: #2B1A16;
+  font-family: var(--font-dm-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6, .font-editorial, .font-serif {
+  font-family: var(--font-playfair), Georgia, serif;
+}
+
+/* Custom editorial scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #EFE8DD;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #DDD2C0;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9A8029;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes slideRight {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.25s ease-out forwards;
+}
+
+.animate-slideUp {
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slideRight {
+  animation: slideRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
