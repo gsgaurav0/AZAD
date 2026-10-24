@@ -63,7 +63,9 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
   // Stores
   const addItem = useCartStore((state) => state.addItem);
   const toggleWishlist = useWishlistStore((state) => state.toggleWishlist);
-  const isInWishlist = useWishlistStore((state) => state.isInWishlist(product.id));
+  const isInWishlist = useWishlistStore((state) =>
+    state.items.some((item) => item.id === product.id)
+  );
   const openSizeGuide = useUIStore((state) => state.openSizeGuide);
   const addToast = useUIStore((state) => state.addToast);
   const addProductToRecentlyViewed = useRecentlyViewedStore((state) => state.addProduct);
@@ -699,22 +701,46 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
       </div>
 
       {/* Mobile Sticky Add To Cart Bar */}
-      <div className="md:hidden fixed bottom-14 left-0 right-0 z-30 bg-[#FBF7F0]/95 backdrop-blur-md border-t border-[#DDD2C0] p-3 shadow-lg flex items-center justify-between gap-3">
-        <div>
-          <div className="font-serif font-bold text-base text-[#2B1A16]">
-            ₹{product.price.toLocaleString('en-IN')}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#FBF7F0]/95 backdrop-blur-md border-t border-[#DDD2C0] px-4 py-2.5 shadow-2xl flex items-center justify-between gap-3">
+        {/* Wishlist quick toggle button */}
+        <button
+          type="button"
+          onClick={handleWishlistToggle}
+          className={`p-2.5 rounded-[3px] border transition-colors flex items-center justify-center shrink-0 ${
+            isInWishlist
+              ? 'border-[#9A8029] bg-[#9A8029]/10 text-[#9A8029]'
+              : 'border-[#DDD2C0] text-[#2B1A16] hover:border-[#9A8029]'
+          }`}
+          aria-label="Wishlist"
+        >
+          <Heart className={`w-5 h-5 ${isInWishlist ? 'fill-current text-[#9A8029]' : ''}`} />
+        </button>
+
+        {/* Selected Price & State */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-baseline gap-1.5">
+            <span className="font-serif font-bold text-base text-[#2B1A16]">
+              ₹{product.price.toLocaleString('en-IN')}
+            </span>
+            {product.discountPercent > 0 && (
+              <span className="text-[10px] text-[#2B1A16]/50 line-through">
+                ₹{product.originalPrice.toLocaleString('en-IN')}
+              </span>
+            )}
           </div>
-          <div className="text-[10px] text-[#2B1A16]/70 truncate max-w-[130px]">
-            {selectedColor} • Size: {selectedSize || 'Choose size'}
+          <div className="text-[10px] text-[#2B1A16]/75 truncate font-medium">
+            {selectedColor} • <span className={selectedSize ? 'text-[#9A8029] font-semibold' : 'text-[#B3402F]'}>{selectedSize ? `Size: ${selectedSize}` : 'Choose size'}</span>
           </div>
         </div>
+
+        {/* Add to Bag CTA */}
         <button
           type="button"
           onClick={handleAddToCart}
-          className="bg-[#9A8029] hover:bg-[#7F6A1F] text-white py-2.5 px-6 rounded-[3px] text-xs font-semibold uppercase tracking-wider transition-colors flex items-center gap-1.5 shadow-sm"
+          className="bg-[#9A8029] hover:bg-[#7F6A1F] active:bg-[#685619] text-white py-2.5 px-5 rounded-[3px] text-xs font-semibold uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-1.5 shadow-sm shrink-0"
         >
           <ShoppingBag className="w-4 h-4" />
-          Add to Bag
+          <span>Add to Bag</span>
         </button>
       </div>
     </div>

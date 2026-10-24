@@ -1,10 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { MessageCircle, X } from 'lucide-react';
 
 export default function FloatingWhatsApp() {
   const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
+
+  if (pathname === '/checkout') return null;
+
+  const isPDP = pathname.startsWith('/product/');
 
   const handleOpenWhatsApp = () => {
     const phoneNumber = '919876543210';
@@ -15,7 +21,11 @@ export default function FloatingWhatsApp() {
   };
 
   return (
-    <div className="fixed bottom-20 md:bottom-8 right-5 z-40 flex flex-col items-end">
+    <div
+      className={`fixed ${
+        isPDP ? 'bottom-20' : 'bottom-18 md:bottom-8'
+      } right-4 md:right-6 z-40 flex flex-col items-end`}
+    >
       {/* Popover Bubble */}
       {isOpen && (
         <div className="mb-3 max-w-xs bg-[#FBF7F0] border border-[#DDD2C0] shadow-xl rounded-[4px] p-3.5 text-xs text-[#2B1A16] animate-fadeIn relative">

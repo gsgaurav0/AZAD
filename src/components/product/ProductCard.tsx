@@ -19,7 +19,9 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
   const [isHovered, setIsHovered] = useState(false);
 
   const toggleWishlist = useWishlistStore((state) => state.toggleWishlist);
-  const isInWishlist = useWishlistStore((state) => state.isInWishlist(product.id));
+  const isInWishlist = useWishlistStore((state) =>
+    state.items.some((item) => item.id === product.id)
+  );
   const addItem = useCartStore((state) => state.addItem);
   const openQuickView = useUIStore((state) => state.openQuickView);
   const addToast = useUIStore((state) => state.addToast);

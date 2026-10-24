@@ -335,12 +335,12 @@ export default function Header() {
             </div>
 
             {/* Center: Brand Logo */}
-            <div className="flex-1 flex justify-center text-center">
+            <div className="flex-1 flex justify-center text-center px-1">
               <Logo size="md" showSubtitle />
             </div>
 
             {/* Right: Actions (Search, Wishlist, Account, Cart) */}
-            <div className="flex items-center gap-3 md:gap-5">
+            <div className="flex items-center justify-end gap-2 sm:gap-4">
               {/* Search Icon Trigger */}
               <button
                 type="button"
@@ -351,10 +351,10 @@ export default function Header() {
                 <Search className="w-5 h-5" />
               </button>
 
-              {/* Wishlist */}
+              {/* Wishlist - hidden on mobile as it is docked in bottom bar */}
               <Link
                 href="/wishlist"
-                className="p-1.5 text-[#2B1A16] hover:text-[#9A8029] transition-colors relative"
+                className="hidden sm:flex p-1.5 text-[#2B1A16] hover:text-[#9A8029] transition-colors relative"
                 aria-label="View wishlist"
               >
                 <Heart className="w-5 h-5" />
@@ -365,11 +365,11 @@ export default function Header() {
                 )}
               </Link>
 
-              {/* Account / Login */}
+              {/* Account / Login - hidden on mobile as it is docked in bottom bar */}
               {isLoggedIn ? (
                 <Link
                   href="/account"
-                  className="p-1.5 text-[#2B1A16] hover:text-[#9A8029] transition-colors relative"
+                  className="hidden sm:flex p-1.5 text-[#2B1A16] hover:text-[#9A8029] transition-colors relative"
                   aria-label="My Account"
                 >
                   <User className="w-5 h-5" />
@@ -378,7 +378,7 @@ export default function Header() {
                 <button
                   type="button"
                   onClick={openLoginModal}
-                  className="p-1.5 text-[#2B1A16] hover:text-[#9A8029] transition-colors"
+                  className="hidden sm:flex p-1.5 text-[#2B1A16] hover:text-[#9A8029] transition-colors"
                   aria-label="Login or sign up"
                 >
                   <User className="w-5 h-5" />

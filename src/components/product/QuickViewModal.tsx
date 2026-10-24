@@ -15,7 +15,7 @@ export default function QuickViewModal() {
   const addItem = useCartStore((state) => state.addItem);
   const toggleWishlist = useWishlistStore((state) => state.toggleWishlist);
   const isInWishlist = useWishlistStore((state) =>
-    quickViewProduct ? state.isInWishlist(quickViewProduct.id) : false
+    quickViewProduct ? state.items.some((item) => item.id === quickViewProduct.id) : false
   );
 
   const [selectedImage, setSelectedImage] = useState<string>('');

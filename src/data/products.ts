@@ -352,7 +352,7 @@ export const PRODUCTS: Product[] = [
     rating: 4.9,
     reviewCount: 92,
     colors: [
-      { name: 'Rust Ochre', hex: '#9A5B32', image: 'https://images.unsplash.com/photo-1610030469668-932d08a54c30?auto=format&fit=crop&w=1000&q=80' },
+      { name: 'Rust Ochre', hex: '#9A5B32', image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1000&q=80' },
     ],
     sizes: [
       { size: 'S', inStock: true, stockCount: 5 },
@@ -361,7 +361,7 @@ export const PRODUCTS: Product[] = [
       { size: 'XL', inStock: true, stockCount: 1 },
     ],
     images: [
-      'https://images.unsplash.com/photo-1610030469668-932d08a54c30?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1000&q=80',
       'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=1000&q=80',
     ],
     fabric: 'Pure Chanderi Silk with Cotton Lining',
@@ -499,7 +499,7 @@ export const PRODUCTS: Product[] = [
     reviewCount: 62,
     colors: [
       { name: 'Antique Gold', hex: '#9A8029', image: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=1000&q=80' },
-      { name: 'Onyx Charcoal', hex: '#262626', image: 'https://images.unsplash.com/photo-1583391733975-0453303c7340?auto=format&fit=crop&w=1000&q=80' },
+      { name: 'Onyx Charcoal', hex: '#262626', image: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=1000&q=80' },
     ],
     sizes: [
       { size: 'S (38)', inStock: true, stockCount: 6 },
@@ -510,7 +510,7 @@ export const PRODUCTS: Product[] = [
     ],
     images: [
       'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1583391733975-0453303c7340?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=1000&q=80',
     ],
     fabric: 'Matka Silk with Cotton Mulmul Lining',
     fit: 'Structured tailored kurta with comfortable straight cut',
@@ -1018,13 +1018,13 @@ export const PRODUCTS: Product[] = [
     rating: 4.9,
     reviewCount: 56,
     colors: [
-      { name: 'Brushed 18K Gold', hex: '#9A8029', image: 'https://images.unsplash.com/photo-1611591475155-426473854362?auto=format&fit=crop&w=1000&q=80' },
+      { name: 'Brushed 18K Gold', hex: '#9A8029', image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=1000&q=80' },
     ],
     sizes: [
       { size: 'Adjustable', inStock: true, stockCount: 14 },
     ],
     images: [
-      'https://images.unsplash.com/photo-1611591475155-426473854362?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=1000&q=80',
       'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=1000&q=80',
     ],
     fabric: 'Hypoallergenic Solid Brass with 2.5 Micron 18K Gold Vermeil',

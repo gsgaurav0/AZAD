@@ -53,9 +53,13 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${playfair.variable} ${dmSans.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#EFE8DD] text-[#2B1A16] font-sans selection:bg-[#9A8029] selection:text-white pb-14 md:pb-0">
+      <body
+        suppressHydrationWarning
+        className="min-h-full flex flex-col bg-[#EFE8DD] text-[#2B1A16] font-sans selection:bg-[#9A8029] selection:text-white pb-14 md:pb-0"
+      >
         <AnnouncementBar />
         <Header />
         
