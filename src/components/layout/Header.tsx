@@ -30,12 +30,42 @@ export default function Header() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isScrolled, setIsScrolled] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const menuTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const cartItemCount = useCartStore((state) => state.getItemCount());
   const openCart = useCartStore((state) => state.openCart);
   const wishlistItems = useWishlistStore((state) => state.items);
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const openLoginModal = useUIStore((state) => state.openLoginModal);
+
+  // Smooth hover intent handlers to prevent menu from vanishing
+  const handleMouseEnterNav = (id: string) => {
+    if (menuTimerRef.current) {
+      clearTimeout(menuTimerRef.current);
+      menuTimerRef.current = null;
+    }
+    setActiveMenu(id);
+  };
+
+  const handleMouseLeaveNav = () => {
+    if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+    menuTimerRef.current = setTimeout(() => {
+      setActiveMenu(null);
+    }, 250);
+  };
+
+  const handleMenuEnter = () => {
+    if (menuTimerRef.current) {
+      clearTimeout(menuTimerRef.current);
+      menuTimerRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+    };
+  }, []);
 
   // Detect scroll for subtle shadow/border transition
   useEffect(() => {
@@ -110,16 +140,20 @@ export default function Header() {
               {/* Desktop Mega-Menu trigger items */}
               <nav
                 className="hidden lg:flex items-center space-x-7"
-                onMouseLeave={() => setActiveMenu(null)}
+                onMouseLeave={handleMouseLeaveNav}
               >
                 {navLinks.map((link) => (
                   <div
                     key={link.id}
                     className="relative group py-2"
-                    onMouseEnter={() => setActiveMenu(link.id)}
+                    onMouseEnter={() => handleMouseEnterNav(link.id)}
                   >
                     <Link
                       href={link.href}
+                      onClick={() => {
+                        if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+                        setActiveMenu(null);
+                      }}
                       className={`text-[13px] tracking-[0.14em] uppercase font-sans font-medium transition-colors duration-200 relative py-1 ${
                         link.isSale
                           ? 'text-[#B3402F] font-semibold hover:text-[#B3402F]/80'
@@ -127,201 +161,12 @@ export default function Header() {
                       }`}
                     >
                       {link.label}
-                      <span className="absolute bottom-0 left-0 w-0 h-[1.5px] bg-[#9A8029] transition-all duration-300 group-hover:w-full" />
+                      <span
+                        className={`absolute bottom-0 left-0 h-[1.5px] bg-[#9A8029] transition-all duration-300 ${
+                          activeMenu === link.id ? 'w-full' : 'w-0 group-hover:w-full'
+                        }`}
+                      />
                     </Link>
-
-                    {/* Mega Menu Dropdown */}
-                    {activeMenu === link.id && (
-                      <div
-                        className="fixed left-0 right-0 top-[calc(100%+8px)] w-full bg-[#FBF7F0] border-y border-[#DDD2C0] shadow-xl z-50 animate-fadeIn"
-                        onMouseEnter={() => setActiveMenu(link.id)}
-                        onMouseLeave={() => setActiveMenu(null)}
-                      >
-                        <div className="max-w-7xl mx-auto px-8 py-8">
-                          {link.id === 'new-in' ? (
-                            <div className="grid grid-cols-4 gap-8">
-                              <div>
-                                <h4 className="font-serif text-base font-semibold text-[#2B1A16] mb-3">
-                                  Fresh Off The Atelier
-                                </h4>
-                                <ul className="space-y-2 text-sm text-[#2B1A16]/80 font-sans">
-                                  <li>
-                                    <Link href="/shop/women?filter=new" className="hover:text-[#9A8029] transition-colors">
-                                      Women New Arrivals
-                                    </Link>
-                                  </li>
-                                  <li>
-                                    <Link href="/shop/men?filter=new" className="hover:text-[#9A8029] transition-colors">
-                                      Men New Arrivals
-                                    </Link>
-                                  </li>
-                                  <li>
-                                    <Link href="/shop/kids?filter=new" className="hover:text-[#9A8029] transition-colors">
-                                      Kids Miniatures
-                                    </Link>
-                                  </li>
-                                  <li>
-                                    <Link href="/shop/accessories?filter=new" className="hover:text-[#9A8029] transition-colors">
-                                      Fine Leather & Jewelry
-                                    </Link>
-                                  </li>
-                                </ul>
-                              </div>
-                              <div className="col-span-3 grid grid-cols-3 gap-4">
-                                {PRODUCTS.filter((p) => p.isNew)
-                                  .slice(0, 3)
-                                  .map((np) => (
-                                    <Link
-                                      key={np.id}
-                                      href={`/product/${np.slug}`}
-                                      className="group/card flex flex-col"
-                                    >
-                                      <div className="relative aspect-[3/4] overflow-hidden rounded-[4px] bg-[#DDD2C0]/20 mb-2">
-                                        <Image
-                                          src={np.images[0]}
-                                          alt={np.name}
-                                          fill
-                                          sizes="(max-width: 1200px) 300px, 400px"
-                                          className="object-cover group-hover/card:scale-105 transition-transform duration-500"
-                                        />
-                                        <span className="absolute top-2 left-2 bg-[#9A8029] text-white text-[10px] font-sans font-semibold tracking-widest uppercase px-2 py-0.5 rounded-[2px]">
-                                          NEW
-                                        </span>
-                                      </div>
-                                      <span className="text-xs font-serif font-medium text-[#2B1A16] line-clamp-1 group-hover/card:text-[#9A8029]">
-                                        {np.name}
-                                      </span>
-                                      <span className="text-xs text-[#2B1A16]/70 mt-0.5">
-                                        ₹{np.price.toLocaleString('en-IN')}
-                                      </span>
-                                    </Link>
-                                  ))}
-                              </div>
-                            </div>
-                          ) : link.id === 'sale' ? (
-                            <div className="grid grid-cols-4 gap-8">
-                              <div>
-                                <div className="inline-flex items-center gap-1.5 text-[#B3402F] text-xs font-semibold uppercase tracking-wider mb-2">
-                                  <Tag className="w-3.5 h-3.5" />
-                                  Private Seasonal Sale
-                                </div>
-                                <h4 className="font-serif text-xl font-semibold text-[#2B1A16] mb-3">
-                                  Up to 40% Off Selected Styles
-                                </h4>
-                                <p className="text-xs text-[#2B1A16]/70 mb-4 leading-relaxed">
-                                  Archival pieces and limited seasonal editions crafted in noble materials.
-                                </p>
-                                <Link
-                                  href="/shop?filter=sale"
-                                  className="inline-flex items-center gap-1 text-xs font-semibold tracking-wider text-[#9A8029] hover:underline uppercase"
-                                >
-                                  View All Sale Items <ArrowRight className="w-3.5 h-3.5" />
-                                </Link>
-                              </div>
-                              <div className="col-span-3 grid grid-cols-3 gap-4">
-                                {PRODUCTS.filter((p) => p.discountPercent >= 33)
-                                  .slice(0, 3)
-                                  .map((sp) => (
-                                    <Link
-                                      key={sp.id}
-                                      href={`/product/${sp.slug}`}
-                                      className="group/card flex flex-col"
-                                    >
-                                      <div className="relative aspect-[3/4] overflow-hidden rounded-[4px] bg-[#DDD2C0]/20 mb-2">
-                                        <Image
-                                          src={sp.images[0]}
-                                          alt={sp.name}
-                                          fill
-                                          sizes="(max-width: 1200px) 300px, 400px"
-                                          className="object-cover group-hover/card:scale-105 transition-transform duration-500"
-                                        />
-                                        <span className="absolute top-2 left-2 bg-[#B3402F] text-white text-[10px] font-sans font-semibold tracking-widest uppercase px-2 py-0.5 rounded-[2px]">
-                                          {sp.discountPercent}% OFF
-                                        </span>
-                                      </div>
-                                      <span className="text-xs font-serif font-medium text-[#2B1A16] line-clamp-1 group-hover/card:text-[#9A8029]">
-                                        {sp.name}
-                                      </span>
-                                      <div className="flex items-center gap-2 mt-0.5 text-xs">
-                                        <span className="font-semibold text-[#B3402F]">
-                                          ₹{sp.price.toLocaleString('en-IN')}
-                                        </span>
-                                        <span className="line-through text-[#2B1A16]/40 text-[11px]">
-                                          ₹{sp.originalPrice.toLocaleString('en-IN')}
-                                        </span>
-                                      </div>
-                                    </Link>
-                                  ))}
-                              </div>
-                            </div>
-                          ) : (
-                            (() => {
-                              const categoryData = CATEGORIES_CONFIG.find(
-                                (c) => c.id === link.id
-                              );
-                              if (!categoryData) return null;
-                              return (
-                                <div className="grid grid-cols-12 gap-8 items-start">
-                                  <div className="col-span-4">
-                                    <h4 className="font-serif text-lg font-semibold text-[#2B1A16] mb-1">
-                                      {categoryData.name} Collection
-                                    </h4>
-                                    <p className="text-xs text-[#2B1A16]/70 mb-4 font-sans">
-                                      {categoryData.description}
-                                    </p>
-                                    <Link
-                                      href={`/shop/${categoryData.slug}`}
-                                      className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-[#9A8029] hover:underline"
-                                    >
-                                      Explore Full Catalog <ArrowRight className="w-3.5 h-3.5" />
-                                    </Link>
-                                  </div>
-
-                                  <div className="col-span-4 border-l border-[#DDD2C0] pl-8">
-                                    <span className="text-[11px] uppercase tracking-widest text-[#2B1A16]/50 font-semibold block mb-3">
-                                      Categories
-                                    </span>
-                                    <div className="grid grid-cols-2 gap-y-2.5 gap-x-4 text-xs font-sans text-[#2B1A16]/80">
-                                      {categoryData.subcategories.map((sub) => (
-                                        <Link
-                                          key={sub}
-                                          href={`/shop/${categoryData.slug}?sub=${encodeURIComponent(sub)}`}
-                                          className="hover:text-[#9A8029] transition-colors py-0.5"
-                                        >
-                                          {sub}
-                                        </Link>
-                                      ))}
-                                    </div>
-                                  </div>
-
-                                  <div className="col-span-4 border-l border-[#DDD2C0] pl-8">
-                                    <div className="relative aspect-[16/10] overflow-hidden rounded-[4px] mb-2 group/feat">
-                                      <Image
-                                        src={categoryData.featuredImage}
-                                        alt={categoryData.featuredTitle}
-                                        fill
-                                        sizes="(max-width: 1200px) 400px, 500px"
-                                        className="object-cover group-hover/feat:scale-105 transition-transform duration-700"
-                                      />
-                                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-4">
-                                        <div className="text-white">
-                                          <span className="text-[10px] tracking-widest uppercase text-[#DDD2C0]">
-                                            CURATED EDIT
-                                          </span>
-                                          <h5 className="font-serif text-sm font-semibold">
-                                            {categoryData.featuredTitle}
-                                          </h5>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              );
-                            })()
-                          )}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 ))}
               </nav>
@@ -395,6 +240,228 @@ export default function Header() {
             </div>
           </div>
         </div>
+
+        {/* Desktop Mega Menu Dropdown directly attached to header with zero gap */}
+        {activeMenu && (
+          <div
+            className="absolute left-0 right-0 top-full w-full bg-[#FBF7F0] border-b border-[#DDD2C0] shadow-2xl z-50 animate-fadeIn before:content-[''] before:absolute before:-top-4 before:left-0 before:right-0 before:h-4"
+            onMouseEnter={handleMenuEnter}
+            onMouseLeave={handleMouseLeaveNav}
+          >
+            <div className="max-w-7xl mx-auto px-8 py-8">
+              {activeMenu === 'new-in' ? (
+                <div className="grid grid-cols-4 gap-8">
+                  <div>
+                    <h4 className="font-serif text-base font-semibold text-[#2B1A16] mb-3">
+                      Fresh Hardware Releases
+                    </h4>
+                    <ul className="space-y-2.5 text-sm text-[#2B1A16]/80 font-sans">
+                      <li>
+                        <Link
+                          href="/shop/headphones?filter=new"
+                          onClick={() => setActiveMenu(null)}
+                          className="hover:text-[#9A8029] transition-colors flex items-center justify-between"
+                        >
+                          <span>Apex & Sonic ANC Audio</span>
+                          <span className="text-[10px] text-[#9A8029] font-bold uppercase">New</span>
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          href="/shop/phones?filter=new"
+                          onClick={() => setActiveMenu(null)}
+                          className="hover:text-[#9A8029] transition-colors flex items-center justify-between"
+                        >
+                          <span>Titan 16 & Nexus Fold Flagships</span>
+                          <span className="text-[10px] text-[#9A8029] font-bold uppercase">New</span>
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          href="/shop/smartwatches?filter=new"
+                          onClick={() => setActiveMenu(null)}
+                          className="hover:text-[#9A8029] transition-colors flex items-center justify-between"
+                        >
+                          <span>Chronos Ultra Titanium 49mm</span>
+                          <span className="text-[10px] text-[#9A8029] font-bold uppercase">New</span>
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          href="/shop/accessories?filter=new"
+                          onClick={() => setActiveMenu(null)}
+                          className="hover:text-[#9A8029] transition-colors flex items-center justify-between"
+                        >
+                          <span>140W GaN Pro & MagDocks</span>
+                          <span className="text-[10px] text-[#9A8029] font-bold uppercase">New</span>
+                        </Link>
+                      </li>
+                    </ul>
+                  </div>
+                  <div className="col-span-3 grid grid-cols-3 gap-4">
+                    {PRODUCTS.filter((p) => p.isNew)
+                      .slice(0, 3)
+                      .map((np) => (
+                        <Link
+                          key={np.id}
+                          href={`/product/${np.slug}`}
+                          onClick={() => setActiveMenu(null)}
+                          className="group/card flex flex-col"
+                        >
+                          <div className="relative aspect-[3/4] overflow-hidden rounded-[4px] bg-[#DDD2C0]/20 mb-2">
+                            <Image
+                              src={np.images[0]}
+                              alt={np.name}
+                              fill
+                              sizes="(max-width: 1200px) 300px, 400px"
+                              className="object-cover group-hover/card:scale-105 transition-transform duration-500"
+                            />
+                            <span className="absolute top-2 left-2 bg-[#9A8029] text-white text-[10px] font-sans font-semibold tracking-widest uppercase px-2 py-0.5 rounded-[2px]">
+                              NEW IN
+                            </span>
+                          </div>
+                          <span className="text-xs font-serif font-medium text-[#2B1A16] line-clamp-1 group-hover/card:text-[#9A8029]">
+                            {np.name}
+                          </span>
+                          <span className="text-xs font-semibold text-[#2B1A16]/80 mt-0.5">
+                            ₹{np.price.toLocaleString('en-IN')}
+                          </span>
+                        </Link>
+                      ))}
+                  </div>
+                </div>
+              ) : activeMenu === 'sale' ? (
+                <div className="grid grid-cols-4 gap-8">
+                  <div>
+                    <div className="inline-flex items-center gap-1.5 text-[#B3402F] text-xs font-semibold uppercase tracking-wider mb-2">
+                      <Tag className="w-3.5 h-3.5" />
+                      Limited Hardware Deals
+                    </div>
+                    <h4 className="font-serif text-xl font-semibold text-[#2B1A16] mb-3">
+                      Up to 35% Off Selected Gear
+                    </h4>
+                    <p className="text-xs text-[#2B1A16]/70 mb-4 leading-relaxed">
+                      Special promotional allocations on planar ANC headphones, 5G smartphones, and GaN accessories with full 2-year warranty.
+                    </p>
+                    <Link
+                      href="/shop?filter=sale"
+                      onClick={() => setActiveMenu(null)}
+                      className="inline-flex items-center gap-1 text-xs font-semibold tracking-wider text-[#9A8029] hover:underline uppercase"
+                    >
+                      View All Deals <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                  <div className="col-span-3 grid grid-cols-3 gap-4">
+                    {PRODUCTS.filter((p) => p.discountPercent >= 20)
+                      .slice(0, 3)
+                      .map((sp) => (
+                        <Link
+                          key={sp.id}
+                          href={`/product/${sp.slug}`}
+                          onClick={() => setActiveMenu(null)}
+                          className="group/card flex flex-col"
+                        >
+                          <div className="relative aspect-[3/4] overflow-hidden rounded-[4px] bg-[#DDD2C0]/20 mb-2">
+                            <Image
+                              src={sp.images[0]}
+                              alt={sp.name}
+                              fill
+                              sizes="(max-width: 1200px) 300px, 400px"
+                              className="object-cover group-hover/card:scale-105 transition-transform duration-500"
+                            />
+                            <span className="absolute top-2 left-2 bg-[#B3402F] text-white text-[10px] font-sans font-semibold tracking-widest uppercase px-2 py-0.5 rounded-[2px]">
+                              {sp.discountPercent}% OFF
+                            </span>
+                          </div>
+                          <span className="text-xs font-serif font-medium text-[#2B1A16] line-clamp-1 group-hover/card:text-[#9A8029]">
+                            {sp.name}
+                          </span>
+                          <div className="flex items-center gap-2 mt-0.5 text-xs">
+                            <span className="font-semibold text-[#B3402F]">
+                              ₹{sp.price.toLocaleString('en-IN')}
+                            </span>
+                            <span className="line-through text-[#2B1A16]/40 text-[11px]">
+                              ₹{sp.originalPrice.toLocaleString('en-IN')}
+                            </span>
+                          </div>
+                        </Link>
+                      ))}
+                  </div>
+                </div>
+              ) : (
+                (() => {
+                  const categoryData = CATEGORIES_CONFIG.find(
+                    (c) => c.id === activeMenu
+                  );
+                  if (!categoryData) return null;
+                  return (
+                    <div className="grid grid-cols-12 gap-8 items-start">
+                      <div className="col-span-4">
+                        <h4 className="font-serif text-lg font-semibold text-[#2B1A16] mb-1">
+                          {categoryData.name}
+                        </h4>
+                        <p className="text-xs text-[#2B1A16]/70 mb-4 font-sans leading-relaxed">
+                          {categoryData.description}
+                        </p>
+                        <Link
+                          href={`/shop/${categoryData.slug}`}
+                          onClick={() => setActiveMenu(null)}
+                          className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-[#9A8029] hover:underline"
+                        >
+                          Explore Full Catalog <ArrowRight className="w-3.5 h-3.5" />
+                        </Link>
+                      </div>
+
+                      <div className="col-span-4 border-l border-[#DDD2C0] pl-8">
+                        <span className="text-[11px] uppercase tracking-widest text-[#2B1A16]/50 font-semibold block mb-3">
+                          Categories & Form Factors
+                        </span>
+                        <div className="grid grid-cols-2 gap-y-2.5 gap-x-4 text-xs font-sans text-[#2B1A16]/80">
+                          {categoryData.subcategories.map((sub) => (
+                            <Link
+                              key={sub}
+                              href={`/shop/${categoryData.slug}?sub=${encodeURIComponent(sub)}`}
+                              onClick={() => setActiveMenu(null)}
+                              className="hover:text-[#9A8029] transition-colors py-0.5"
+                            >
+                              {sub}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="col-span-4 border-l border-[#DDD2C0] pl-8">
+                        <Link
+                          href={`/shop/${categoryData.slug}`}
+                          onClick={() => setActiveMenu(null)}
+                          className="block relative aspect-[16/10] overflow-hidden rounded-[4px] mb-2 group/feat"
+                        >
+                          <Image
+                            src={categoryData.featuredImage}
+                            alt={categoryData.featuredTitle}
+                            fill
+                            sizes="(max-width: 1200px) 400px, 500px"
+                            className="object-cover group-hover/feat:scale-105 transition-transform duration-700"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-end p-4">
+                            <div className="text-white">
+                              <span className="text-[10px] tracking-widest uppercase text-[#DDD2C0]">
+                                FEATURED HARDWARE
+                              </span>
+                              <h5 className="font-serif text-sm font-semibold">
+                                {categoryData.featuredTitle}
+                              </h5>
+                            </div>
+                          </div>
+                        </Link>
+                      </div>
+                    </div>
+                  );
+                })()
+              )}
+            </div>
+          </div>
+        )}
       </header>
 
       {/* Live Search Modal / Overlay */}

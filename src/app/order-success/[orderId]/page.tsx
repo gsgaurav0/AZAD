@@ -58,7 +58,7 @@ export default function OrderSuccessPage({ params }: OrderSuccessProps) {
           Thank you for your Patronage
         </h1>
         <p className="text-xs sm:text-sm text-[#2B1A16]/75 font-sans max-w-md mx-auto mb-8 leading-relaxed">
-          Your order has been registered at the Maison atelier. A confirmation dispatch note has been sent to your registered contact.
+          Your hardware order has been queued for diagnostic testing and express dispatch at the Mewak distribution center. A confirmation dispatch note has been sent to your registered contact.
         </p>
 
         {/* Order Card Summary */}
