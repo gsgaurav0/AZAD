@@ -17,10 +17,10 @@ export default function TrendingGrid() {
           <div>
             <div className="flex items-center gap-1.5 text-xs uppercase tracking-[0.25em] text-[#B3402F] font-semibold mb-2 font-sans">
               <Flame className="w-3.5 h-3.5 fill-current" />
-              <span>THE PATRON FAVORITES</span>
+              <span>MOST POPULAR HARDWARE</span>
             </div>
-            <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-normal text-[#2B1A16]">
-              Trending This Season
+            <h2 className="font-sans text-3xl sm:text-4xl md:text-5xl font-bold text-[#2B1A16]">
+              Trending Tech
             </h2>
           </div>
 

@@ -26,7 +26,7 @@ export default function Footer() {
           <div className="lg:col-span-5 space-y-4">
             <Logo size="lg" className="items-start" />
             <p className="text-xs text-[#EFE8DD]/70 max-w-sm leading-relaxed font-sans">
-              MewaK embodies the intersection of ancestral Indian textile craftsmanship and sharp European editorial tailoring. Silks, handloomed linens, and slow luxury.
+              AZAD pioneers the convergence of cutting-edge silicon architecture, acoustic purity, and precision materials. Flagship smartphones, planar headphones, and connected wearables.
             </p>
             <div className="flex items-center gap-4 pt-2 text-[#DDD2C0]/80">
               <a
@@ -61,19 +61,19 @@ export default function Footer() {
 
           <div className="lg:col-span-7 flex flex-col justify-center">
             <span className="text-[11px] uppercase tracking-widest text-[#9A8029] font-semibold mb-2 block">
-              THE PATRON BULLETIN
+              THE AZAD INSIDER
             </span>
             <h4 className="font-serif text-xl sm:text-2xl text-[#EFE8DD] mb-2">
-              Receive private invitations to seasonal edits & runway previews
+              Receive priority access to flagship drops & VIP technology briefings
             </h4>
             <p className="text-xs text-[#EFE8DD]/60 mb-4">
-              Enjoy 10% off your inaugural order with personal concierge privileges.
+              Enjoy 10% off your inaugural order with official warranty protection.
             </p>
 
             {subscribed ? (
               <div className="flex items-center gap-2 bg-[#9A8029]/20 border border-[#9A8029] text-[#EFE8DD] px-4 py-3 rounded-[4px] text-xs">
                 <Check className="w-4 h-4 text-[#9A8029]" />
-                <span>Welcome to the Maison MewaK. Your welcome code <strong>MEWAK10</strong> has been noted.</span>
+                <span>Welcome to AZAD. Your discount code <strong>AZAD10</strong> is active.</span>
               </div>
             ) : (
               <form onSubmit={handleSubscribe} className="flex max-w-md gap-2">
@@ -104,37 +104,37 @@ export default function Footer() {
           {/* Col 1: Collections */}
           <div>
             <h5 className="font-serif text-sm font-semibold text-[#EFE8DD] uppercase tracking-wider mb-4">
-              Collections
+              Categories
             </h5>
             <ul className="space-y-2.5 text-[#EFE8DD]/70">
               <li>
-                <Link href="/shop/women" className="hover:text-[#9A8029] transition-colors">
-                  Women Haute Edition
+                <Link href="/shop/headphones" className="hover:text-[#9A8029] transition-colors">
+                  Headphones & Audio
                 </Link>
               </li>
               <li>
-                <Link href="/shop/men" className="hover:text-[#9A8029] transition-colors">
-                  Men Neapolitan Tailoring
+                <Link href="/shop/phones" className="hover:text-[#9A8029] transition-colors">
+                  Flagship Smartphones
                 </Link>
               </li>
               <li>
-                <Link href="/shop/kids" className="hover:text-[#9A8029] transition-colors">
-                  Kids Heirloom Cotton
+                <Link href="/shop/smartwatches" className="hover:text-[#9A8029] transition-colors">
+                  Connected Smartwatches
                 </Link>
               </li>
               <li>
                 <Link href="/shop/accessories" className="hover:text-[#9A8029] transition-colors">
-                  Florentine Leather & Silk
+                  GaN Chargers & Docks
                 </Link>
               </li>
               <li>
                 <Link href="/shop?filter=new" className="hover:text-[#9A8029] transition-colors">
-                  New In Runway
+                  Latest Tech Releases
                 </Link>
               </li>
               <li>
                 <Link href="/shop?filter=sale" className="text-[#B3402F] hover:text-[#B3402F]/80 transition-colors">
-                  Archival Private Sale
+                  Exclusive Deals & Bundles
                 </Link>
               </li>
             </ul>
@@ -143,7 +143,7 @@ export default function Footer() {
           {/* Col 2: Client Services */}
           <div>
             <h5 className="font-serif text-sm font-semibold text-[#EFE8DD] uppercase tracking-wider mb-4">
-              Client Concierge
+              Customer Support
             </h5>
             <ul className="space-y-2.5 text-[#EFE8DD]/70">
               <li>
@@ -153,17 +153,17 @@ export default function Footer() {
               </li>
               <li>
                 <Link href="/shipping" className="hover:text-[#9A8029] transition-colors">
-                  Complimentary Shipping
+                  Express Shipping Policy
                 </Link>
               </li>
               <li>
                 <Link href="/returns" className="hover:text-[#9A8029] transition-colors">
-                  15-Day Doorstep Returns
+                  15-Day Replacement
                 </Link>
               </li>
               <li>
                 <Link href="/size-guide" className="hover:text-[#9A8029] transition-colors">
-                  Atelier Size Conversion
+                  Device Sizing & Compatibility
                 </Link>
               </li>
               <li>
@@ -173,7 +173,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link href="/contact" className="hover:text-[#9A8029] transition-colors">
-                  Book a Stylist Consultation
+                  Contact Tech Support
                 </Link>
               </li>
             </ul>
@@ -241,7 +241,7 @@ export default function Footer() {
         {/* Bottom Payment Badges & Powered By Kashyap Communication */}
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-[#EFE8DD]/60">
           <div>
-            © {new Date().getFullYear()} MewaK Atelier Ltd. All rights reserved.
+            © {new Date().getFullYear()} AZAD Electronics Ltd. All rights reserved.
           </div>
 
           {/* Payment Method Badges */}

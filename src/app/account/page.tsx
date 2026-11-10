@@ -10,14 +10,8 @@ import {
   MapPin,
   LogOut,
   CheckCircle2,
-  Clock,
   Truck,
-  ArrowRight,
-  ShieldCheck,
   Plus,
-  Trash2,
-  Send,
-  AlertCircle,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
@@ -415,11 +409,11 @@ export default function AccountPage() {
                       <input
                         type="radio"
                         name="refundMode"
-                        checked={returnRefundMode === 'MewaK Store Credit'}
-                        onChange={() => setReturnRefundMode('MewaK Store Credit')}
+                        checked={returnRefundMode === 'AZAD Store Credit'}
+                        onChange={() => setReturnRefundMode('AZAD Store Credit')}
                         className="accent-[#9A8029]"
                       />
-                      <span>Instant MewaK Store Credit + 5% bonus privilege coupon</span>
+                      <span>Instant AZAD Store Credit + 5% bonus privilege coupon</span>
                     </label>
                   </div>
                 </div>

@@ -3,42 +3,42 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles, Cpu, ShieldCheck, Zap, Headphones } from 'lucide-react';
 
 export default function HeroBanner() {
   return (
-    <section className="relative min-h-[75vh] sm:min-h-[85vh] md:min-h-[90vh] flex items-center justify-center overflow-hidden bg-[#2B1A16]">
+    <section className="relative min-h-[75vh] sm:min-h-[85vh] md:min-h-[90vh] flex items-center justify-center overflow-hidden bg-[#0F172A]">
       {/* Background Hero Image with refined gradient overlay */}
       <div className="absolute inset-0 z-0">
         <Image
-          src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=2000&q=85"
-          alt="MewaK Autumn Winter Haute Couture"
+          src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=2000&q=85"
+          alt="AZAD Flagship Headphones & Electronics"
           fill
           priority
           sizes="100vw"
-          className="object-cover object-top opacity-75 transform scale-102"
+          className="object-cover object-center opacity-65 transform scale-102"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#2B1A16] via-[#2B1A16]/50 to-[#2B1A16]/30" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#2B1A16]/60 via-transparent to-[#2B1A16]/50" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A] via-[#0F172A]/60 to-[#0F172A]/40" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0F172A]/80 via-transparent to-[#0F172A]/70" />
       </div>
 
       {/* Hero Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20 text-center flex flex-col items-center">
         {/* Editorial Sub-badge */}
-        <div className="inline-flex items-center gap-1.5 sm:gap-2 border border-[#9A8029]/60 bg-[#2B1A16]/80 backdrop-blur-md px-3 sm:px-4 py-1 sm:py-1.5 rounded-full mb-4 sm:mb-6 text-[10px] sm:text-xs text-[#DDD2C0] tracking-[0.2em] uppercase font-sans">
+        <div className="inline-flex items-center gap-1.5 sm:gap-2 border border-[#9A8029]/60 bg-[#0F172A]/85 backdrop-blur-md px-3 sm:px-4 py-1 sm:py-1.5 rounded-full mb-4 sm:mb-6 text-[10px] sm:text-xs text-[#DDD2C0] tracking-[0.2em] uppercase font-sans">
           <Sparkles className="w-3 h-3 text-[#9A8029] shrink-0" />
-          <span>Autumn / Winter 2026 Atelier</span>
+          <span>Next-Gen Audio & Flagship Silicon 2026</span>
         </div>
 
         {/* Headline */}
-        <h1 className="font-serif text-3xl sm:text-5xl md:text-7xl lg:text-8xl text-[#EFE8DD] font-normal tracking-tight leading-[1.12] sm:leading-[1.08] max-w-5xl mb-4 sm:mb-6">
-          The Art of <br className="hidden sm:inline" />
-          <span className="italic font-light text-[#9A8029]">Sartorial</span> Poise
+        <h1 className="font-sans text-3xl sm:text-5xl md:text-7xl lg:text-8xl text-[#EFE8DD] font-bold tracking-tight leading-[1.12] sm:leading-[1.08] max-w-5xl mb-4 sm:mb-6">
+          Architectural Sound. <br className="hidden sm:inline" />
+          <span className="italic font-light text-[#9A8029]">Pure Silicon</span> Mastery.
         </h1>
 
         {/* Editorial Paragraph */}
         <p className="font-sans text-xs sm:text-base md:text-lg text-[#EFE8DD]/85 max-w-2xl mx-auto mb-6 sm:mb-10 leading-relaxed font-light px-2">
-          Sculpted in pure mulberry silks, Neapolitan virgin wools, and hand-loomed heritage linens. Crafted for patrons who understand that true luxury never shouts.
+          Engineered with custom beryllium drivers, aerospace Grade 5 titanium, and ultra-low latency wireless architecture. Crafted for those who demand precision.
         </p>
 
         {/* CTAs */}
@@ -47,42 +47,42 @@ export default function HeroBanner() {
             href="/shop"
             className="w-full sm:w-auto bg-[#9A8029] hover:bg-[#7F6A1F] text-white px-7 sm:px-8 py-3.5 sm:py-4 rounded-[4px] text-xs font-semibold uppercase tracking-[0.2em] transition-all duration-300 shadow-lg flex items-center justify-center gap-2 group"
           >
-            <span>Explore Collection</span>
+            <span>Explore All Gear</span>
             <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
           </Link>
           <Link
-            href="/shop?filter=new"
+            href="/shop/headphones"
             className="w-full sm:w-auto border border-[#DDD2C0]/50 hover:border-[#EFE8DD] text-[#EFE8DD] hover:bg-white/10 px-7 sm:px-8 py-3.5 sm:py-4 rounded-[4px] text-xs font-semibold uppercase tracking-[0.2em] transition-all duration-300 backdrop-blur-xs text-center"
           >
-            New Arrivals
+            Audio & Headphones
           </Link>
         </div>
 
         {/* Floating Value Props Banner */}
         <div className="mt-10 sm:mt-16 pt-6 sm:pt-8 border-t border-[#DDD2C0]/20 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 text-left max-w-4xl w-full text-xs">
-          <div className="bg-[#2B1A16]/50 sm:bg-transparent p-2 sm:p-0 rounded-[3px]">
-            <span className="text-[9px] sm:text-[10px] tracking-widest uppercase text-[#9A8029] font-semibold block mb-0.5">
-              FABRICS
+          <div className="bg-[#0F172A]/70 sm:bg-transparent p-2.5 sm:p-0 rounded-[4px] border border-white/5 sm:border-none">
+            <span className="text-[9px] sm:text-[10px] tracking-widest uppercase text-[#9A8029] font-semibold block mb-0.5 flex items-center gap-1">
+              <Headphones className="w-3 h-3" /> ACOUSTICS
             </span>
-            <span className="font-serif text-xs sm:text-sm text-[#EFE8DD]">100% Pure Mulberry Silk</span>
+            <span className="font-sans text-xs sm:text-sm text-[#EFE8DD] font-medium">Beryllium & Planar Drivers</span>
           </div>
-          <div className="bg-[#2B1A16]/50 sm:bg-transparent p-2 sm:p-0 rounded-[3px]">
-            <span className="text-[9px] sm:text-[10px] tracking-widest uppercase text-[#9A8029] font-semibold block mb-0.5">
-              TAILORING
+          <div className="bg-[#0F172A]/70 sm:bg-transparent p-2.5 sm:p-0 rounded-[4px] border border-white/5 sm:border-none">
+            <span className="text-[9px] sm:text-[10px] tracking-widest uppercase text-[#9A8029] font-semibold block mb-0.5 flex items-center gap-1">
+              <Cpu className="w-3 h-3" /> PROCESSING
             </span>
-            <span className="font-serif text-xs sm:text-sm text-[#EFE8DD]">Half-Canvas Build</span>
+            <span className="font-sans text-xs sm:text-sm text-[#EFE8DD] font-medium">Snapdragon 8 Gen 3</span>
           </div>
-          <div className="bg-[#2B1A16]/50 sm:bg-transparent p-2 sm:p-0 rounded-[3px]">
-            <span className="text-[9px] sm:text-[10px] tracking-widest uppercase text-[#9A8029] font-semibold block mb-0.5">
-              ATELIER
+          <div className="bg-[#0F172A]/70 sm:bg-transparent p-2.5 sm:p-0 rounded-[4px] border border-white/5 sm:border-none">
+            <span className="text-[9px] sm:text-[10px] tracking-widest uppercase text-[#9A8029] font-semibold block mb-0.5 flex items-center gap-1">
+              <Zap className="w-3 h-3" /> CHARGING
             </span>
-            <span className="font-serif text-xs sm:text-sm text-[#EFE8DD]">Handcrafted in India</span>
+            <span className="font-sans text-xs sm:text-sm text-[#EFE8DD] font-medium">140W GaN Fast Charge</span>
           </div>
-          <div className="bg-[#2B1A16]/50 sm:bg-transparent p-2 sm:p-0 rounded-[3px]">
-            <span className="text-[9px] sm:text-[10px] tracking-widest uppercase text-[#9A8029] font-semibold block mb-0.5">
-              CONCIERGE
+          <div className="bg-[#0F172A]/70 sm:bg-transparent p-2.5 sm:p-0 rounded-[4px] border border-white/5 sm:border-none">
+            <span className="text-[9px] sm:text-[10px] tracking-widest uppercase text-[#9A8029] font-semibold block mb-0.5 flex items-center gap-1">
+              <ShieldCheck className="w-3 h-3" /> WARRANTY
             </span>
-            <span className="font-serif text-xs sm:text-sm text-[#EFE8DD]">15-Day Free Trial</span>
+            <span className="font-sans text-xs sm:text-sm text-[#EFE8DD] font-medium">2-Year Official Shield</span>
           </div>
         </div>
       </div>

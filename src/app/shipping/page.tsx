@@ -1,10 +1,9 @@
 import React from 'react';
-import { Truck, ShieldCheck, Clock, MapPin } from 'lucide-react';
 
 export const metadata = {
-  title: 'Complimentary Shipping & Express Delivery | MewaK Atelier',
+  title: 'Express Shipping & Courier Delivery | AZAD',
   description:
-    'Information regarding our domestic complimentary shipping, express air dispatch, and signature gift packaging.',
+    'Information regarding our domestic complimentary shipping, express air dispatch, and shock-resistant electronic packaging.',
 };
 
 export default function ShippingPage() {
@@ -15,39 +14,39 @@ export default function ShippingPage() {
           <span className="text-xs uppercase tracking-[0.25em] text-[#9A8029] font-bold block mb-2 font-sans">
             DELIVERY LOGISTICS
           </span>
-          <h1 className="font-serif text-4xl sm:text-5xl text-[#2B1A16] font-normal mb-3">
-            Shipping & White-Glove Dispatch
+          <h1 className="font-sans text-4xl sm:text-5xl text-[#2B1A16] font-bold mb-3">
+            Express Shipping & Hardware Dispatch
           </h1>
           <p className="text-xs sm:text-sm text-[#2B1A16]/75 font-sans">
-            Every order is carefully inspected, steam-pressed, and wrapped in acid-free archival tissue.
+            Every device is diagnostic-tested, sealed with tamper-evident security tags, and packed in shock-absorbing foam.
           </p>
         </div>
 
         <div className="space-y-6 font-sans text-xs sm:text-sm text-[#2B1A16]/85">
           <div className="bg-[#FBF7F0] border border-[#DDD2C0] p-6 sm:p-8 rounded-[4px] space-y-3">
-            <h2 className="font-serif text-xl sm:text-2xl text-[#2B1A16] font-semibold">
+            <h2 className="font-sans text-xl sm:text-2xl text-[#2B1A16] font-semibold">
               1. Complimentary Shipping Threshold
             </h2>
             <p>
-              We are pleased to provide complimentary express shipping across all postal codes within India for orders valued at <strong>₹999 or above</strong>. For orders below this threshold, a flat delivery fee of ₹99 is added at checkout.
+              We are pleased to provide complimentary express air shipping across all postal codes within India for orders valued at <strong>₹999 or above</strong>. For orders below this threshold, a flat delivery fee of ₹99 is added at checkout.
             </p>
           </div>
 
           <div className="bg-[#FBF7F0] border border-[#DDD2C0] p-6 sm:p-8 rounded-[4px] space-y-3">
-            <h2 className="font-serif text-xl sm:text-2xl text-[#2B1A16] font-semibold">
+            <h2 className="font-sans text-xl sm:text-2xl text-[#2B1A16] font-semibold">
               2. Processing & Dispatch Timelines
             </h2>
             <p>
-              Orders are packaged and handed to our logistics partners (BlueDart, Delhivery, or Express Air Cargo) within 24–48 hours of confirmation. Delivery times range from 2 to 4 business days for metropolitan centers, and 4 to 6 business days for other regions.
+              Orders are packaged and handed to our logistics partners (BlueDart, Delhivery, or Express Air Cargo) within 24 hours of confirmation. Delivery times range from 2 to 4 business days for metropolitan centers, and 3 to 5 business days for other regions. Real-time SMS and email tracking links are provided instantly upon pickup.
             </p>
           </div>
 
           <div className="bg-[#FBF7F0] border border-[#DDD2C0] p-6 sm:p-8 rounded-[4px] space-y-3">
-            <h2 className="font-serif text-xl sm:text-2xl text-[#2B1A16] font-semibold">
-              3. Signature Keepsake Packaging
+            <h2 className="font-sans text-xl sm:text-2xl text-[#2B1A16] font-semibold">
+              3. Secure Anti-Static & Shock-Resistant Packaging
             </h2>
             <p>
-              Every garment arrives inside an embossed MewaK linen-textured keepsake box, accompanied by cedar blocks for insect protection and a certificate of handloom authenticity.
+              Every electronic device arrives inside sealed anti-static bags within rigid drop-tested packaging, accompanied by official warranty documentation, certificate of calibration, and genuine accessories.
             </p>
           </div>
         </div>

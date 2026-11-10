@@ -8,14 +8,30 @@ import { PRODUCTS } from '@/data/products';
 import { Occasion } from '@/types';
 
 const OCCASIONS: { id: Occasion; label: string; tagline: string }[] = [
-  { id: 'Party', label: 'Party & Soirée', tagline: 'Luminous Mulberry silks, cowl necklines & velvet bandhgalas' },
-  { id: 'Work', label: 'Executive & Work', tagline: 'Biella wool half-canvas tailoring, crisp Oxford shirts & leather totes' },
-  { id: 'Ethnic', label: 'Festive & Ethnic', tagline: 'Handloom Chanderi zari sarees, Angrakha kurtas & Changthangi wraps' },
-  { id: 'Casual', label: 'Resort & Casual', tagline: 'Normandy camp linens, Gurkha trousers & relaxed cotton sundresses' },
+  {
+    id: 'Work',
+    label: 'Work & Studio',
+    tagline: 'Planar studio headphones, dual-screen foldables, GaN desktop power hubs & connected smartwatches',
+  },
+  {
+    id: 'Fitness',
+    label: 'Sports & Adventure',
+    tagline: 'Titanium rugged GPS smartwatches, sweatproof ANC earbuds & slim magnetic kickstand power banks',
+  },
+  {
+    id: 'Gaming',
+    label: 'Gaming & Esports',
+    tagline: 'Ultra-low latency wireless spatial headsets, cooling gel ear cushions & broadcast-grade mics',
+  },
+  {
+    id: 'Everyday',
+    label: 'Daily Flagships',
+    tagline: 'Aerospace Grade 5 titanium 200MP smartphones, forged carbon fiber cases & minimal compact form factors',
+  },
 ];
 
 export default function ShopByOccasion() {
-  const [activeOccasion, setActiveOccasion] = useState<Occasion>('Party');
+  const [activeOccasion, setActiveOccasion] = useState<Occasion>('Work');
 
   const filteredProducts = PRODUCTS.filter((p) => p.occasion === activeOccasion).slice(0, 4);
   const currentOccasionObj = OCCASIONS.find((o) => o.id === activeOccasion) || OCCASIONS[0];
@@ -26,10 +42,10 @@ export default function ShopByOccasion() {
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-10">
           <span className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-[#9A8029] font-semibold block mb-2 font-sans">
-            DRESSING FOR THE MOMENT
+            ENGINEERED FOR YOUR WORKFLOW
           </span>
-          <h2 className="font-serif text-2xl sm:text-4xl md:text-5xl font-normal text-[#2B1A16] mb-2 sm:mb-3">
-            Shop by Occasion
+          <h2 className="font-sans text-2xl sm:text-4xl md:text-5xl font-bold text-[#2B1A16] mb-2 sm:mb-3">
+            Shop by Lifestyle & Setup
           </h2>
           <p className="text-xs sm:text-sm text-[#2B1A16]/70 font-sans">
             {currentOccasionObj.tagline}
@@ -62,13 +78,13 @@ export default function ShopByOccasion() {
         </div>
 
         {/* Bottom CTA */}
-        <div className="text-center mt-8 sm:mt-12">
+        <div className="text-center mt-10">
           <Link
-            href={`/shop?occasion=${encodeURIComponent(activeOccasion)}`}
-            className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#9A8029] hover:text-[#7F6A1F] border-b border-[#9A8029] pb-1 transition-colors"
+            href="/shop"
+            className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#9A8029] hover:text-[#7F6A1F] transition-colors group"
           >
-            <span>Explore all {activeOccasion} Garments</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <span>Explore All {currentOccasionObj.label} Hardware</span>
+            <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
           </Link>
         </div>
       </div>

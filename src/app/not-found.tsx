@@ -1,6 +1,5 @@
 import React from 'react';
 import Link from 'next/link';
-import { ArrowRight, Compass } from 'lucide-react';
 import { LogoLeafIcon } from '@/components/common/Logo';
 
 export default function NotFound() {
@@ -14,10 +13,10 @@ export default function NotFound() {
           ERROR 404
         </span>
         <h1 className="font-serif text-3xl sm:text-4xl text-[#2B1A16] font-normal mb-3">
-          Archival Page Not Found
+          Hardware Not Found
         </h1>
         <p className="text-xs sm:text-sm text-[#2B1A16]/70 mb-8 font-sans leading-relaxed">
-          The silhouette or catalog edit you seek has either retired to our private archives or resides under another collection.
+          The device, audio component, or hardware page you seek may have been moved, updated, or decommissioned.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link

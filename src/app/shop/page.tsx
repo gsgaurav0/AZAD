@@ -2,9 +2,9 @@ import React, { Suspense } from 'react';
 import ListingView from '@/components/listing/ListingView';
 
 export const metadata = {
-  title: 'Shop All Haute Collections | MewaK Atelier',
+  title: 'Shop All Hardware & Audio | AZAD',
   description:
-    'Browse our full collection of noble Mulberry silks, Italian wool blazers, handloom Chanderi sarees, and organic linens.',
+    'Browse our full lineup of planar magnetic headphones, titanium 5G smartphones, sapphire smartwatches, and GaN power accessories.',
 };
 
 export default function ShopAllPage() {
@@ -12,8 +12,8 @@ export default function ShopAllPage() {
     <Suspense fallback={<ListingSkeleton />}>
       <ListingView
         initialCategory="all"
-        pageTitle="The Complete Atelier Collection"
-        pageSubtitle="Explore our full wardrobe of handcrafted garments, architectural outerwear, and slow-crafted accessories."
+        pageTitle="The Complete Hardware Lineup"
+        pageSubtitle="Explore our full ecosystem of precision acoustic headphones, titanium smartphones, smartwatches, and fast charging docks."
       />
     </Suspense>
   );

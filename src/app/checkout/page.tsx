@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   Check,
-  ChevronRight,
   ShieldCheck,
   MapPin,
   CreditCard,
@@ -14,12 +13,10 @@ import {
   Lock,
   Plus,
   ArrowRight,
-  Sparkles,
 } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
-import { Address } from '@/types';
 
 export default function CheckoutPage() {
   const router = useRouter();

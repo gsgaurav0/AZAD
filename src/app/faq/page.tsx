@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface FAQItem {
   q: string;
@@ -10,18 +10,18 @@ interface FAQItem {
 
 const FAQ_DATA: { category: string; questions: FAQItem[] }[] = [
   {
-    category: 'Orders & Concierge Checkout',
+    category: 'Orders & Express Checkout',
     questions: [
       {
         q: 'How do I place an order as a guest versus registered patron?',
         a: 'You may browse freely and check out by entering your 10-digit Indian mobile number for instant 6-digit OTP verification. No complex passwords are required.',
       },
       {
-        q: 'Can I apply promotional coupons to my shopping bag?',
-        a: 'Yes. Enter promo code MEWAK10 at checkout or in the bag drawer for 10% off your order, or WELCOME50 for ₹500 discount on orders above ₹1,999.',
+        q: 'Can I apply promotional coupons to my shopping cart?',
+        a: 'Yes. Enter promo code AZAD10 at checkout or in the bag drawer for 10% off your order, or WELCOME50 for ₹500 discount on orders above ₹1,999.',
       },
       {
-        q: 'What payment modes are accepted at MewaK?',
+        q: 'What payment modes are accepted at AZAD?',
         a: 'We accept instant UPI (Google Pay, PhonePe, Paytm, BHIM), all major Credit and Debit Cards (Visa, Mastercard, RuPay, Amex), Indian Net Banking, and Cash on Delivery.',
       },
     ],
@@ -35,37 +35,37 @@ const FAQ_DATA: { category: string; questions: FAQItem[] }[] = [
       },
       {
         q: 'How long does dispatch take?',
-        a: 'Every piece undergoes a final white-glove quality inspection at our atelier and is dispatched within 24 to 48 hours via express air logistics (Delhivery / BlueDart). Delivery is typically completed within 3 to 5 business days.',
+        a: 'Every electronic device undergoes diagnostic quality testing and is dispatched within 24 hours via express air logistics (Delhivery / BlueDart). Delivery is typically completed within 2 to 4 business days.',
       },
     ],
   },
   {
-    category: 'Returns & Complimentary Doorstep Pickup',
+    category: 'Returns, Replacements & Warranty',
     questions: [
       {
-        q: 'What is the return policy duration?',
-        a: 'We offer a complimentary 15-day return and size exchange window from the day of delivery. Our courier agent will visit your residence for doorstep pickup.',
+        q: 'What is the replacement and return policy?',
+        a: 'We offer a complimentary 15-day replacement window from the day of delivery. If you experience any sizing, fit, or hardware defect, our courier will visit your residence for doorstep replacement.',
       },
       {
-        q: 'What condition must garments remain in?',
-        a: 'Pieces must remain unworn, unwashed, and in their original packaging with the gold security tags affixed.',
+        q: 'What condition must returned hardware be in?',
+        a: 'Items must be returned in their original packaging with serial number stickers intact, alongside all bundled charging cables and accessories.',
       },
       {
         q: 'When will my refund be processed?',
-        a: 'Once the returned item is inspected at our atelier, refunds are credited back to your original source account within 48 to 72 hours.',
+        a: 'Once the returned hardware is received and checked at our technical facility, refunds are credited back to your original source account within 48 to 72 hours.',
       },
     ],
   },
   {
-    category: 'Fabrics & Garment Care',
+    category: 'Warranty & Hardware Support',
     questions: [
       {
-        q: 'Are MewaK silks 100% natural?',
-        a: 'Yes. We strictly employ 100% pure Mulberry silk, Chanderi cotton-silk handlooms, Grade-A Mongolian cashmere, and Normandy flax linens. Zero polyester blends are used.',
+        q: 'What warranty is included with AZAD devices?',
+        a: 'All AZAD headphones, smartphones, smartwatches, and GaN chargers include an official 2-Year Brand Warranty covering internal electronics, acoustic drivers, and manufacturer defects.',
       },
       {
-        q: 'How should I care for Mulberry silk and half-canvas tailoring?',
-        a: 'We advise specialized dry cleaning for our tailored outerwear, suits, and silk dresses. Linen and organic cotton pieces can be gently laundered in cold water.',
+        q: 'Are AZAD products water and sweat resistant?',
+        a: 'Yes. The Chronos Ultra watch is rated 100m / EN13319 dive-certified, the Titan 16 Pro Max is IP68 water & dust sealed, and SonicBuds Ultra earbuds are IPX7 sweatproof.',
       },
     ],
   },

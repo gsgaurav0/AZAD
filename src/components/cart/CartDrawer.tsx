@@ -312,7 +312,7 @@ export default function CartDrawer() {
                     type="text"
                     value={couponInput}
                     onChange={(e) => setCouponInput(e.target.value)}
-                    placeholder="Promo code (MEWAK10, WELCOME50)"
+                    placeholder="Promo code (AZAD10, WELCOME50)"
                     className="flex-1 bg-white border border-[#DDD2C0] rounded-[4px] px-3 py-1.5 text-xs text-[#2B1A16] uppercase outline-none placeholder:normal-case placeholder:text-[#2B1A16]/40"
                   />
                   <button
@@ -376,7 +376,7 @@ export default function CartDrawer() {
               {/* Trust Tagline */}
               <div className="flex items-center justify-center gap-2 text-[10px] text-[#2B1A16]/60 pt-1">
                 <ShieldCheck className="w-3 h-3 text-[#4C7A34]" />
-                <span>100% Genuine Luxury • 15-Day Hassle-Free Returns</span>
+                <span>100% Authentic Brand Hardware • 2-Year Warranty</span>
               </div>
             </div>
           )}

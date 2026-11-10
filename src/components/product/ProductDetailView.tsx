@@ -15,10 +15,7 @@ import {
   ChevronDown,
   ChevronUp,
   Check,
-  Sparkles,
-  Share2,
   Clock,
-  ArrowRight,
   Send,
 } from 'lucide-react';
 import { Product, Review } from '@/types';
@@ -79,7 +76,6 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
     addProductToRecentlyViewed(product);
   }, [product, addProductToRecentlyViewed]);
 
-  const activeColorObj = product.colors.find((c) => c.name === selectedColor);
   const selectedSizeObj = product.sizes.find((s) => s.size === selectedSize);
 
   // Zoom handlers
@@ -338,11 +334,11 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
               </div>
             </div>
 
-            {/* Size Selector + Size Guide */}
+            {/* Size / Edition Selector + Guide */}
             <div className="pt-2 border-t border-[#DDD2C0]">
               <div className="flex items-center justify-between text-xs mb-2 font-sans">
                 <span className="font-semibold uppercase tracking-wider text-[#2B1A16]/80">
-                  Select Size
+                  Select Edition / Storage
                 </span>
                 <button
                   type="button"
@@ -350,7 +346,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                   className="flex items-center gap-1 text-[#9A8029] hover:underline font-semibold"
                 >
                   <Ruler className="w-3.5 h-3.5" />
-                  Size Guide & Chart
+                  Sizing & Specs Guide
                 </button>
               </div>
 
@@ -377,9 +373,37 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
               {selectedSizeObj?.stockCount !== undefined && selectedSizeObj.stockCount <= 3 && selectedSizeObj.stockCount > 0 && (
                 <div className="flex items-center gap-1.5 text-xs text-[#B3402F] font-semibold mt-2">
                   <Clock className="w-3.5 h-3.5" />
-                  Only {selectedSizeObj.stockCount} pieces left in atelier reserve!
+                  Only {selectedSizeObj.stockCount} units left in warehouse inventory!
                 </div>
               )}
+            </div>
+
+            {/* Quantity Selector */}
+            <div className="pt-2 flex items-center justify-between border-t border-[#DDD2C0]">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#2B1A16]/80 font-sans">
+                Quantity
+              </span>
+              <div className="flex items-center border border-[#DDD2C0] rounded-[3px] bg-white overflow-hidden shadow-xs">
+                <button
+                  type="button"
+                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                  className="px-3 py-1.5 text-xs text-[#2B1A16] hover:bg-[#EFE8DD] transition-colors font-bold"
+                  aria-label="Decrease quantity"
+                >
+                  -
+                </button>
+                <span className="px-3.5 py-1.5 text-xs font-semibold text-[#2B1A16] min-w-[2.2rem] text-center bg-[#FBF7F0]">
+                  {quantity}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setQuantity((q) => Math.min(5, q + 1))}
+                  className="px-3 py-1.5 text-xs text-[#2B1A16] hover:bg-[#EFE8DD] transition-colors font-bold"
+                  aria-label="Increase quantity"
+                >
+                  +
+                </button>
+              </div>
             </div>
 
             {/* Primary Action Buttons: Add to Bag & Buy Now */}
@@ -391,7 +415,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                   className="w-full py-3.5 px-4 bg-[#2B1A16] hover:bg-[#9A8029] text-[#EFE8DD] text-xs font-semibold uppercase tracking-[0.2em] rounded-[4px] transition-colors flex items-center justify-center gap-2 shadow-sm"
                 >
                   <ShoppingBag className="w-4 h-4" />
-                  Add to Bag
+                  Add to Cart
                 </button>
                 <button
                   type="button"
@@ -406,15 +430,15 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
               <div className="grid grid-cols-3 gap-2 py-3 bg-[#FBF7F0] border border-[#DDD2C0] rounded-[4px] text-center text-[10px] text-[#2B1A16]/70">
                 <div className="flex flex-col items-center gap-1">
                   <Truck className="w-4 h-4 text-[#9A8029]" />
-                  <span>Free Shipping &gt; ₹999</span>
+                  <span>Free Express &gt; ₹999</span>
                 </div>
                 <div className="flex flex-col items-center gap-1 border-x border-[#DDD2C0]">
                   <RotateCcw className="w-4 h-4 text-[#9A8029]" />
-                  <span>15-Day Free Returns</span>
+                  <span>15-Day Replacement</span>
                 </div>
                 <div className="flex flex-col items-center gap-1">
                   <ShieldCheck className="w-4 h-4 text-[#9A8029]" />
-                  <span>Authentic Handloom</span>
+                  <span>Official 2-Yr Warranty</span>
                 </div>
               </div>
             </div>
@@ -456,7 +480,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                   onClick={() => setOpenAccordion(openAccordion === 'details' ? null : 'details')}
                   className="w-full p-3.5 flex items-center justify-between text-left font-serif font-semibold text-sm text-[#2B1A16]"
                 >
-                  <span>Sartorial Details & Specifications</span>
+                  <span>Technical Specifications & Architecture</span>
                   {openAccordion === 'details' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                 </button>
                 {openAccordion === 'details' && (
@@ -471,26 +495,26 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                 )}
               </div>
 
-              {/* Accordion 2: Fabric & Care */}
+              {/* Accordion 2: Materials & In The Box */}
               <div className="border border-[#DDD2C0] rounded-[4px] bg-[#FBF7F0] overflow-hidden">
                 <button
                   type="button"
                   onClick={() => setOpenAccordion(openAccordion === 'care' ? null : 'care')}
                   className="w-full p-3.5 flex items-center justify-between text-left font-serif font-semibold text-sm text-[#2B1A16]"
                 >
-                  <span>Noble Fabric & Garment Care</span>
+                  <span>Chassis Materials & Package Contents</span>
                   {openAccordion === 'care' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                 </button>
                 {openAccordion === 'care' && (
                   <div className="p-3.5 pt-0 text-[#2B1A16]/80 space-y-2 border-t border-[#DDD2C0]/40">
                     <div>
-                      <strong>Composition:</strong> {product.fabric}
+                      <strong>Chassis & Composition:</strong> {product.fabric}
                     </div>
                     <div>
-                      <strong>Tailored Fit:</strong> {product.fit}
+                      <strong>Form Factor & Ergonomics:</strong> {product.fit}
                     </div>
                     <div>
-                      <strong>Care Instructions:</strong>
+                      <strong>Package Contents & Warranty:</strong>
                       <ul className="list-disc pl-4 space-y-1 mt-1">
                         {product.care.map((c, i) => (
                           <li key={i}>{c}</li>
@@ -508,14 +532,14 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                   onClick={() => setOpenAccordion(openAccordion === 'returns' ? null : 'returns')}
                   className="w-full p-3.5 flex items-center justify-between text-left font-serif font-semibold text-sm text-[#2B1A16]"
                 >
-                  <span>Doorstep Pickup, Returns & Exchanges</span>
+                  <span>15-Day Replacement & Official Warranty</span>
                   {openAccordion === 'returns' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                 </button>
                 {openAccordion === 'returns' && (
                   <div className="p-3.5 pt-0 text-[#2B1A16]/80 space-y-2 border-t border-[#DDD2C0]/40">
                     <p>{product.returns}</p>
                     <p>
-                      Complimentary door-to-door courier service across India. Items must remain unwashed with intact atelier seals.
+                      Complimentary express door-to-door courier service across India. Returned items must include original product box, serial number label, and bundled accessories.
                     </p>
                   </div>
                 )}
@@ -529,10 +553,10 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
           <div className="mt-20 pt-12 border-t border-[#DDD2C0]">
             <div className="mb-8">
               <span className="text-xs uppercase tracking-[0.25em] text-[#9A8029] font-semibold block mb-1 font-sans">
-                STYLIST RECOMMENDATION
+                ECOSYSTEM SETUP
               </span>
               <h3 className="font-serif text-2xl sm:text-3xl text-[#2B1A16]">
-                Complete The Look
+                Complete Your Workspace
               </h3>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
@@ -550,7 +574,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
             <div className="lg:col-span-5 space-y-6">
               <div>
                 <span className="text-xs uppercase tracking-[0.25em] text-[#9A8029] font-semibold block mb-1 font-sans">
-                  PATRON REFLECTIONS
+                  OWNER EXPERIENCES
                 </span>
                 <h3 className="font-serif text-2xl sm:text-3xl text-[#2B1A16]">
                   Verified Reviews
@@ -569,7 +593,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                     ))}
                   </div>
                   <span className="text-xs text-[#2B1A16]/70 font-sans">
-                    Based on {reviewsList.length} verified patron evaluations
+                    Based on {reviewsList.length} verified customer evaluations
                   </span>
                 </div>
               </div>
@@ -577,8 +601,13 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
               {/* Interactive Write Review Form */}
               <div className="bg-[#FBF7F0] border border-[#DDD2C0] p-6 rounded-[4px]">
                 <h4 className="font-serif text-base font-semibold text-[#2B1A16] mb-3">
-                  Write a Patron Review
+                  Write an Owner Review
                 </h4>
+                {reviewSubmitted && (
+                  <div className="mb-3 p-2 bg-[#4C7A34]/15 border border-[#4C7A34] text-[#4C7A34] text-xs rounded-[3px] text-center font-semibold">
+                    Thank you! Your verified review has been published.
+                  </div>
+                )}
                 <form onSubmit={handleAddReview} className="space-y-3 font-sans">
                   <div>
                     <label className="block text-xs font-semibold text-[#2B1A16]/70 mb-1">
@@ -623,7 +652,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                       rows={3}
                       value={newReviewComment}
                       onChange={(e) => setNewReviewComment(e.target.value)}
-                      placeholder="Comment on the fabric drape, sizing, and stitching quality..."
+                      placeholder="Comment on audio fidelity, processing speed, build quality, or battery life..."
                       className="w-full bg-white border border-[#DDD2C0] rounded-[3px] p-2 text-xs text-[#2B1A16] outline-none"
                     />
                   </div>
@@ -641,7 +670,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
             <div className="lg:col-span-7 space-y-4">
               {reviewsList.length === 0 ? (
                 <div className="bg-[#FBF7F0] border border-[#DDD2C0] p-8 text-center text-xs text-[#2B1A16]/60 rounded-[4px]">
-                  Be the first patron to review this archival piece.
+                  Be the first owner to review this device.
                 </div>
               ) : (
                 reviewsList.map((rev) => (

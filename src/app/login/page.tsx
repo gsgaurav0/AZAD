@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Phone, Lock, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { Phone, Lock, ArrowRight, ShieldCheck } from 'lucide-react';
 import Logo from '@/components/common/Logo';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
@@ -71,7 +70,7 @@ export default function LoginPage() {
     const code = otp.join('');
     if (code === '123456') {
       login(phoneNumber, fullName || 'Patron');
-      addToast('Welcome back to the Maison MewaK.', 'success');
+      addToast('Welcome back to AZAD.', 'success');
       router.push('/account');
     } else {
       setError('Invalid OTP code. Please enter 123456.');

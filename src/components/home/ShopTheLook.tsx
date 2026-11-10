@@ -102,16 +102,16 @@ export default function ShopTheLook() {
           <div className="lg:col-span-5 space-y-5">
             <div>
               <span className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-[#9A8029] font-semibold block mb-1.5 font-sans">
-                RUNWAY CURATION
+                THE CONNECTED ECOSYSTEM
               </span>
-              <h2 className="font-serif text-2xl sm:text-4xl text-[#2B1A16] font-normal mb-2">
+              <h2 className="font-sans text-2xl sm:text-4xl text-[#2B1A16] font-bold mb-2">
                 {look.title}
               </h2>
               <p className="text-xs text-[#2B1A16]/70 italic font-sans mb-3">
                 &ldquo;{look.tagline}&rdquo;
               </p>
               <p className="text-xs sm:text-sm text-[#2B1A16]/80 font-sans leading-relaxed">
-                Tap the interactive plus badges on the model portrait to inspect each garment in this runway ensemble.
+                Tap the interactive hotspot beacons on the workstation to explore each component in this flagship setup.
               </p>
             </div>
 
@@ -169,7 +169,7 @@ export default function ShopTheLook() {
                 href="/shop"
                 className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#9A8029] hover:text-[#7F6A1F] transition-colors"
               >
-                <span>Browse All Runway Lookbooks</span>
+                <span>Explore Complete Flagship Lineup</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>

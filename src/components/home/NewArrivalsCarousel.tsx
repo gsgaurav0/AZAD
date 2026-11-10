@@ -28,10 +28,10 @@ export default function NewArrivalsCarousel() {
         <div className="flex items-end justify-between mb-10">
           <div>
             <span className="text-xs uppercase tracking-[0.25em] text-[#9A8029] font-semibold block mb-2 font-sans">
-              FRESH OFF THE ATELIER
+              FRESH OFF THE HARDWARE LAB
             </span>
-            <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-normal text-[#2B1A16]">
-              New Arrivals
+            <h2 className="font-sans text-3xl sm:text-4xl md:text-5xl font-bold text-[#2B1A16]">
+              Latest Releases
             </h2>
           </div>
 

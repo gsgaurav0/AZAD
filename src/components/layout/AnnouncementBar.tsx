@@ -5,10 +5,10 @@ import Link from 'next/link';
 import { Sparkles, PhoneCall, ChevronRight } from 'lucide-react';
 
 const MESSAGES = [
-  'Complimentary Doorstep Shipping on orders above ₹999',
-  'Easy 15-Day Hassle-Free Returns & Size Exchanges',
-  'Special Season Offer: Use code MEWAK10 for 10% Off',
-  'Handcrafted Heritage Luxury | Slow Sustainable Fashion',
+  'Complimentary Express Courier Shipping on all orders above ₹999',
+  '15-Day Risk-Free Replacement & 2-Year Official Brand Warranty',
+  'Exclusive Launch Discount: Use code AZAD10 for 10% Off',
+  'Next-Gen Audio, Flagship Smartphones & Connected Wearables',
 ];
 
 export default function AnnouncementBar() {
@@ -28,11 +28,11 @@ export default function AnnouncementBar() {
         <div className="hidden lg:flex items-center gap-4 text-[11px] tracking-wider uppercase text-[#EFE8DD]/70">
           <span className="flex items-center gap-1.5 hover:text-[#9A8029] transition-colors">
             <PhoneCall className="w-3 h-3 text-[#9A8029]" />
-            Patron Concierge: +91 98765 43210
+            Tech Support & Care: +91 98765 43210
           </span>
           <span className="text-[#DDD2C0]/30">•</span>
           <span className="text-[#9A8029] font-medium tracking-widest">
-            INDIAN ATELIER
+            AUTHENTIC BRAND WARRANTY
           </span>
         </div>
 

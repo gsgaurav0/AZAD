@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import {
@@ -8,7 +8,6 @@ import {
   Grid3X3,
   Grid2X2,
   LayoutGrid,
-  ChevronDown,
   X,
   Star,
   Check,
@@ -16,7 +15,7 @@ import {
 } from 'lucide-react';
 import ProductCard from '@/components/product/ProductCard';
 import { PRODUCTS } from '@/data/products';
-import { Category, Product } from '@/types';
+import { Category } from '@/types';
 
 interface ListingViewProps {
   initialCategory?: Category | 'all';
@@ -37,13 +36,19 @@ export default function ListingView({
   const occasionParam = searchParams.get('occasion');
 
   // Filter States
+  const [prevInitialCategory, setPrevInitialCategory] = useState(initialCategory);
   const [selectedCategory, setSelectedCategory] = useState<Category | 'all'>(initialCategory);
+  if (prevInitialCategory !== initialCategory) {
+    setPrevInitialCategory(initialCategory);
+    setSelectedCategory(initialCategory);
+  }
+
   const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>(
     subcategoryParam ? [subcategoryParam] : []
   );
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState<number>(12000);
+  const [priceRange, setPriceRange] = useState<number>(150000);
   const [selectedFabrics, setSelectedFabrics] = useState<string[]>([]);
   const [selectedFits, setSelectedFits] = useState<string[]>([]);
   const [selectedDiscount, setSelectedDiscount] = useState<number>(0);
@@ -54,41 +59,28 @@ export default function ListingView({
   const [visibleCount, setVisibleCount] = useState(12);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Sync category prop if route changes
-  useEffect(() => {
-    setSelectedCategory(initialCategory);
-  }, [initialCategory]);
-
-  // Extract distinct fabrics and fits across dataset
+  // Extract distinct materials & form factors across tech catalog
   const allFabrics = useMemo(() => {
-    const set = new Set<string>();
-    PRODUCTS.forEach((p) => {
-      if (p.fabric.includes('Silk')) set.add('Mulberry Silk');
-      if (p.fabric.includes('Linen')) set.add('Belgian/French Linen');
-      if (p.fabric.includes('Wool')) set.add('Merino/Cashmere Wool');
-      if (p.fabric.includes('Cotton')) set.add('Organic Cotton');
-      if (p.fabric.includes('Leather')) set.add('Florentine Leather');
-    });
-    return Array.from(set);
+    return ['Titanium', 'Beryllium', 'Sapphire', 'Planar', 'Carbon Fiber', 'Aluminum', 'GaN Core'];
   }, []);
 
   const allFits = useMemo(() => {
-    return ['Relaxed', 'Tailored', 'Slim', 'Oversized', 'Fluid A-Line'];
+    return ['Over-Ear', 'In-Ear', 'Foldable', 'Rugged 49mm', 'Compact 6.1"', 'Slim MagSafe'];
   }, []);
 
   const allColors = useMemo(() => {
     return [
-      { name: 'Ochre Gold', hex: '#9A8029' },
-      { name: 'Deep Espresso', hex: '#2B1A16' },
-      { name: 'Ivory Sand', hex: '#FBF7F0' },
-      { name: 'Camel Tan', hex: '#C29B72' },
-      { name: 'Royal Navy', hex: '#1E293B' },
-      { name: 'Crimson Red', hex: '#B3402F' },
-      { name: 'Olive Green', hex: '#555543' },
+      { name: 'Space Black', hex: '#111827' },
+      { name: 'Titanium Silver', hex: '#94A3B8' },
+      { name: 'Obsidian Black', hex: '#18181B' },
+      { name: 'Glacier White', hex: '#F4F4F5' },
+      { name: 'Desert Gold', hex: '#C29B72' },
+      { name: 'Forest Emerald', hex: '#064E3B' },
+      { name: 'Deep Navy', hex: '#1E3A8A' },
     ];
   }, []);
 
-  const allSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+  const allSizes = ['Standard', '128GB', '256GB', '512GB', '1TB', '41mm', '45mm', '49mm'];
 
   // Subcategories for current category
   const availableSubcategories = useMemo(() => {
@@ -141,16 +133,11 @@ export default function ListingView({
       // Price filter
       if (product.price > priceRange) return false;
 
-      // Fabric filter
+      // Materials & Specs filter
       if (selectedFabrics.length > 0) {
-        const matchesFabric = selectedFabrics.some((f) => {
-          if (f.includes('Silk') && product.fabric.includes('Silk')) return true;
-          if (f.includes('Linen') && product.fabric.includes('Linen')) return true;
-          if (f.includes('Wool') && product.fabric.includes('Wool')) return true;
-          if (f.includes('Cotton') && product.fabric.includes('Cotton')) return true;
-          if (f.includes('Leather') && product.fabric.includes('Leather')) return true;
-          return false;
-        });
+        const matchesFabric = selectedFabrics.some((f) =>
+          product.fabric.toLowerCase().includes(f.toLowerCase())
+        );
         if (!matchesFabric) return false;
       }
 
@@ -199,7 +186,7 @@ export default function ListingView({
     setSelectedSubcategories([]);
     setSelectedSizes([]);
     setSelectedColors([]);
-    setPriceRange(12000);
+    setPriceRange(150000);
     setSelectedFabrics([]);
     setSelectedFits([]);
     setSelectedDiscount(0);
@@ -213,7 +200,7 @@ export default function ListingView({
     selectedSubcategories.length +
     selectedSizes.length +
     selectedColors.length +
-    (priceRange < 12000 ? 1 : 0) +
+    (priceRange < 150000 ? 1 : 0) +
     selectedFabrics.length +
     selectedFits.length +
     (selectedDiscount > 0 ? 1 : 0) +
@@ -434,21 +421,31 @@ export default function ListingView({
             {/* Category Filter */}
             <div>
               <span className="text-xs font-semibold uppercase tracking-wider text-[#2B1A16]/70 block mb-2 font-sans">
-                Collection
+                Hardware Category
               </span>
               <div className="space-y-1 text-xs font-sans">
-                {['all', 'women', 'men', 'kids', 'accessories'].map((cat) => (
+                {['all', 'headphones', 'phones', 'smartwatches', 'accessories'].map((cat) => (
                   <button
                     key={cat}
                     type="button"
                     onClick={() => setSelectedCategory(cat as Category | 'all')}
-                    className={`w-full text-left py-1 px-2 rounded-[2px] capitalize transition-colors flex justify-between ${
+                    className={`w-full text-left py-1.5 px-2 rounded-[2px] capitalize transition-colors flex justify-between ${
                       selectedCategory === cat
                         ? 'bg-[#EFE8DD] text-[#9A8029] font-bold'
                         : 'text-[#2B1A16]/80 hover:bg-[#EFE8DD]/50'
                     }`}
                   >
-                    <span>{cat === 'all' ? 'All Collections' : cat}</span>
+                    <span>
+                      {cat === 'all'
+                        ? 'All Hardware'
+                        : cat === 'headphones'
+                        ? 'Headphones & Audio'
+                        : cat === 'phones'
+                        ? 'Smartphones'
+                        : cat === 'smartwatches'
+                        ? 'Smartwatches'
+                        : 'Tech Accessories'}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -485,9 +482,9 @@ export default function ListingView({
             {/* Size Filter */}
             <div>
               <span className="text-xs font-semibold uppercase tracking-wider text-[#2B1A16]/70 block mb-2 font-sans">
-                Size
+                Variant / Storage
               </span>
-              <div className="grid grid-cols-3 gap-1.5">
+              <div className="grid grid-cols-2 gap-1.5">
                 {allSizes.map((size) => {
                   const isSelected = selectedSizes.includes(size);
                   return (
@@ -495,7 +492,7 @@ export default function ListingView({
                       key={size}
                       type="button"
                       onClick={() => toggleSize(size)}
-                      className={`py-1.5 text-xs font-semibold rounded-[2px] border transition-colors ${
+                      className={`py-1.5 px-2 text-xs font-semibold rounded-[2px] border transition-colors truncate ${
                         isSelected
                           ? 'bg-[#2B1A16] text-[#EFE8DD] border-[#2B1A16]'
                           : 'bg-white border-[#DDD2C0] text-[#2B1A16] hover:border-[#9A8029]'
@@ -511,7 +508,7 @@ export default function ListingView({
             {/* Color Swatches */}
             <div>
               <span className="text-xs font-semibold uppercase tracking-wider text-[#2B1A16]/70 block mb-2 font-sans">
-                Color Palette
+                Color Finish
               </span>
               <div className="flex flex-wrap gap-2">
                 {allColors.map((color) => {
@@ -539,28 +536,28 @@ export default function ListingView({
             {/* Price Slider */}
             <div>
               <div className="flex justify-between items-center text-xs font-semibold uppercase tracking-wider text-[#2B1A16]/70 mb-2 font-sans">
-                <span>Max Price</span>
+                <span>Max Budget</span>
                 <span className="text-[#9A8029] font-bold">₹{priceRange.toLocaleString('en-IN')}</span>
               </div>
               <input
                 type="range"
                 min={1000}
-                max={12000}
-                step={500}
+                max={150000}
+                step={5000}
                 value={priceRange}
                 onChange={(e) => setPriceRange(Number(e.target.value))}
                 className="w-full accent-[#9A8029] cursor-pointer"
               />
               <div className="flex justify-between text-[10px] text-[#2B1A16]/50 mt-1 font-sans">
                 <span>₹1,000</span>
-                <span>₹12,000</span>
+                <span>₹1,50,000</span>
               </div>
             </div>
 
-            {/* Fabric Filter */}
+            {/* Materials Filter */}
             <div>
               <span className="text-xs font-semibold uppercase tracking-wider text-[#2B1A16]/70 block mb-2 font-sans">
-                Noble Fabrics
+                Materials & Architecture
               </span>
               <div className="space-y-1 text-xs font-sans">
                 {allFabrics.map((fabric) => (
@@ -580,10 +577,10 @@ export default function ListingView({
               </div>
             </div>
 
-            {/* Fit Filter */}
+            {/* Form Factor Filter */}
             <div>
               <span className="text-xs font-semibold uppercase tracking-wider text-[#2B1A16]/70 block mb-2 font-sans">
-                Silhouette & Fit
+                Form Factor & Tier
               </span>
               <div className="space-y-1 text-xs font-sans">
                 {allFits.map((fit) => (
@@ -716,21 +713,29 @@ export default function ListingView({
               {/* Category */}
               <div>
                 <span className="text-xs font-semibold uppercase tracking-wider text-[#2B1A16]/70 block mb-2 font-sans">
-                  Collection
+                  Category
                 </span>
                 <div className="grid grid-cols-2 gap-2 text-xs">
-                  {['all', 'women', 'men', 'kids', 'accessories'].map((cat) => (
+                  {['all', 'headphones', 'phones', 'smartwatches', 'accessories'].map((cat) => (
                     <button
                       key={cat}
                       type="button"
                       onClick={() => setSelectedCategory(cat as Category | 'all')}
-                      className={`py-2 px-3 rounded-[3px] capitalize border text-left ${
+                      className={`py-2 px-3 rounded-[3px] capitalize border text-left truncate ${
                         selectedCategory === cat
                           ? 'bg-[#2B1A16] text-[#EFE8DD] border-[#2B1A16]'
                           : 'bg-white border-[#DDD2C0] text-[#2B1A16]'
                       }`}
                     >
-                      {cat === 'all' ? 'All' : cat}
+                      {cat === 'all'
+                        ? 'All'
+                        : cat === 'headphones'
+                        ? 'Audio'
+                        : cat === 'phones'
+                        ? 'Phones'
+                        : cat === 'smartwatches'
+                        ? 'Watches'
+                        : 'Accessories'}
                     </button>
                   ))}
                 </div>
@@ -739,15 +744,15 @@ export default function ListingView({
               {/* Sizes */}
               <div>
                 <span className="text-xs font-semibold uppercase tracking-wider text-[#2B1A16]/70 block mb-2 font-sans">
-                  Size
+                  Variant / Storage
                 </span>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   {allSizes.map((size) => (
                     <button
                       key={size}
                       type="button"
                       onClick={() => toggleSize(size)}
-                      className={`py-2 text-xs font-semibold rounded-[3px] border ${
+                      className={`py-2 px-1 text-xs font-semibold rounded-[3px] border truncate ${
                         selectedSizes.includes(size)
                           ? 'bg-[#2B1A16] text-[#EFE8DD] border-[#2B1A16]'
                           : 'bg-white border-[#DDD2C0] text-[#2B1A16]'
@@ -768,8 +773,8 @@ export default function ListingView({
                 <input
                   type="range"
                   min={1000}
-                  max={12000}
-                  step={500}
+                  max={150000}
+                  step={5000}
                   value={priceRange}
                   onChange={(e) => setPriceRange(Number(e.target.value))}
                   className="w-full accent-[#9A8029]"

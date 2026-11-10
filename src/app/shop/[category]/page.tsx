@@ -12,17 +12,17 @@ export async function generateMetadata({ params }: CategoryPageProps) {
   const { category } = await params;
   const config = CATEGORIES_CONFIG.find((c) => c.slug === category);
   if (!config) {
-    return { title: 'Collections | MewaK' };
+    return { title: 'Products | AZAD' };
   }
   return {
-    title: `${config.name} Collection | MewaK Atelier`,
+    title: `${config.name} | AZAD Tech`,
     description: config.description,
   };
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { category } = await params;
-  const validCategories: Category[] = ['women', 'men', 'kids', 'accessories'];
+  const validCategories: Category[] = ['headphones', 'phones', 'smartwatches', 'accessories'];
 
   if (!validCategories.includes(category as Category)) {
     notFound();

@@ -11,7 +11,6 @@ import {
   User,
   Menu,
   X,
-  ChevronDown,
   ArrowRight,
   TrendingUp,
   Tag,
@@ -22,7 +21,6 @@ import { useWishlistStore } from '@/store/wishlistStore';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
 import { CATEGORIES_CONFIG, PRODUCTS } from '@/data/products';
-import { Product } from '@/types';
 
 export default function Header() {
   const router = useRouter();
@@ -30,7 +28,6 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [isScrolled, setIsScrolled] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -49,14 +46,11 @@ export default function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Live search filtering
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setSearchResults([]);
-      return;
-    }
+  // Live search filtering with useMemo
+  const searchResults = React.useMemo(() => {
+    if (!searchQuery.trim()) return [];
     const q = searchQuery.toLowerCase().trim();
-    const results = PRODUCTS.filter(
+    return PRODUCTS.filter(
       (p) =>
         p.name.toLowerCase().includes(q) ||
         p.category.toLowerCase().includes(q) ||
@@ -64,7 +58,6 @@ export default function Header() {
         p.fabric.toLowerCase().includes(q) ||
         p.occasion.toLowerCase().includes(q)
     ).slice(0, 5);
-    setSearchResults(results);
   }, [searchQuery]);
 
   // Focus search input when search is opened
@@ -84,12 +77,12 @@ export default function Header() {
   };
 
   const navLinks = [
-    { id: 'women', label: 'Women', href: '/shop/women' },
-    { id: 'men', label: 'Men', href: '/shop/men' },
-    { id: 'kids', label: 'Kids', href: '/shop/kids' },
+    { id: 'headphones', label: 'Headphones', href: '/shop/headphones' },
+    { id: 'phones', label: 'Smartphones', href: '/shop/phones' },
+    { id: 'smartwatches', label: 'Smartwatches', href: '/shop/smartwatches' },
     { id: 'accessories', label: 'Accessories', href: '/shop/accessories' },
     { id: 'new-in', label: 'New In', href: '/shop?filter=new' },
-    { id: 'sale', label: 'Sale', href: '/shop?filter=sale', isSale: true },
+    { id: 'sale', label: 'Deals', href: '/shop?filter=sale', isSale: true },
   ];
 
   return (
@@ -510,7 +503,7 @@ export default function Header() {
                 </div>
               ) : (
                 <div className="py-8 text-center text-sm text-[#2B1A16]/60">
-                  No fashion pieces matching &ldquo;{searchQuery}&rdquo;. Try searching by fabric, style, or occasion.
+                  No tech gear matching &ldquo;{searchQuery}&rdquo;. Try searching by product name, category, or specs.
                 </div>
               )}
             </div>
@@ -566,7 +559,7 @@ export default function Header() {
               {/* Informational Links */}
               <div>
                 <span className="text-[11px] uppercase tracking-widest text-[#2B1A16]/50 font-semibold block mb-2">
-                  Maison MewaK
+                  AZAD Electronics
                 </span>
                 <div className="space-y-2 text-sm font-sans text-[#2B1A16]/80">
                   <Link

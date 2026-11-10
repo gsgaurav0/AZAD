@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Mail, Phone, MapPin, Send, CheckCircle2, Clock } from 'lucide-react';
+import { Mail, Phone, Send, CheckCircle2, Clock } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
 
 export default function ContactPage() {
@@ -10,7 +10,7 @@ export default function ContactPage() {
     name: '',
     email: '',
     phone: '',
-    subject: 'Stylist Consultation',
+    subject: 'Hardware Consultation',
     message: '',
   });
   const [submitted, setSubmitted] = useState(false);
@@ -18,7 +18,7 @@ export default function ContactPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
-    addToast('Your inquiry has reached the Maison Stylist Concierge.', 'success');
+    addToast('Your inquiry has reached the AZAD Technical Concierge.', 'success');
   };
 
   return (
@@ -27,13 +27,13 @@ export default function ContactPage() {
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-16">
           <span className="text-xs uppercase tracking-[0.25em] text-[#9A8029] font-bold block mb-2 font-sans">
-            PATRON ASSISTANCE
+            TECHNICAL & CONCIERGE ASSISTANCE
           </span>
           <h1 className="font-serif text-4xl sm:text-5xl text-[#2B1A16] font-normal mb-4">
-            Connect with the Atelier
+            Connect with AZAD
           </h1>
           <p className="text-xs sm:text-sm text-[#2B1A16]/75 font-sans leading-relaxed">
-            Our personal stylists and master tailors are available for private appointments, bespoke measurements, and order inquiries.
+            Our audio architects, hardware technicians, and corporate specialists are available for private consultations, warranty support, and enterprise setups.
           </p>
         </div>
 
@@ -41,7 +41,7 @@ export default function ContactPage() {
           {/* Left Column: Interactive Contact Form */}
           <div className="lg:col-span-7 bg-[#FBF7F0] border border-[#DDD2C0] p-6 sm:p-10 rounded-[4px] shadow-sm font-sans">
             <h3 className="font-serif text-2xl font-semibold text-[#2B1A16] mb-2">
-              Send a Private Message
+              Send an Engineering Inquiry
             </h3>
             <p className="text-xs text-[#2B1A16]/70 mb-6">
               Inquiries are acknowledged within four business hours.
@@ -51,16 +51,16 @@ export default function ContactPage() {
               <div className="bg-[#4C7A34]/15 border border-[#4C7A34] p-8 rounded-[4px] text-center space-y-3">
                 <CheckCircle2 className="w-12 h-12 text-[#4C7A34] mx-auto" />
                 <h4 className="font-serif text-xl font-bold text-[#2B1A16]">
-                  Message Inscribed
+                  Inquiry Dispatched
                 </h4>
                 <p className="text-xs text-[#2B1A16]/80 max-w-md mx-auto">
-                  Thank you, {formData.name}. A senior client liaison will contact you via email shortly.
+                  Thank you, {formData.name}. An AZAD hardware specialist will contact you via email shortly.
                 </p>
                 <button
                   type="button"
                   onClick={() => {
                     setSubmitted(false);
-                    setFormData({ name: '', email: '', phone: '', subject: 'Stylist Consultation', message: '' });
+                    setFormData({ name: '', email: '', phone: '', subject: 'Hardware Consultation', message: '' });
                   }}
                   className="bg-[#2B1A16] text-[#EFE8DD] text-xs font-semibold uppercase px-5 py-2.5 rounded-[2px]"
                 >
@@ -92,7 +92,7 @@ export default function ContactPage() {
                       required
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      placeholder="patron@domain.com"
+                      placeholder="client@domain.com"
                       className="w-full bg-white border border-[#DDD2C0] rounded-[3px] p-2.5 text-xs text-[#2B1A16] outline-none"
                     />
                   </div>
@@ -120,11 +120,11 @@ export default function ContactPage() {
                       onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                       className="w-full bg-white border border-[#DDD2C0] rounded-[3px] p-2.5 text-xs text-[#2B1A16] outline-none"
                     >
-                      <option>Stylist Consultation</option>
-                      <option>Size & Fit Inquiry</option>
+                      <option>Hardware Consultation</option>
+                      <option>Acoustic & Fit Advice</option>
                       <option>Order & Tracking Assistance</option>
-                      <option>Press & Editorial Loans</option>
-                      <option>Flagship Boutique Appointment</option>
+                      <option>Warranty & Diagnostic Support</option>
+                      <option>Experience Studio Appointment</option>
                     </select>
                   </div>
                 </div>
@@ -138,7 +138,7 @@ export default function ContactPage() {
                     rows={4}
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    placeholder="Share specific garment details, measurements, or event dates..."
+                    placeholder="Specify model numbers, setup requirements, or technical diagnostics..."
                     className="w-full bg-white border border-[#DDD2C0] rounded-[3px] p-2.5 text-xs text-[#2B1A16] outline-none"
                   />
                 </div>
@@ -154,11 +154,11 @@ export default function ContactPage() {
             )}
           </div>
 
-          {/* Right Column: Flagship Boutiques & Contact Coordinates */}
+          {/* Right Column: Experience Studios & Contact Coordinates */}
           <div className="lg:col-span-5 space-y-6 font-sans">
             <div className="bg-[#FBF7F0] border border-[#DDD2C0] p-6 rounded-[4px] space-y-4">
               <h3 className="font-serif text-xl font-semibold text-[#2B1A16]">
-                Client Concierge
+                Technical Concierge
               </h3>
               <div className="space-y-3 text-xs text-[#2B1A16]/80">
                 <div className="flex items-center gap-3">
@@ -167,7 +167,7 @@ export default function ContactPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <Mail className="w-4 h-4 text-[#9A8029]" />
-                  <span>concierge@mewak.fashion</span>
+                  <span>support@azad.tech</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Clock className="w-4 h-4 text-[#9A8029]" />
@@ -178,26 +178,26 @@ export default function ContactPage() {
 
             <div className="bg-[#FBF7F0] border border-[#DDD2C0] p-6 rounded-[4px] space-y-4">
               <h3 className="font-serif text-xl font-semibold text-[#2B1A16]">
-                Flagship Boutiques
+                Flagship Experience Studios
               </h3>
               <div className="space-y-4 text-xs text-[#2B1A16]/80 divide-y divide-[#DDD2C0]/50">
                 <div className="pt-2 first:pt-0">
                   <strong className="font-serif text-sm text-[#2B1A16] block">
-                    New Delhi — The Chanakya
+                    New Delhi — Cyber City Studio
                   </strong>
-                  <p className="mt-0.5">Level 2, Chanakyapuri Diplomatic Enclave, New Delhi 110021</p>
+                  <p className="mt-0.5">DLF Cyber City, Building 10, DLF Phase 2, Gurugram 122002</p>
                 </div>
                 <div className="pt-3">
                   <strong className="font-serif text-sm text-[#2B1A16] block">
-                    Mumbai — Kala Ghoda
+                    Mumbai — Bandra Kurla Complex
                   </strong>
-                  <p className="mt-0.5">Heritage Wing, VB Gandhi Marg, Fort, Mumbai 400001</p>
+                  <p className="mt-0.5">Maker Maxity, BKC, Bandra East, Mumbai 400051</p>
                 </div>
                 <div className="pt-3">
                   <strong className="font-serif text-sm text-[#2B1A16] block">
-                    Bengaluru — Lavelle Road
+                    Bengaluru — Indiranagar Tech Lab
                   </strong>
-                  <p className="mt-0.5">44/1, Prestige Vasant, Lavelle Road, Bengaluru 560001</p>
+                  <p className="mt-0.5">100 Feet Road, HAL 2nd Stage, Indiranagar, Bengaluru 560038</p>
                 </div>
               </div>
             </div>

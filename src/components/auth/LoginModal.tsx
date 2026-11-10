@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Phone, Lock, ArrowRight, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { X, Phone, Lock, ArrowRight, ShieldCheck } from 'lucide-react';
 import Logo from '@/components/common/Logo';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
@@ -78,7 +78,7 @@ export default function LoginModal() {
     // Mock OTP verification (123456)
     if (enteredOtp === '123456') {
       login(phoneNumber, fullName || 'Patron');
-      addToast('Welcome back to the Maison MewaK.', 'success');
+      addToast('Welcome back to AZAD.', 'success');
       closeLoginModal();
       setStep('phone');
       setPhoneNumber('');
@@ -238,7 +238,7 @@ export default function LoginModal() {
                 type="submit"
                 className="w-full bg-[#9A8029] hover:bg-[#7F6A1F] text-white py-3 rounded-[4px] text-xs font-semibold uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
               >
-                Verify & Enter Maison <Lock className="w-3.5 h-3.5" />
+                Verify & Sign In <Lock className="w-3.5 h-3.5" />
               </button>
 
               <button
@@ -254,7 +254,7 @@ export default function LoginModal() {
           {/* Privacy footer */}
           <div className="mt-6 pt-4 border-t border-[#DDD2C0] flex items-center justify-center gap-1.5 text-[10px] text-[#2B1A16]/60">
             <ShieldCheck className="w-3.5 h-3.5 text-[#4C7A34]" />
-            <span>Encrypted patron verification • Never shared with third parties</span>
+            <span>Encrypted customer verification • Never shared with third parties</span>
           </div>
         </div>
       </div>

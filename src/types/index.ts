@@ -1,5 +1,5 @@
-export type Category = 'men' | 'women' | 'kids' | 'accessories';
-export type Occasion = 'Casual' | 'Party' | 'Ethnic' | 'Work';
+export type Category = 'headphones' | 'phones' | 'smartwatches' | 'accessories';
+export type Occasion = 'Gaming' | 'Fitness' | 'Work' | 'Everyday';
 
 export interface ProductColor {
   name: string;

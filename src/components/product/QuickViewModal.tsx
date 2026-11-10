@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { X, Star, Heart, ShoppingBag, ArrowRight, Check } from 'lucide-react';
@@ -18,21 +18,21 @@ export default function QuickViewModal() {
     quickViewProduct ? state.items.some((item) => item.id === quickViewProduct.id) : false
   );
 
+  const [prevProductId, setPrevProductId] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string>('');
   const [selectedColor, setSelectedColor] = useState<string>('');
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [quantity, setQuantity] = useState(1);
 
-  // Sync state whenever quickViewProduct changes
-  useEffect(() => {
-    if (quickViewProduct) {
-      setSelectedColor(quickViewProduct.colors[0]?.name || 'Standard');
-      setSelectedImage(quickViewProduct.images[0]);
-      const firstInStock = quickViewProduct.sizes.find((s) => s.inStock)?.size || quickViewProduct.sizes[0]?.size || '';
-      setSelectedSize(firstInStock);
-      setQuantity(1);
-    }
-  }, [quickViewProduct]);
+  // Sync state whenever quickViewProduct changes without effect
+  if (quickViewProduct && quickViewProduct.id !== prevProductId) {
+    setPrevProductId(quickViewProduct.id);
+    setSelectedColor(quickViewProduct.colors[0]?.name || 'Standard');
+    setSelectedImage(quickViewProduct.images[0]);
+    const firstInStock = quickViewProduct.sizes.find((s) => s.inStock)?.size || quickViewProduct.sizes[0]?.size || '';
+    setSelectedSize(firstInStock);
+    setQuantity(1);
+  }
 
   if (!quickViewProduct) return null;
 
@@ -187,7 +187,7 @@ export default function QuickViewModal() {
               {/* Size selector */}
               <div className="mb-4">
                 <label className="block text-xs font-semibold uppercase tracking-wider text-[#2B1A16]/80 mb-1.5">
-                  Select Size
+                  Select Edition / Storage
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {quickViewProduct.sizes.map((s) => (

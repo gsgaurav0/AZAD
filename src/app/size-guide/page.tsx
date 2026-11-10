@@ -1,128 +1,183 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Ruler, Sparkles } from 'lucide-react';
+import { CheckCircle2, ShieldCheck } from 'lucide-react';
+
+type GuideTab = 'smartwatches' | 'headphones' | 'phones';
 
 export default function SizeGuidePage() {
-  const [unit, setUnit] = useState<'inches' | 'cm'>('inches');
-  const [gender, setGender] = useState<'women' | 'men' | 'kids'>('women');
-
-  const womenData = [
-    { size: 'XS', bust: unit === 'inches' ? '32 - 33"' : '81 - 84 cm', waist: unit === 'inches' ? '25 - 26"' : '63 - 66 cm', hip: unit === 'inches' ? '35 - 36"' : '89 - 91 cm' },
-    { size: 'S', bust: unit === 'inches' ? '34 - 35"' : '86 - 89 cm', waist: unit === 'inches' ? '27 - 28"' : '68 - 71 cm', hip: unit === 'inches' ? '37 - 38"' : '94 - 96 cm' },
-    { size: 'M', bust: unit === 'inches' ? '36 - 37"' : '91 - 94 cm', waist: unit === 'inches' ? '29 - 30"' : '74 - 76 cm', hip: unit === 'inches' ? '39 - 40"' : '99 - 102 cm' },
-    { size: 'L', bust: unit === 'inches' ? '38.5 - 40"' : '98 - 102 cm', waist: unit === 'inches' ? '31.5 - 33"' : '80 - 84 cm', hip: unit === 'inches' ? '41.5 - 43"' : '105 - 109 cm' },
-    { size: 'XL', bust: unit === 'inches' ? '41.5 - 43"' : '105 - 109 cm', waist: unit === 'inches' ? '34.5 - 36"' : '88 - 92 cm', hip: unit === 'inches' ? '44.5 - 46"' : '113 - 117 cm' },
-    { size: 'XXL', bust: unit === 'inches' ? '44.5 - 46"' : '113 - 117 cm', waist: unit === 'inches' ? '37.5 - 39"' : '95 - 99 cm', hip: unit === 'inches' ? '47.5 - 49"' : '121 - 125 cm' },
-  ];
-
-  const menData = [
-    { size: 'S (38)', chest: unit === 'inches' ? '37 - 39"' : '94 - 99 cm', waist: unit === 'inches' ? '30 - 32"' : '76 - 81 cm', neck: unit === 'inches' ? '15"' : '38 cm' },
-    { size: 'M (40)', chest: unit === 'inches' ? '40 - 41"' : '101 - 104 cm', waist: unit === 'inches' ? '33 - 34"' : '84 - 86 cm', neck: unit === 'inches' ? '15.5"' : '39.5 cm' },
-    { size: 'L (42)', chest: unit === 'inches' ? '42 - 44"' : '107 - 112 cm', waist: unit === 'inches' ? '35 - 37"' : '89 - 94 cm', neck: unit === 'inches' ? '16.5"' : '42 cm' },
-    { size: 'XL (44)', chest: unit === 'inches' ? '45 - 47"' : '114 - 119 cm', waist: unit === 'inches' ? '38 - 40"' : '96 - 102 cm', neck: unit === 'inches' ? '17.5"' : '44.5 cm' },
-    { size: 'XXL (46)', chest: unit === 'inches' ? '48 - 50"' : '122 - 127 cm', waist: unit === 'inches' ? '41 - 43"' : '104 - 109 cm', neck: unit === 'inches' ? '18.5"' : '47 cm' },
-  ];
+  const [activeTab, setActiveTab] = useState<GuideTab>('smartwatches');
 
   return (
     <div className="bg-[#EFE8DD] min-h-screen py-12 md:py-20 border-b border-[#DDD2C0]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <span className="text-xs uppercase tracking-[0.25em] text-[#9A8029] font-bold block mb-2 font-sans">
-            SARTORIAL PROPORTIONS
+            HARDWARE SPECIFICATIONS & ERGONOMICS
           </span>
-          <h1 className="font-serif text-4xl sm:text-5xl text-[#2B1A16] font-normal mb-3">
-            Atelier Size Guide & Conversions
+          <h1 className="font-sans text-4xl sm:text-5xl text-[#2B1A16] font-bold mb-3">
+            Device Sizing & Fit Guide
           </h1>
           <p className="text-xs sm:text-sm text-[#2B1A16]/75 font-sans max-w-xl mx-auto">
-            Our garments are tailored according to neoclassical European ease and Indian comfort specifications.
+            Review detailed case dimensions, ear-coupling architectures, and wrist sizes to ensure the perfect fit for your setup.
           </p>
         </div>
 
-        {/* Tab & Unit Selector */}
-        <div className="bg-[#FBF7F0] border border-[#DDD2C0] p-6 rounded-[4px] shadow-sm mb-10">
-          <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-[#DDD2C0]">
-            <div className="flex rounded-[4px] border border-[#DDD2C0] bg-[#EFE8DD] p-0.5 text-xs font-semibold uppercase tracking-wider font-sans">
-              {(['women', 'men'] as const).map((g) => (
-                <button
-                  key={g}
-                  type="button"
-                  onClick={() => setGender(g)}
-                  className={`px-4 py-2 rounded-[3px] transition-colors ${
-                    gender === g ? 'bg-white text-[#2B1A16] shadow-xs' : 'text-[#2B1A16]/60 hover:text-[#2B1A16]'
-                  }`}
-                >
-                  {g}
-                </button>
-              ))}
-            </div>
-
-            <div className="flex items-center gap-2 text-xs font-sans">
-              <span className="text-[#2B1A16]/60 font-semibold">Unit:</span>
-              <div className="flex rounded-[4px] border border-[#DDD2C0] bg-[#EFE8DD] p-0.5 text-xs font-semibold">
-                <button
-                  type="button"
-                  onClick={() => setUnit('inches')}
-                  className={`px-3 py-1.5 rounded-[3px] transition-colors ${
-                    unit === 'inches' ? 'bg-[#9A8029] text-white' : 'text-[#2B1A16]/70'
-                  }`}
-                >
-                  Inches
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setUnit('cm')}
-                  className={`px-3 py-1.5 rounded-[3px] transition-colors ${
-                    unit === 'cm' ? 'bg-[#9A8029] text-white' : 'text-[#2B1A16]/70'
-                  }`}
-                >
-                  Centimeters (cm)
-                </button>
-              </div>
-            </div>
+        {/* Tab & Guide Card */}
+        <div className="bg-[#FBF7F0] border border-[#DDD2C0] p-6 sm:p-8 rounded-[4px] shadow-sm mb-10">
+          <div className="flex rounded-[4px] border border-[#DDD2C0] bg-[#EFE8DD] p-1 text-xs font-semibold uppercase tracking-wider font-sans mb-8">
+            {[
+              { id: 'smartwatches' as const, label: 'Smartwatches & Wrist Sizing' },
+              { id: 'headphones' as const, label: 'Audio & Earphone Fit' },
+              { id: 'phones' as const, label: 'Smartphones & Canvas Sizing' },
+            ].map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setActiveTab(t.id)}
+                className={`flex-1 py-2.5 text-center rounded-[3px] transition-colors truncate px-2 ${
+                  activeTab === t.id ? 'bg-white text-[#2B1A16] shadow-xs' : 'text-[#2B1A16]/60 hover:text-[#2B1A16]'
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
           </div>
 
-          {/* Table */}
-          <div className="overflow-x-auto mt-6 border border-[#DDD2C0] rounded-[4px]">
-            <table className="w-full text-left text-xs sm:text-sm font-sans">
-              <thead className="bg-[#EFE8DD] text-[#2B1A16] uppercase tracking-wider font-semibold border-b border-[#DDD2C0]">
-                <tr>
-                  <th className="py-3 px-4">Size</th>
-                  {gender === 'women' ? (
-                    <>
-                      <th className="py-3 px-4">Bust</th>
-                      <th className="py-3 px-4">Waist</th>
-                      <th className="py-3 px-4">Hips</th>
-                    </>
-                  ) : (
-                    <>
-                      <th className="py-3 px-4">Chest</th>
-                      <th className="py-3 px-4">Waist</th>
-                      <th className="py-3 px-4">Collar / Neck</th>
-                    </>
-                  )}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#DDD2C0]/50 bg-white">
-                {gender === 'women'
-                  ? womenData.map((row) => (
-                      <tr key={row.size} className="hover:bg-[#FBF7F0]">
-                        <td className="py-3.5 px-4 font-bold text-[#2B1A16]">{row.size}</td>
-                        <td className="py-3.5 px-4 text-[#2B1A16]/80">{row.bust}</td>
-                        <td className="py-3.5 px-4 text-[#2B1A16]/80">{row.waist}</td>
-                        <td className="py-3.5 px-4 text-[#2B1A16]/80">{row.hip}</td>
-                      </tr>
-                    ))
-                  : menData.map((row) => (
-                      <tr key={row.size} className="hover:bg-[#FBF7F0]">
-                        <td className="py-3.5 px-4 font-bold text-[#2B1A16]">{row.size}</td>
-                        <td className="py-3.5 px-4 text-[#2B1A16]/80">{row.chest}</td>
-                        <td className="py-3.5 px-4 text-[#2B1A16]/80">{row.waist}</td>
-                        <td className="py-3.5 px-4 text-[#2B1A16]/80">{row.neck}</td>
-                      </tr>
-                    ))}
-              </tbody>
-            </table>
+          {activeTab === 'smartwatches' && (
+            <div className="space-y-6">
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs font-sans border-collapse">
+                  <thead>
+                    <tr className="bg-[#EFE8DD] text-[#2B1A16] font-semibold border-b border-[#DDD2C0]">
+                      <th className="p-3 text-left">Case Size</th>
+                      <th className="p-3 text-left">Display Size</th>
+                      <th className="p-3 text-left">Wrist Circumference</th>
+                      <th className="p-3 text-left">Strap Lug Width</th>
+                      <th className="p-3 text-left">Ideal Use Case</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#DDD2C0]/50 text-[#2B1A16]/80">
+                    <tr>
+                      <td className="p-3 font-bold text-[#2B1A16]">41mm Slim</td>
+                      <td className="p-3">1.3-inch AMOLED (1000 nits)</td>
+                      <td className="p-3">130mm – 175mm</td>
+                      <td className="p-3">20mm Quick-Release</td>
+                      <td className="p-3">Slimmer wrists, boardroom meetings & sleep tracking</td>
+                    </tr>
+                    <tr>
+                      <td className="p-3 font-bold text-[#2B1A16]">45mm Classic</td>
+                      <td className="p-3">1.43-inch AMOLED (1500 nits)</td>
+                      <td className="p-3">155mm – 200mm</td>
+                      <td className="p-3">22mm Quick-Release</td>
+                      <td className="p-3">Universal daily driver, notifications & daily fitness</td>
+                    </tr>
+                    <tr>
+                      <td className="p-3 font-bold text-[#2B1A16]">49mm Ultra</td>
+                      <td className="p-3">1.99-inch Sapphire (3000 nits)</td>
+                      <td className="p-3">165mm – 220mm</td>
+                      <td className="p-3">26mm Titanium Lug</td>
+                      <td className="p-3">Marathons, scuba diving, mountaineering & solar GPS</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="p-4 bg-[#EFE8DD]/50 rounded-[3px] border border-[#DDD2C0] text-xs text-[#2B1A16]/80 flex items-start gap-3">
+                <CheckCircle2 className="w-5 h-5 text-[#9A8029] shrink-0 mt-0.5" />
+                <span>
+                  <strong>Wrist Measurement Tip:</strong> Use a flexible tailor&apos;s tape around your wrist bone. If your measurement falls right between 41mm and 45mm, choose 41mm for formal suits or 45mm for active lifestyle visibility.
+                </span>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'headphones' && (
+            <div className="space-y-6">
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs font-sans border-collapse">
+                  <thead>
+                    <tr className="bg-[#EFE8DD] text-[#2B1A16] font-semibold border-b border-[#DDD2C0]">
+                      <th className="p-3 text-left">Category</th>
+                      <th className="p-3 text-left">Acoustic Drivers</th>
+                      <th className="p-3 text-left">Ear Cup Coupling</th>
+                      <th className="p-3 text-left">Included Ear Tips / Pads</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#DDD2C0]/50 text-[#2B1A16]/80">
+                    <tr>
+                      <td className="p-3 font-bold text-[#2B1A16]">Apex Pro Wireless</td>
+                      <td className="p-3">40mm Custom Beryllium</td>
+                      <td className="p-3">Circumaural (Over-Ear Seal)</td>
+                      <td className="p-3">Perforated memory foam lambskin cushions</td>
+                    </tr>
+                    <tr>
+                      <td className="p-3 font-bold text-[#2B1A16]">SonicBuds Ultra</td>
+                      <td className="p-3">11mm Dual Coaxial</td>
+                      <td className="p-3">Intra-Aural (Acoustic In-Ear)</td>
+                      <td className="p-3">4 sizes: XS, S, M, L medical-grade silicone</td>
+                    </tr>
+                    <tr>
+                      <td className="p-3 font-bold text-[#2B1A16]">Aura Studio Planar</td>
+                      <td className="p-3">90mm Planar Magnetic</td>
+                      <td className="p-3">Circumaural (Open Grille)</td>
+                      <td className="p-3">Breathable velour cooling studio pads</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'phones' && (
+            <div className="space-y-6">
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs font-sans border-collapse">
+                  <thead>
+                    <tr className="bg-[#EFE8DD] text-[#2B1A16] font-semibold border-b border-[#DDD2C0]">
+                      <th className="p-3 text-left">Smartphone Model</th>
+                      <th className="p-3 text-left">Screen Size</th>
+                      <th className="p-3 text-left">Chassis Weight</th>
+                      <th className="p-3 text-left">Hand Ergonomics</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#DDD2C0]/50 text-[#2B1A16]/80">
+                    <tr>
+                      <td className="p-3 font-bold text-[#2B1A16]">Vertex 5 Compact</td>
+                      <td className="p-3">6.1-inch OLED 120Hz</td>
+                      <td className="p-3">168g</td>
+                      <td className="p-3">Compact pocket fit, seamless one-handed thumb reach</td>
+                    </tr>
+                    <tr>
+                      <td className="p-3 font-bold text-[#2B1A16]">Horizon Phone (3)</td>
+                      <td className="p-3">6.55-inch Flexible OLED</td>
+                      <td className="p-3">190g</td>
+                      <td className="p-3">Balanced everyday standard proportions</td>
+                    </tr>
+                    <tr>
+                      <td className="p-3 font-bold text-[#2B1A16]">Titan 16 Pro Max</td>
+                      <td className="p-3">6.7-inch LTPO AMOLED</td>
+                      <td className="p-3">221g</td>
+                      <td className="p-3">Maximalist visual canvas for gaming & camera zoom</td>
+                    </tr>
+                    <tr>
+                      <td className="p-3 font-bold text-[#2B1A16]">Nexus Fold 6 Ultra</td>
+                      <td className="p-3">6.3-inch Cover / 8.0-inch Inner</td>
+                      <td className="p-3">239g</td>
+                      <td className="p-3">Phone mode in pocket; unfolds into desktop workstation</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Guarantee Banner */}
+        <div className="p-6 bg-[#FBF7F0] border border-[#DDD2C0] rounded-[4px] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-sans">
+          <div className="flex items-center gap-2 text-[#2B1A16]">
+            <ShieldCheck className="w-5 h-5 text-[#9A8029] shrink-0" />
+            <span>Unsure about your sizing? Enjoy our <strong>15-Day Risk-Free Home Trial & Replacement</strong>.</span>
           </div>
         </div>
       </div>

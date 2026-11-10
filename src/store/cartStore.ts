@@ -115,13 +115,13 @@ export const useCartStore = create<CartState>()(
         const code = rawCode.trim().toUpperCase();
         const subtotal = get().getSubtotal();
 
-        if (code === 'MEWAK10') {
+        if (code === 'AZAD10' || code === 'MEWAK10') {
           set({
-            appliedCoupon: 'MEWAK10',
+            appliedCoupon: code,
             couponDiscountPercent: 10,
             couponDiscountFlat: 0,
           });
-          return { success: true, message: 'Coupon MEWAK10 applied: 10% Off!' };
+          return { success: true, message: `Coupon ${code} applied: 10% Off!` };
         }
 
         if (code === 'WELCOME50') {
@@ -201,7 +201,7 @@ export const useCartStore = create<CartState>()(
       },
     }),
     {
-      name: 'mewak_cart_storage',
+      name: 'azad_cart_storage',
       partialize: (state) => ({
         items: state.items,
         appliedCoupon: state.appliedCoupon,

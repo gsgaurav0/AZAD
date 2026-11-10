@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Address, Order, OrderStatus } from '@/types';
+import { Address, Order } from '@/types';
 
 interface UserProfile {
   name: string;
@@ -57,110 +57,126 @@ const DEFAULT_ADDRESSES: Address[] = [
 
 const DEFAULT_ORDERS: Order[] = [
   {
-    id: 'MWK-829104',
+    id: 'AZD-829104',
     date: '20 Oct 2026',
     items: [
       {
         product: {
-          id: 'mwk-w01',
-          slug: 'silk-pleated-maxi-dress',
-          name: 'Pleated Mulberry Silk Maxi Dress',
-          subtitle: 'Flowing silhouette with gathered neckline',
-          category: 'women',
-          subcategory: 'Dresses',
-          price: 4999,
-          originalPrice: 7999,
-          discountPercent: 38,
+          id: 'azd-h01',
+          slug: 'apex-pro-anc-wireless-headphones',
+          name: 'Apex Pro ANC Wireless Headphones',
+          subtitle: 'Custom 40mm Beryllium Drivers • 45h Battery • Spatial Audio',
+          category: 'headphones',
+          subcategory: 'Noise Cancelling',
+          price: 18999,
+          originalPrice: 24999,
+          discountPercent: 24,
           isNew: true,
           isTrending: true,
           isFeatured: true,
-          occasion: 'Party',
+          occasion: 'Work',
           rating: 4.9,
-          reviewCount: 84,
-          colors: [{ name: 'Ochre Gold', hex: '#9A8029', image: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=1000&q=80' }],
-          sizes: [{ size: 'S', inStock: true }],
-          images: ['https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=1000&q=80'],
-          fabric: '100% Mulberry Silk',
-          fit: 'Fluid relaxed drape',
-          care: ['Dry clean only'],
-          description: 'A poetic masterpiece crafted from ethereal mulberry silk.',
-          details: ['Keyhole back'],
-          returns: '15-day doorstep pickup',
+          reviewCount: 142,
+          colors: [
+            {
+              name: 'Space Black',
+              hex: '#111827',
+              image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1000&q=80',
+            },
+          ],
+          sizes: [{ size: 'Standard Edition', inStock: true }],
+          images: [
+            'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1000&q=80',
+          ],
+          fabric: 'Aero-grade Aluminum & Memory Foam Lambskin',
+          fit: 'Over-Ear Ergonomic Acoustic Seal • 280g',
+          care: ['2-Year Total Care Warranty'],
+          description: 'Engineered for true acoustic purity with custom beryllium drivers.',
+          details: ['40mm Beryllium Drivers', 'Hybrid ANC'],
+          returns: '15-day return policy',
           reviews: [],
         },
-        selectedColor: 'Ochre Gold',
-        selectedSize: 'S',
+        selectedColor: 'Space Black',
+        selectedSize: 'Standard Edition',
         quantity: 1,
       },
     ],
-    subtotal: 4999,
-    discount: 500,
+    subtotal: 18999,
+    discount: 1899,
     shipping: 0,
-    total: 4499,
-    couponCode: 'WELCOME50',
+    total: 17100,
+    couponCode: 'AZAD10',
     address: DEFAULT_ADDRESSES[0],
     paymentMethod: 'UPI',
     status: 'Shipped',
     trackingNumber: 'DELHIVERY-98127384',
     statusHistory: [
       { status: 'Placed', timestamp: '20 Oct 2026, 04:30 PM', note: 'Order verified & payment confirmed', completed: true },
-      { status: 'Packed', timestamp: '21 Oct 2026, 11:15 AM', note: 'Handcrafted in signature gift packaging', completed: true },
+      { status: 'Packed', timestamp: '21 Oct 2026, 11:15 AM', note: 'Inspected & packaged in shock-resistant security seal', completed: true },
       { status: 'Shipped', timestamp: '22 Oct 2026, 02:40 PM', note: 'In transit via Express Airway Delhivery', completed: true },
-      { status: 'Out for Delivery', timestamp: 'Estimated 25 Oct 2026', note: 'Delivery courier assigned', completed: false },
+      { status: 'Out for Delivery', timestamp: 'Estimated 25 Oct 2026', note: 'Courier out for delivery', completed: false },
       { status: 'Delivered', timestamp: 'Estimated 25 Oct 2026', note: 'Safe doorstep handover', completed: false },
     ],
   },
   {
-    id: 'MWK-761922',
-    date: '12 Sep 2026',
+    id: 'AZD-719302',
+    date: '14 Sep 2026',
     items: [
       {
         product: {
-          id: 'mwk-a01',
-          slug: 'handcrafted-full-grain-leather-tote',
-          name: 'Florence Artisan Leather Tote',
-          subtitle: 'Vegetable-tanned full-grain leather',
+          id: 'azd-a01',
+          slug: 'magdock-3-in-1-wireless-charging-stand',
+          name: 'MagDock 3-in-1 Magnetic Wireless Stand',
+          subtitle: 'Fast 15W Qi2 Stand for Phone, Watch & Earbuds',
           category: 'accessories',
-          subcategory: 'Bags & Totes',
-          price: 4999,
+          subcategory: 'Magnetic Docks',
+          price: 5999,
           originalPrice: 7999,
-          discountPercent: 38,
+          discountPercent: 25,
           isNew: true,
           isTrending: true,
           isFeatured: true,
           occasion: 'Work',
           rating: 4.9,
-          reviewCount: 168,
-          colors: [{ name: 'Rich Cognac', hex: '#8B4513', image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=1000&q=80' }],
-          sizes: [{ size: 'One Size', inStock: true }],
-          images: ['https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=1000&q=80'],
-          fabric: 'Italian Cowhide',
-          fit: '38cm x 32cm',
-          care: ['Beeswax balm'],
-          description: 'Sculpted from thick vegetable-tanned leather.',
-          details: ['Solid brass hardware'],
+          reviewCount: 153,
+          colors: [
+            {
+              name: 'Matte Space Black',
+              hex: '#18181B',
+              image: 'https://images.unsplash.com/photo-1586816879360-004f5b0c51e3?auto=format&fit=crop&w=1000&q=80',
+            },
+          ],
+          sizes: [{ size: 'Desktop Stand', inStock: true }],
+          images: [
+            'https://images.unsplash.com/photo-1586816879360-004f5b0c51e3?auto=format&fit=crop&w=1000&q=80',
+          ],
+          fabric: 'CNC Machined Aircraft Aluminum',
+          fit: 'Weighted Base 420g',
+          care: ['2-Year Power Warranty'],
+          description: 'Single-cable magnetic charging station for Phone, Watch, and Earbuds.',
+          details: ['Qi2 15W Wireless Fast Charging'],
           returns: '15-day return policy',
           reviews: [],
         },
-        selectedColor: 'Rich Cognac',
-        selectedSize: 'One Size',
+        selectedColor: 'Matte Space Black',
+        selectedSize: 'Desktop Stand',
         quantity: 1,
       },
     ],
-    subtotal: 4999,
+    subtotal: 5999,
     discount: 0,
     shipping: 0,
-    total: 4999,
-    address: DEFAULT_ADDRESSES[0],
+    total: 5999,
+    address: DEFAULT_ADDRESSES[1],
     paymentMethod: 'Credit/Debit Card',
     status: 'Delivered',
-    trackingNumber: 'BLUEDART-55198273',
+    trackingNumber: 'BLUEDART-44910283',
     statusHistory: [
-      { status: 'Placed', timestamp: '12 Sep 2026, 10:20 AM', note: 'Order verified', completed: true },
-      { status: 'Packed', timestamp: '12 Sep 2026, 04:00 PM', note: 'Gift packaged', completed: true },
-      { status: 'Shipped', timestamp: '13 Sep 2026, 09:30 AM', note: 'Dispatched via BlueDart Express', completed: true },
-      { status: 'Out for Delivery', timestamp: '15 Sep 2026, 11:00 AM', note: 'Agent on route', completed: true },
-      { status: 'Delivered', timestamp: '15 Sep 2026, 02:15 PM', note: 'Delivered to resident with OTP validation', completed: true },
+      { status: 'Placed', timestamp: '14 Sep 2026, 09:12 AM', note: 'Order placed', completed: true },
+      { status: 'Packed', timestamp: '14 Sep 2026, 03:00 PM', note: 'Packaged & dispatched', completed: true },
+      { status: 'Shipped', timestamp: '15 Sep 2026, 10:30 AM', note: 'Dispatched via BlueDart Air', completed: true },
+      { status: 'Out for Delivery', timestamp: '17 Sep 2026, 08:45 AM', note: 'Out for delivery in Gurugram', completed: true },
+      { status: 'Delivered', timestamp: '17 Sep 2026, 01:20 PM', note: 'Delivered to recipient', completed: true },
     ],
   },
 ];
@@ -172,21 +188,21 @@ export const useAuthStore = create<AuthState>()(
       user: {
         name: 'Siddharth Kashyap',
         phone: '+91 98765 43210',
-        email: 'siddharth@kashyap.com',
-        memberTier: 'Gold Connoisseur',
+        email: 'siddharth@azad.tech',
+        memberTier: 'Titanium VIP Member',
         joinedDate: 'August 2024',
       },
       savedAddresses: DEFAULT_ADDRESSES,
       orders: DEFAULT_ORDERS,
 
-      login: (phone: string, name = 'Valued Patron') => {
+      login: (phone: string, name = 'Valued Member') => {
         set({
           isLoggedIn: true,
           user: {
-            name: name || 'Valued Patron',
+            name: name || 'Valued Member',
             phone: phone.startsWith('+91') ? phone : `+91 ${phone}`,
-            email: 'patron@mewak.fashion',
-            memberTier: 'Gold Connoisseur',
+            email: 'member@azad.tech',
+            memberTier: 'Titanium VIP Member',
             joinedDate: 'October 2026',
           },
         });
@@ -205,34 +221,27 @@ export const useAuthStore = create<AuthState>()(
         }));
       },
 
-      addAddress: (addressData) => {
-        const newAddress: Address = {
-          ...addressData,
-          id: `addr-${Date.now()}`,
-          isDefault: addressData.isDefault || get().savedAddresses.length === 0,
-        };
-
+      addAddress: (newAddr) => {
+        const id = `addr-${Date.now()}`;
+        const created: Address = { ...newAddr, id };
         set((state) => {
-          let updatedList = state.savedAddresses;
-          if (newAddress.isDefault) {
-            updatedList = updatedList.map((a) => ({ ...a, isDefault: false }));
+          let addresses = state.savedAddresses;
+          if (created.isDefault) {
+            addresses = addresses.map((a) => ({ ...a, isDefault: false }));
           }
-          return { savedAddresses: [newAddress, ...updatedList] };
+          return { savedAddresses: [...addresses, created] };
         });
-
-        return newAddress;
+        return created;
       },
 
       updateAddress: (updated) => {
-        set((state) => ({
-          savedAddresses: state.savedAddresses.map((a) =>
-            a.id === updated.id
-              ? updated
-              : updated.isDefault
-              ? { ...a, isDefault: false }
-              : a
-          ),
-        }));
+        set((state) => {
+          let addresses = state.savedAddresses.map((a) => (a.id === updated.id ? updated : a));
+          if (updated.isDefault) {
+            addresses = addresses.map((a) => (a.id === updated.id ? a : { ...a, isDefault: false }));
+          }
+          return { savedAddresses: addresses };
+        });
       },
 
       deleteAddress: (id) => {
@@ -251,13 +260,15 @@ export const useAuthStore = create<AuthState>()(
       },
 
       placeOrder: (orderData) => {
-        const orderId = `MWK-${Math.floor(100000 + Math.random() * 900000)}`;
-        const dateStr = new Date().toLocaleDateString('en-GB', {
-          day: '2-digit',
+        const orderId = `AZD-${Math.floor(100000 + Math.random() * 900000)}`;
+        const trackingNumber = `BLUEDART-${Math.floor(10000000 + Math.random() * 90000000)}`;
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('en-GB', {
+          day: 'numeric',
           month: 'short',
           year: 'numeric',
         });
-        const timeStr = new Date().toLocaleTimeString('en-US', {
+        const timeStr = now.toLocaleTimeString('en-US', {
           hour: '2-digit',
           minute: '2-digit',
         });
@@ -267,36 +278,36 @@ export const useAuthStore = create<AuthState>()(
           id: orderId,
           date: dateStr,
           status: 'Placed',
-          trackingNumber: `DELHIVERY-${Math.floor(10000000 + Math.random() * 90000000)}`,
+          trackingNumber,
           statusHistory: [
             {
               status: 'Placed',
               timestamp: `${dateStr}, ${timeStr}`,
-              note: 'Order placed & payment verified successfully',
+              note: 'Order confirmed & queued for hardware diagnostic inspection',
               completed: true,
             },
             {
               status: 'Packed',
-              timestamp: 'Expected within 24 hours',
-              note: 'Awaiting bespoke quality inspection & packaging',
+              timestamp: 'Pending',
+              note: 'Tamper-evident anti-static packaging & serial registration',
               completed: false,
             },
             {
               status: 'Shipped',
-              timestamp: 'Expected within 48 hours',
-              note: 'Dispatched via Express Courier',
+              timestamp: 'Pending',
+              note: 'Handed to express air logistics',
               completed: false,
             },
             {
               status: 'Out for Delivery',
-              timestamp: 'Expected in 3-4 days',
-              note: 'Courier agent will arrive at your address',
+              timestamp: 'Pending',
+              note: 'Local hub courier dispatch',
               completed: false,
             },
             {
               status: 'Delivered',
-              timestamp: 'Expected in 4-5 days',
-              note: 'Doorstep contactless delivery',
+              timestamp: 'Pending',
+              note: 'Direct doorstep delivery',
               completed: false,
             },
           ],
@@ -311,14 +322,13 @@ export const useAuthStore = create<AuthState>()(
 
       requestReturn: (orderId: string, reason: string) => {
         const orders = get().orders;
-        const exists = orders.some((o) => o.id === orderId);
-        if (!exists) return false;
-        // In real app, update return request state
+        const target = orders.find((o) => o.id === orderId);
+        if (!target || !reason) return false;
         return true;
       },
     }),
     {
-      name: 'mewak_auth_storage',
+      name: 'azad_auth_storage',
     }
   )
 );

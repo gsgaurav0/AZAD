@@ -15,7 +15,7 @@ export default function FloatingWhatsApp() {
   const handleOpenWhatsApp = () => {
     const phoneNumber = '919876543210';
     const message = encodeURIComponent(
-      'Hello MewaK Concierge, I would like personal stylist assistance with your current collection.'
+      'Hello AZAD Tech Support, I would like assistance with your electronics and audio gear.'
     );
     window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
   };
@@ -38,10 +38,10 @@ export default function FloatingWhatsApp() {
           </button>
           <div className="flex items-center gap-2 mb-1.5">
             <span className="w-2 h-2 rounded-full bg-[#4C7A34] animate-pulse" />
-            <span className="font-serif font-semibold text-sm">MewaK Concierge</span>
+            <span className="font-sans font-semibold text-sm">AZAD Tech Support</span>
           </div>
           <p className="text-[#2B1A16]/75 mb-3 leading-relaxed">
-            Need help selecting your size, pairing outfits, or arranging a boutique fitting? Our stylists are active on WhatsApp.
+            Need help selecting device variants, checking specs compatibility, or tracking your delivery? Our product specialists are active on WhatsApp.
           </p>
           <button
             type="button"

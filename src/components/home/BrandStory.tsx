@@ -3,8 +3,8 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Leaf, Shield, Award } from 'lucide-react';
-import { LogoLeafIcon } from '@/components/common/Logo';
+import { ArrowRight, Cpu, ShieldCheck, Zap } from 'lucide-react';
+import { LogoTechIcon } from '@/components/common/Logo';
 
 export default function BrandStory() {
   return (
@@ -13,19 +13,19 @@ export default function BrandStory() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           {/* Left Column: Visual Collage */}
           <div className="lg:col-span-6 grid grid-cols-2 gap-4 relative">
-            <div className="relative aspect-[3/4] rounded-[4px] overflow-hidden border border-[#DDD2C0] bg-[#2B1A16] shadow-lg">
+            <div className="relative aspect-[3/4] rounded-[4px] overflow-hidden border border-[#DDD2C0] bg-[#0F172A] shadow-lg">
               <Image
-                src="https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=800&q=80"
-                alt="Hand tailoring at MewaK Atelier"
+                src="https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=800&q=80"
+                alt="Acoustic tuning laboratory"
                 fill
                 sizes="(max-width: 768px) 50vw, 30vw"
                 className="object-cover"
               />
             </div>
-            <div className="relative aspect-[3/4] rounded-[4px] overflow-hidden border border-[#DDD2C0] bg-[#2B1A16] shadow-lg translate-y-8">
+            <div className="relative aspect-[3/4] rounded-[4px] overflow-hidden border border-[#DDD2C0] bg-[#0F172A] shadow-lg translate-y-8">
               <Image
-                src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80"
-                alt="Zari weaving handloom"
+                src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=800&q=80"
+                alt="Precision CNC Titanium Chassis"
                 fill
                 sizes="(max-width: 768px) 50vw, 30vw"
                 className="object-cover"
@@ -33,61 +33,61 @@ export default function BrandStory() {
             </div>
 
             {/* Floating Gold Monogram Seal */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-24 h-24 rounded-full bg-[#2B1A16] border-2 border-[#9A8029] flex flex-col items-center justify-center text-center shadow-2xl p-2">
-              <LogoLeafIcon size={24} />
-              <span className="text-[8px] tracking-[0.2em] uppercase text-[#DDD2C0] font-sans mt-0.5">
-                SINCE 2024
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-24 h-24 rounded-full bg-[#0F172A] border-2 border-[#9A8029] flex flex-col items-center justify-center text-center shadow-2xl p-2 text-white">
+              <LogoTechIcon size={24} />
+              <span className="text-[8px] tracking-[0.2em] uppercase text-[#DDD2C0] font-sans mt-0.5 font-bold">
+                AZAD TECH
               </span>
             </div>
           </div>
 
-          {/* Right Column: Editorial Narrative */}
+          {/* Right Column: Narrative */}
           <div className="lg:col-span-6 space-y-6 lg:pl-6 mt-8 lg:mt-0">
             <div>
               <span className="text-xs uppercase tracking-[0.25em] text-[#9A8029] font-semibold block mb-2 font-sans">
-                MAISON PHILOSOPHY
+                ENGINEERING PHILOSOPHY
               </span>
-              <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-normal text-[#2B1A16] leading-tight mb-4">
-                The Art of Sartorial Harmony
+              <h2 className="font-sans text-3xl sm:text-4xl md:text-5xl font-bold text-[#2B1A16] leading-tight mb-4">
+                The Convergence of Silicon & Acoustic Mastery
               </h2>
-              <p className="font-serif italic text-base sm:text-lg text-[#2B1A16]/80 mb-4">
-                &ldquo;Fashion passes; true architectural silhouette and noble materials endure for generations.&rdquo;
+              <p className="font-sans italic text-base sm:text-lg text-[#2B1A16]/80 mb-4">
+                &ldquo;True technological luxury does not distract; it elevates your human potential through uncompromising acoustic and tactile perfection.&rdquo;
               </p>
               <p className="font-sans text-xs sm:text-sm text-[#2B1A16]/75 leading-relaxed mb-4">
-                Born out of a reverence for historic Indian textile heritage and modern European minimalism, MewaK exists to restore quiet dignity to modern apparel. Each garment is meticulously drafted using non-synthetic fibers — organic French linens, mulberry silk charmeuse, and Biella merino wools.
+                Born to challenge the disposable nature of modern consumer electronics, AZAD engineers devices crafted from enduring materials — aerospace Grade 5 titanium, hand-matched walnut wood, sapphire crystal glass, and bulletproof 1500D aramid fibers.
               </p>
               <p className="font-sans text-xs sm:text-sm text-[#2B1A16]/75 leading-relaxed">
-                By celebrating zero-compromise artisan guilds and slow batch releases, we ensure every stitch honors both the hands that craft it and the patron who wears it.
+                By pairing custom beryllium diaphragms and planar transducers with flagship Snapdragon silicon and intelligent GaN thermal architectures, we deliver hardware calibrated for years of peak performance.
               </p>
             </div>
 
             {/* Three Pillar Icons */}
             <div className="grid grid-cols-3 gap-4 pt-4 border-t border-[#DDD2C0]">
               <div className="space-y-1">
-                <Leaf className="w-5 h-5 text-[#9A8029]" />
-                <h4 className="font-serif text-xs font-semibold text-[#2B1A16]">
-                  Slow Fashion
+                <Cpu className="w-5 h-5 text-[#9A8029]" />
+                <h4 className="font-sans text-xs font-semibold text-[#2B1A16]">
+                  Acoustic Lab
                 </h4>
                 <p className="text-[11px] text-[#2B1A16]/60 font-sans">
-                  Small batch limited editions
+                  Custom planar & beryllium drivers
                 </p>
               </div>
               <div className="space-y-1">
-                <Award className="w-5 h-5 text-[#9A8029]" />
-                <h4 className="font-serif text-xs font-semibold text-[#2B1A16]">
-                  Master Weavers
+                <Zap className="w-5 h-5 text-[#9A8029]" />
+                <h4 className="font-sans text-xs font-semibold text-[#2B1A16]">
+                  Aerospace Chassis
                 </h4>
                 <p className="text-[11px] text-[#2B1A16]/60 font-sans">
-                  GI-certified handlooms
+                  Grade 5 Titanium & Sapphire
                 </p>
               </div>
               <div className="space-y-1">
-                <Shield className="w-5 h-5 text-[#9A8029]" />
-                <h4 className="font-serif text-xs font-semibold text-[#2B1A16]">
-                  Ethical Fair Pay
+                <ShieldCheck className="w-5 h-5 text-[#9A8029]" />
+                <h4 className="font-sans text-xs font-semibold text-[#2B1A16]">
+                  Total Care Shield
                 </h4>
                 <p className="text-[11px] text-[#2B1A16]/60 font-sans">
-                  Patronage for artisan guilds
+                  2-Year Full Brand Warranty
                 </p>
               </div>
             </div>
@@ -97,7 +97,7 @@ export default function BrandStory() {
                 href="/about"
                 className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#9A8029] hover:text-[#7F6A1F] border-b border-[#9A8029] pb-1 transition-colors"
               >
-                <span>Read Full Maison Narrative</span>
+                <span>Read Our Technology Manifesto</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>

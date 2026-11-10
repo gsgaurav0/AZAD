@@ -25,22 +25,24 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'MewaK | Modern Luxury Fashion & Sartorial Craftsmanship',
+  title: 'AZAD | Next-Gen Electronics, Headphones & Flagship Devices',
   description:
-    'Discover timeless couture, Mulberry silks, Neapolitan tailoring, and slow sustainable luxury by MewaK. Handcrafted in India.',
+    'Discover planar audio headphones, titanium 5G smartphones, sapphire smartwatches & GaN power ecosystems by AZAD.',
   keywords: [
-    'MewaK',
-    'luxury fashion',
-    'editorial clothing',
-    'Mulberry silk dress',
-    'Chanderi saree',
-    'Italian wool blazer',
-    'slow fashion India',
+    'AZAD',
+    'AZAD electronics',
+    'wireless headphones',
+    'noise cancelling',
+    'flagship smartphone',
+    'smartwatch',
+    'titanium watch',
+    'GaN charger',
+    'premium audio India',
   ],
   openGraph: {
-    title: 'MewaK | Modern Luxury Fashion',
+    title: 'AZAD | Next-Gen Electronics & Premium Audio',
     description:
-      'Discover timeless silhouettes, noble materials, and artisanal Indian craftsmanship.',
+      'Engineered with planar magnetic drivers, titanium silicon, and uncompromising hardware craft.',
     type: 'website',
   },
 };
