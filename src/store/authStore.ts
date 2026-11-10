@@ -57,7 +57,7 @@ const DEFAULT_ADDRESSES: Address[] = [
 
 const DEFAULT_ORDERS: Order[] = [
   {
-    id: 'AZD-829104',
+    id: 'MWK-829104',
     date: '20 Oct 2026',
     items: [
       {
@@ -105,7 +105,7 @@ const DEFAULT_ORDERS: Order[] = [
     discount: 1899,
     shipping: 0,
     total: 17100,
-    couponCode: 'AZAD10',
+    couponCode: 'MEWAK10',
     address: DEFAULT_ADDRESSES[0],
     paymentMethod: 'UPI',
     status: 'Shipped',
@@ -188,7 +188,7 @@ export const useAuthStore = create<AuthState>()(
       user: {
         name: 'Siddharth Kashyap',
         phone: '+91 98765 43210',
-        email: 'siddharth@azad.tech',
+        email: 'siddharth@mewak.tech',
         memberTier: 'Titanium VIP Member',
         joinedDate: 'August 2024',
       },
@@ -201,7 +201,7 @@ export const useAuthStore = create<AuthState>()(
           user: {
             name: name || 'Valued Member',
             phone: phone.startsWith('+91') ? phone : `+91 ${phone}`,
-            email: 'member@azad.tech',
+            email: 'member@mewak.tech',
             memberTier: 'Titanium VIP Member',
             joinedDate: 'October 2026',
           },
@@ -260,7 +260,7 @@ export const useAuthStore = create<AuthState>()(
       },
 
       placeOrder: (orderData) => {
-        const orderId = `AZD-${Math.floor(100000 + Math.random() * 900000)}`;
+        const orderId = `MWK-${Math.floor(100000 + Math.random() * 900000)}`;
         const trackingNumber = `BLUEDART-${Math.floor(10000000 + Math.random() * 90000000)}`;
         const now = new Date();
         const dateStr = now.toLocaleDateString('en-GB', {
@@ -328,7 +328,7 @@ export const useAuthStore = create<AuthState>()(
       },
     }),
     {
-      name: 'azad_auth_storage',
+      name: 'mewak_auth_storage',
     }
   )
 );

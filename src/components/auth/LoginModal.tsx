@@ -78,7 +78,7 @@ export default function LoginModal() {
     // Mock OTP verification (123456)
     if (enteredOtp === '123456') {
       login(phoneNumber, fullName || 'Patron');
-      addToast('Welcome back to AZAD.', 'success');
+      addToast('Welcome back to Mewak.', 'success');
       closeLoginModal();
       setStep('phone');
       setPhoneNumber('');
@@ -124,7 +124,7 @@ export default function LoginModal() {
             </h3>
             <p className="text-xs text-[#2B1A16]/70 mt-1 font-sans">
               {step === 'phone'
-                ? 'Enter your mobile number to access your curated wardrobe, orders, and privileges.'
+                ? 'Enter your mobile number to access your saved hardware, order tracking, and warranty benefits.'
                 : `We sent a 6-digit authentication code to +91 ${phoneNumber}`}
             </p>
           </div>

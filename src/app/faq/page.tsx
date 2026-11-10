@@ -18,10 +18,10 @@ const FAQ_DATA: { category: string; questions: FAQItem[] }[] = [
       },
       {
         q: 'Can I apply promotional coupons to my shopping cart?',
-        a: 'Yes. Enter promo code AZAD10 at checkout or in the bag drawer for 10% off your order, or WELCOME50 for ₹500 discount on orders above ₹1,999.',
+        a: 'Yes. Enter promo code MEWAK10 at checkout or in the bag drawer for 10% off your order, or WELCOME50 for ₹500 discount on orders above ₹1,999.',
       },
       {
-        q: 'What payment modes are accepted at AZAD?',
+        q: 'What payment modes are accepted at Mewak?',
         a: 'We accept instant UPI (Google Pay, PhonePe, Paytm, BHIM), all major Credit and Debit Cards (Visa, Mastercard, RuPay, Amex), Indian Net Banking, and Cash on Delivery.',
       },
     ],
@@ -60,11 +60,11 @@ const FAQ_DATA: { category: string; questions: FAQItem[] }[] = [
     category: 'Warranty & Hardware Support',
     questions: [
       {
-        q: 'What warranty is included with AZAD devices?',
-        a: 'All AZAD headphones, smartphones, smartwatches, and GaN chargers include an official 2-Year Brand Warranty covering internal electronics, acoustic drivers, and manufacturer defects.',
+        q: 'What warranty is included with Mewak devices?',
+        a: 'All Mewak headphones, smartphones, smartwatches, and GaN chargers include an official 2-Year Brand Warranty covering internal electronics, acoustic drivers, and manufacturer defects.',
       },
       {
-        q: 'Are AZAD products water and sweat resistant?',
+        q: 'Are Mewak products water and sweat resistant?',
         a: 'Yes. The Chronos Ultra watch is rated 100m / EN13319 dive-certified, the Titan 16 Pro Max is IP68 water & dust sealed, and SonicBuds Ultra earbuds are IPX7 sweatproof.',
       },
     ],

@@ -5,9 +5,9 @@ import { ArrowRight, Sparkles } from 'lucide-react';
 import { LogoTechIcon } from '@/components/common/Logo';
 
 export const metadata = {
-  title: 'Our Technology & Engineering Manifesto | AZAD',
+  title: 'Our Technology & Engineering Manifesto | Mewak',
   description:
-    'The philosophy behind AZAD: converging planar acoustic purity, Grade 5 titanium, and next-generation silicon architectures.',
+    'The philosophy behind Mewak: converging planar acoustic purity, Grade 5 titanium, and next-generation silicon architectures.',
 };
 
 export default function AboutPage() {
@@ -32,7 +32,7 @@ export default function AboutPage() {
         <div className="relative aspect-[16/9] rounded-[4px] overflow-hidden border border-[#DDD2C0] shadow-xl mb-16 bg-[#0F172A]">
           <Image
             src="https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=1600&q=85"
-            alt="AZAD Engineering Laboratory"
+            alt="Mewak Engineering Laboratory"
             fill
             className="object-cover"
           />
@@ -42,13 +42,13 @@ export default function AboutPage() {
         <div className="space-y-12 font-sans text-xs sm:text-sm text-[#2B1A16]/85 leading-relaxed">
           <div className="bg-[#FBF7F0] border border-[#DDD2C0] p-8 rounded-[4px] space-y-4">
             <h2 className="font-sans text-2xl font-bold text-[#2B1A16]">
-              I. The Genesis of AZAD
+              I. The Genesis of Mewak
             </h2>
             <p>
-              Founded in 2024, AZAD was born from a singular conviction: premium electronics should not be fragile, disposable plastic gadgets that lose value in six months.
+              Founded in 2024, Mewak was born from a singular conviction: premium electronics should not be fragile, disposable plastic gadgets that lose value in six months.
             </p>
             <p>
-              By pairing planar magnetic transducer engineering with forged titanium chassis and high-efficiency silicon, AZAD crafts hardware designed for professional creators, audiophiles, and discerning technophiles.
+              By pairing planar magnetic transducer engineering with forged titanium chassis and high-efficiency silicon, Mewak crafts hardware designed for professional creators, audiophiles, and discerning technophiles.
             </p>
           </div>
 
@@ -77,7 +77,7 @@ export default function AboutPage() {
           <div className="text-center py-6 border-t border-[#DDD2C0] flex flex-col items-center">
             <LogoTechIcon size={32} className="mb-2" />
             <span className="font-sans font-bold text-sm text-[#2B1A16]">
-              AZAD HARDWARE LABS
+              MEWAK HARDWARE LABS
             </span>
             <span className="text-[10px] tracking-widest uppercase text-[#2B1A16]/50 mt-1">
               Bengaluru • San Francisco • Tokyo

@@ -135,7 +135,7 @@ export default function SizeGuideModal() {
             <div className="p-3 bg-[#EFE8DD]/50 rounded-[3px] border border-[#DDD2C0] text-[11px] text-[#2B1A16]/80 flex items-start gap-2">
               <CheckCircle2 className="w-4 h-4 text-[#9A8029] shrink-0 mt-0.5" />
               <span>
-                All AZAD wireless earbuds ship with 4 sizes of hypoallergenic medical-grade silicone ear tips to guarantee a secure, bass-rich acoustic seal.
+                All Mewak wireless earbuds ship with 4 sizes of hypoallergenic medical-grade silicone ear tips to guarantee a secure, bass-rich acoustic seal.
               </span>
             </div>
           </div>

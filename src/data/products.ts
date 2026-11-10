@@ -49,7 +49,7 @@ export const PRODUCTS: Product[] = [
     fabric: 'Aero-grade Aluminum & Memory Foam Lambskin',
     fit: 'Over-Ear Ergonomic Acoustic Seal • 280g',
     care: [
-      '2-Year AZAD Total Care Replacement Warranty',
+      '2-Year Mewak Total Care Replacement Warranty',
       'Protective magnetic hard carrying case included',
       'Braided USB-C fast charge & 3.5mm gold-plated audio cables included',
       'Wipe ear cushions with dry microfiber cloth',
@@ -725,7 +725,7 @@ export const PRODUCTS: Product[] = [
       'Rotary Haptic Crown with mechanical click feedback',
       'Continuous Optical PPG Sensor (Heart Rate, SpO2, Stress & Sleep tracking)',
       'Full 7 days of normal battery life on a single 45-minute charge',
-      'Compatible with iOS and Android via AZAD Connect App',
+      'Compatible with iOS and Android via Mewak Connect App',
     ],
     returns: '15-day return policy. Delivered in a luxurious presentation gift box.',
     reviews: [
@@ -919,7 +919,7 @@ export const PRODUCTS: Product[] = [
     fabric: 'CNC Machined Aircraft-Grade Aluminum & Soft-Touch Silicone',
     fit: 'Weighted Base with Micro-Suction Grip • 420g Desk Stability',
     care: [
-      '2-Year AZAD Power Guarantee',
+      '2-Year Mewak Power Guarantee',
       'Includes 1.5m braided 60W USB-C to USB-C cable',
       'Equipped with Active Temperature Control and Foreign Object Detection',
     ],

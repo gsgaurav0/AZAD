@@ -559,7 +559,7 @@ export default function Header() {
               {/* Informational Links */}
               <div>
                 <span className="text-[11px] uppercase tracking-widest text-[#2B1A16]/50 font-semibold block mb-2">
-                  AZAD Electronics
+                  Mewak Electronics
                 </span>
                 <div className="space-y-2 text-sm font-sans text-[#2B1A16]/80">
                   <Link

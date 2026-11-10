@@ -70,7 +70,7 @@ export default function LoginPage() {
     const code = otp.join('');
     if (code === '123456') {
       login(phoneNumber, fullName || 'Patron');
-      addToast('Welcome back to AZAD.', 'success');
+      addToast('Welcome back to Mewak.', 'success');
       router.push('/account');
     } else {
       setError('Invalid OTP code. Please enter 123456.');

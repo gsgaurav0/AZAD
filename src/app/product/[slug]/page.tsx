@@ -12,14 +12,14 @@ export async function generateMetadata({ params }: ProductPageProps) {
   const product = PRODUCTS.find((p) => p.slug === slug || p.id === slug);
 
   if (!product) {
-    return { title: 'Product Not Found | AZAD' };
+    return { title: 'Product Not Found | Mewak' };
   }
 
   return {
-    title: `${product.name} | AZAD Tech`,
+    title: `${product.name} | Mewak Electronics`,
     description: product.description,
     openGraph: {
-      title: `${product.name} - AZAD Electronics`,
+      title: `${product.name} - Mewak Electronics`,
       description: product.description,
       images: [{ url: product.images[0] }],
     },

@@ -1,8 +1,8 @@
 import React from 'react';
 
 export const metadata = {
-  title: 'Terms of Service | AZAD',
-  description: 'Terms governing the purchase of electronics, hardware, and audio products at AZAD.',
+  title: 'Terms of Service | Mewak',
+  description: 'Terms governing the purchase of electronics, hardware, and audio products at Mewak.',
 };
 
 export default function TermsPage() {
@@ -22,7 +22,7 @@ export default function TermsPage() {
               1. The Contract of Sale
             </h2>
             <p>
-              By finalizing an order on the AZAD digital storefront, you enter into a sale agreement for premium consumer electronics, audio hardware, and tech accessories governed by Indian commerce laws.
+              By finalizing an order on the Mewak digital storefront, you enter into a sale agreement for premium consumer electronics, audio hardware, and tech accessories governed by Indian commerce laws.
             </p>
           </section>
 
@@ -31,7 +31,7 @@ export default function TermsPage() {
               2. Official Warranty & Coverage
             </h2>
             <p>
-              All hardware products purchased through authorized AZAD channels include our 2-Year Official Brand Warranty. Coverage protects against driver failure, motherboard defects, and manufacturing anomalies under normal operational usage.
+              All hardware products purchased through authorized Mewak channels include our 2-Year Official Brand Warranty. Coverage protects against driver failure, motherboard defects, and manufacturing anomalies under normal operational usage.
             </p>
           </section>
 
@@ -40,7 +40,7 @@ export default function TermsPage() {
               3. Intellectual Property
             </h2>
             <p>
-              The AZAD trademark, hardware industrial designs, acoustic calibration profiles, and product photography remain the exclusive intellectual property of AZAD Electronics Ltd.
+              The Mewak trademark, hardware industrial designs, acoustic calibration profiles, and product photography remain the exclusive intellectual property of Mewak Electronics Ltd.
             </p>
           </section>
         </div>

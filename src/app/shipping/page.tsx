@@ -1,7 +1,7 @@
 import React from 'react';
 
 export const metadata = {
-  title: 'Express Shipping & Courier Delivery | AZAD',
+  title: 'Express Shipping & Courier Delivery | Mewak',
   description:
     'Information regarding our domestic complimentary shipping, express air dispatch, and shock-resistant electronic packaging.',
 };

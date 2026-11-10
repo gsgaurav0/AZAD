@@ -12,10 +12,10 @@ export async function generateMetadata({ params }: CategoryPageProps) {
   const { category } = await params;
   const config = CATEGORIES_CONFIG.find((c) => c.slug === category);
   if (!config) {
-    return { title: 'Products | AZAD' };
+    return { title: 'Products | Mewak' };
   }
   return {
-    title: `${config.name} | AZAD Tech`,
+    title: `${config.name} | Mewak Electronics`,
     description: config.description,
   };
 }

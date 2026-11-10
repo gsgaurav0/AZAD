@@ -25,12 +25,12 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'AZAD | Next-Gen Electronics, Headphones & Flagship Devices',
+  title: 'Mewak | Next-Gen Electronics, Headphones & Flagship Devices',
   description:
-    'Discover planar audio headphones, titanium 5G smartphones, sapphire smartwatches & GaN power ecosystems by AZAD.',
+    'Discover planar audio headphones, titanium 5G smartphones, sapphire smartwatches & GaN power ecosystems by Mewak.',
   keywords: [
-    'AZAD',
-    'AZAD electronics',
+    'Mewak',
+    'Mewak electronics',
     'wireless headphones',
     'noise cancelling',
     'flagship smartphone',
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     'premium audio India',
   ],
   openGraph: {
-    title: 'AZAD | Next-Gen Electronics & Premium Audio',
+    title: 'Mewak | Next-Gen Electronics & Premium Audio',
     description:
       'Engineered with planar magnetic drivers, titanium silicon, and uncompromising hardware craft.',
     type: 'website',

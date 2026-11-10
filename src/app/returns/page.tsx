@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 
 export const metadata = {
-  title: '15-Day Replacement & Returns Policy | AZAD',
+  title: '15-Day Replacement & Returns Policy | Mewak',
   description:
     'Our commitment to your satisfaction: complimentary 15-day doorstep pickups, hardware replacements, and prompt refund settlements.',
 };
@@ -48,7 +48,7 @@ export default function ReturnsPage() {
               3. Refund & Replacement Timelines
             </h2>
             <p>
-              Once your item is received and checked at our diagnostics center, replacements are dispatched immediately or refunds are initiated to your original payment method (UPI, Card, or Net Banking) or credited as instant AZAD store credit.
+              Once your item is received and checked at our diagnostics center, replacements are dispatched immediately or refunds are initiated to your original payment method (UPI, Card, or Net Banking) or credited as instant Mewak store credit.
             </p>
           </div>
 

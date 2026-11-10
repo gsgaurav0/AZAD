@@ -312,7 +312,7 @@ export default function CartDrawer() {
                     type="text"
                     value={couponInput}
                     onChange={(e) => setCouponInput(e.target.value)}
-                    placeholder="Promo code (AZAD10, WELCOME50)"
+                    placeholder="Promo code (MEWAK10, WELCOME50)"
                     className="flex-1 bg-white border border-[#DDD2C0] rounded-[4px] px-3 py-1.5 text-xs text-[#2B1A16] uppercase outline-none placeholder:normal-case placeholder:text-[#2B1A16]/40"
                   />
                   <button

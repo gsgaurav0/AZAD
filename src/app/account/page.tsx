@@ -36,7 +36,7 @@ export default function AccountPage() {
 
   // Return Request Form State
   const [returnOrderId, setReturnOrderId] = useState(orders[0]?.id || '');
-  const [returnReason, setReturnReason] = useState('Size was too large / loose');
+  const [returnReason, setReturnReason] = useState('Comfort or fit issue with ear cushions / watch band');
   const [returnRefundMode, setReturnRefundMode] = useState('Original Payment Method');
   const [returnSuccess, setReturnSuccess] = useState(false);
 
@@ -382,11 +382,11 @@ export default function AccountPage() {
                     onChange={(e) => setReturnReason(e.target.value)}
                     className="w-full bg-white border border-[#DDD2C0] rounded-[3px] p-2.5 text-xs text-[#2B1A16] outline-none"
                   >
-                    <option>Size was too large / loose</option>
-                    <option>Size was too tight / small</option>
-                    <option>Fabric feel did not meet expectations</option>
-                    <option>Exchange for a different shade</option>
-                    <option>Defective seam or button</option>
+                    <option>Comfort or fit issue with ear cushions / watch band</option>
+                    <option>Exchange for different colorway or storage edition</option>
+                    <option>Diagnostic hardware issue or audio calibration discrepancy</option>
+                    <option>Packaging arrived damaged in courier transit</option>
+                    <option>Changed mind / 15-day risk-free return</option>
                   </select>
                 </div>
 
@@ -409,11 +409,11 @@ export default function AccountPage() {
                       <input
                         type="radio"
                         name="refundMode"
-                        checked={returnRefundMode === 'AZAD Store Credit'}
-                        onChange={() => setReturnRefundMode('AZAD Store Credit')}
+                        checked={returnRefundMode === 'Mewak Store Credit'}
+                        onChange={() => setReturnRefundMode('Mewak Store Credit')}
                         className="accent-[#9A8029]"
                       />
-                      <span>Instant AZAD Store Credit + 5% bonus privilege coupon</span>
+                      <span>Instant Mewak Store Credit + 5% bonus privilege coupon</span>
                     </label>
                   </div>
                 </div>

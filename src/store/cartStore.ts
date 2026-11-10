@@ -201,7 +201,7 @@ export const useCartStore = create<CartState>()(
       },
     }),
     {
-      name: 'azad_cart_storage',
+      name: 'mewak_cart_storage',
       partialize: (state) => ({
         items: state.items,
         appliedCoupon: state.appliedCoupon,

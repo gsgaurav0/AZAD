@@ -12,7 +12,7 @@ export default function HeroBanner() {
       <div className="absolute inset-0 z-0">
         <Image
           src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=2000&q=85"
-          alt="AZAD Flagship Headphones & Electronics"
+          alt="Mewak Flagship Headphones & Electronics"
           fill
           priority
           sizes="100vw"

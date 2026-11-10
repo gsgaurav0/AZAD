@@ -40,7 +40,7 @@ const INSTA_POSTS = [
     id: 6,
     image: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=600&q=80',
     likes: '4.5k',
-    caption: 'The ultimate minimalist developer and creator setup powered by AZAD.',
+    caption: 'The ultimate minimalist developer and creator setup powered by Mewak.',
   },
 ];
 
@@ -63,7 +63,7 @@ export default function InstagramGallery() {
             className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-wider text-[#2B1A16] hover:text-[#9A8029] transition-colors uppercase font-sans"
           >
             <InstagramIcon size={16} className="text-[#9A8029]" />
-            @azadtech
+            @mewaktech
           </a>
         </div>
 

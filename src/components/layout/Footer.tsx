@@ -24,9 +24,9 @@ export default function Footer() {
         {/* Top Newsletter & Brand Note */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 pb-12 border-b border-[#DDD2C0]/15">
           <div className="lg:col-span-5 space-y-4">
-            <Logo size="lg" className="items-start" />
+            <Logo size="lg" className="items-start" inverted={true} />
             <p className="text-xs text-[#EFE8DD]/70 max-w-sm leading-relaxed font-sans">
-              AZAD pioneers the convergence of cutting-edge silicon architecture, acoustic purity, and precision materials. Flagship smartphones, planar headphones, and connected wearables.
+              Mewak pioneers the convergence of cutting-edge silicon architecture, acoustic purity, and precision materials. Flagship smartphones, planar headphones, and connected wearables.
             </p>
             <div className="flex items-center gap-4 pt-2 text-[#DDD2C0]/80">
               <a
@@ -61,7 +61,7 @@ export default function Footer() {
 
           <div className="lg:col-span-7 flex flex-col justify-center">
             <span className="text-[11px] uppercase tracking-widest text-[#9A8029] font-semibold mb-2 block">
-              THE AZAD INSIDER
+              THE MEWAK INSIDER
             </span>
             <h4 className="font-serif text-xl sm:text-2xl text-[#EFE8DD] mb-2">
               Receive priority access to flagship drops & VIP technology briefings
@@ -73,7 +73,7 @@ export default function Footer() {
             {subscribed ? (
               <div className="flex items-center gap-2 bg-[#9A8029]/20 border border-[#9A8029] text-[#EFE8DD] px-4 py-3 rounded-[4px] text-xs">
                 <Check className="w-4 h-4 text-[#9A8029]" />
-                <span>Welcome to AZAD. Your discount code <strong>AZAD10</strong> is active.</span>
+                <span>Welcome to Mewak. Your discount code <strong>MEWAK10</strong> is active.</span>
               </div>
             ) : (
               <form onSubmit={handleSubscribe} className="flex max-w-md gap-2">
@@ -241,7 +241,7 @@ export default function Footer() {
         {/* Bottom Payment Badges & Powered By Kashyap Communication */}
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-[#EFE8DD]/60">
           <div>
-            © {new Date().getFullYear()} AZAD Electronics Ltd. All rights reserved.
+            © {new Date().getFullYear()} Mewak Electronics Ltd. All rights reserved.
           </div>
 
           {/* Payment Method Badges */}

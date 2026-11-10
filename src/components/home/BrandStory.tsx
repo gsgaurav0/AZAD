@@ -36,7 +36,7 @@ export default function BrandStory() {
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-24 h-24 rounded-full bg-[#0F172A] border-2 border-[#9A8029] flex flex-col items-center justify-center text-center shadow-2xl p-2 text-white">
               <LogoTechIcon size={24} />
               <span className="text-[8px] tracking-[0.2em] uppercase text-[#DDD2C0] font-sans mt-0.5 font-bold">
-                AZAD TECH
+                MEWAK
               </span>
             </div>
           </div>
@@ -54,7 +54,7 @@ export default function BrandStory() {
                 &ldquo;True technological luxury does not distract; it elevates your human potential through uncompromising acoustic and tactile perfection.&rdquo;
               </p>
               <p className="font-sans text-xs sm:text-sm text-[#2B1A16]/75 leading-relaxed mb-4">
-                Born to challenge the disposable nature of modern consumer electronics, AZAD engineers devices crafted from enduring materials — aerospace Grade 5 titanium, hand-matched walnut wood, sapphire crystal glass, and bulletproof 1500D aramid fibers.
+                Born to challenge the disposable nature of modern consumer electronics, Mewak engineers devices crafted from enduring materials — aerospace Grade 5 titanium, hand-matched walnut wood, sapphire crystal glass, and bulletproof 1500D aramid fibers.
               </p>
               <p className="font-sans text-xs sm:text-sm text-[#2B1A16]/75 leading-relaxed">
                 By pairing custom beryllium diaphragms and planar transducers with flagship Snapdragon silicon and intelligent GaN thermal architectures, we deliver hardware calibrated for years of peak performance.

@@ -22,7 +22,7 @@ export const useRecentlyViewedStore = create<RecentlyViewedState>()(
       clearAll: () => set({ items: [] }),
     }),
     {
-      name: 'azad_recently_viewed',
+      name: 'mewak_recently_viewed',
     }
   )
 );

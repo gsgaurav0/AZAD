@@ -1,7 +1,7 @@
 import React from 'react';
 
 export const metadata = {
-  title: 'Privacy Policy | AZAD',
+  title: 'Privacy Policy | Mewak',
   description: 'Our policy regarding data encryption, customer confidentiality, and secure sessions.',
 };
 
@@ -22,7 +22,7 @@ export default function PrivacyPage() {
               1. Customer Confidentiality
             </h2>
             <p>
-              At AZAD, customer privacy is strictly protected. We do not sell, rent, or trade your contact information, phone numbers, or hardware registration serials with commercial data brokers.
+              At Mewak, customer privacy is strictly protected. We do not sell, rent, or trade your contact information, phone numbers, or hardware registration serials with commercial data brokers.
             </p>
           </section>
 

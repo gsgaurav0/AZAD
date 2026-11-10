@@ -7,7 +7,7 @@ import { Sparkles, PhoneCall, ChevronRight } from 'lucide-react';
 const MESSAGES = [
   'Complimentary Express Courier Shipping on all orders above ₹999',
   '15-Day Risk-Free Replacement & 2-Year Official Brand Warranty',
-  'Exclusive Launch Discount: Use code AZAD10 for 10% Off',
+  'Exclusive Launch Discount: Use code MEWAK10 for 10% Off',
   'Next-Gen Audio, Flagship Smartphones & Connected Wearables',
 ];
 

@@ -319,7 +319,7 @@ export default function CartPage() {
                         type="text"
                         value={couponInput}
                         onChange={(e) => setCouponInput(e.target.value)}
-                        placeholder="AZAD10 or WELCOME50"
+                        placeholder="MEWAK10 or WELCOME50"
                         className="flex-1 bg-white border border-[#DDD2C0] rounded-[3px] px-3 py-2 text-xs text-[#2B1A16] uppercase outline-none focus:border-[#9A8029]"
                       />
                       <button
@@ -340,12 +340,12 @@ export default function CartPage() {
                       <button
                         type="button"
                         onClick={() => {
-                          const res = applyCoupon('AZAD10');
+                          const res = applyCoupon('MEWAK10');
                           if (res.success) addToast(res.message, 'success');
                         }}
                         className="text-[10px] bg-[#EFE8DD] hover:bg-[#DDD2C0] text-[#2B1A16] px-2 py-0.5 rounded-[2px] border border-[#DDD2C0]"
                       >
-                        Use <strong>AZAD10</strong> (10% Off)
+                        Use <strong>MEWAK10</strong> (10% Off)
                       </button>
                       <button
                         type="button"

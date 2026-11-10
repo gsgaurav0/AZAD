@@ -18,7 +18,7 @@ export default function ContactPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
-    addToast('Your inquiry has reached the AZAD Technical Concierge.', 'success');
+    addToast('Your inquiry has reached the Mewak Technical Concierge.', 'success');
   };
 
   return (
@@ -30,7 +30,7 @@ export default function ContactPage() {
             TECHNICAL & CONCIERGE ASSISTANCE
           </span>
           <h1 className="font-serif text-4xl sm:text-5xl text-[#2B1A16] font-normal mb-4">
-            Connect with AZAD
+            Connect with Mewak
           </h1>
           <p className="text-xs sm:text-sm text-[#2B1A16]/75 font-sans leading-relaxed">
             Our audio architects, hardware technicians, and corporate specialists are available for private consultations, warranty support, and enterprise setups.
@@ -54,7 +54,7 @@ export default function ContactPage() {
                   Inquiry Dispatched
                 </h4>
                 <p className="text-xs text-[#2B1A16]/80 max-w-md mx-auto">
-                  Thank you, {formData.name}. An AZAD hardware specialist will contact you via email shortly.
+                  Thank you, {formData.name}. A Mewak hardware specialist will contact you via email shortly.
                 </p>
                 <button
                   type="button"
@@ -167,7 +167,7 @@ export default function ContactPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <Mail className="w-4 h-4 text-[#9A8029]" />
-                  <span>support@azad.tech</span>
+                  <span>support@mewak.tech</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Clock className="w-4 h-4 text-[#9A8029]" />

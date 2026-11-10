@@ -2,7 +2,7 @@ import React, { Suspense } from 'react';
 import ListingView from '@/components/listing/ListingView';
 
 export const metadata = {
-  title: 'Shop All Hardware & Audio | AZAD',
+  title: 'Shop All Hardware & Audio | Mewak',
   description:
     'Browse our full lineup of planar magnetic headphones, titanium 5G smartphones, sapphire smartwatches, and GaN power accessories.',
 };
