@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Address, Order } from '@/types';
+import { Address, Order, OrderStatus } from '@/types';
 
 interface UserProfile {
   name: string;
@@ -26,6 +26,11 @@ interface AuthState {
   setDefaultAddress: (id: string) => void;
   placeOrder: (order: Omit<Order, 'id' | 'date' | 'status' | 'statusHistory' | 'trackingNumber'>) => Order;
   requestReturn: (orderId: string, reason: string) => boolean;
+  updateOrderStatus: (orderId: string, status: OrderStatus, note?: string) => void;
+  updateOrder: (orderId: string, updates: Partial<Order>) => void;
+  deleteOrder: (orderId: string) => void;
+  createAdminOrder: (order: Order) => Order;
+  resetOrdersToDefault: () => void;
 }
 
 const DEFAULT_ADDRESSES: Address[] = [
@@ -325,6 +330,79 @@ export const useAuthStore = create<AuthState>()(
         const target = orders.find((o) => o.id === orderId);
         if (!target || !reason) return false;
         return true;
+      },
+
+      updateOrderStatus: (orderId: string, newStatus: OrderStatus, customNote?: string) => {
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        const timestamp = `${dateStr}, ${timeStr}`;
+
+        const statusSequence: OrderStatus[] = ['Placed', 'Packed', 'Shipped', 'Out for Delivery', 'Delivered'];
+        const targetIndex = statusSequence.indexOf(newStatus);
+
+        set((state) => ({
+          orders: state.orders.map((o) => {
+            if (o.id !== orderId) return o;
+
+            let updatedHistory = o.statusHistory.map((step) => {
+              if (newStatus === 'Cancelled') {
+                return step;
+              }
+              const stepIndex = statusSequence.indexOf(step.status);
+              if (stepIndex <= targetIndex) {
+                return {
+                  ...step,
+                  completed: true,
+                  timestamp: step.completed && step.timestamp !== 'Pending' ? step.timestamp : timestamp,
+                  note: step.status === newStatus && customNote ? customNote : step.note,
+                };
+              }
+              return { ...step, completed: false, timestamp: 'Pending' };
+            });
+
+            if (newStatus === 'Cancelled') {
+              updatedHistory = [
+                ...updatedHistory,
+                {
+                  status: 'Cancelled',
+                  timestamp,
+                  note: customNote || 'Order cancelled by administration',
+                  completed: true,
+                },
+              ];
+            }
+
+            return {
+              ...o,
+              status: newStatus,
+              statusHistory: updatedHistory,
+            };
+          }),
+        }));
+      },
+
+      updateOrder: (orderId: string, updates: Partial<Order>) => {
+        set((state) => ({
+          orders: state.orders.map((o) => (o.id === orderId ? { ...o, ...updates } : o)),
+        }));
+      },
+
+      deleteOrder: (orderId: string) => {
+        set((state) => ({
+          orders: state.orders.filter((o) => o.id !== orderId),
+        }));
+      },
+
+      createAdminOrder: (order: Order) => {
+        set((state) => ({
+          orders: [order, ...state.orders],
+        }));
+        return order;
+      },
+
+      resetOrdersToDefault: () => {
+        set({ orders: DEFAULT_ORDERS });
       },
     }),
     {

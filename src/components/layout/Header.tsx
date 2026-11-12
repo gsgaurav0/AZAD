@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import {
   Search,
   Heart,
@@ -20,10 +20,16 @@ import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
+import { useProductStore } from '@/store/productStore';
+import { useIsMounted } from '@/hooks/useIsMounted';
 import { CATEGORIES_CONFIG, PRODUCTS } from '@/data/products';
 
 export default function Header() {
   const router = useRouter();
+  const pathname = usePathname();
+  const mounted = useIsMounted();
+  const storeProducts = useProductStore((state) => state.products);
+  const liveProducts = mounted ? storeProducts : PRODUCTS;
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -80,15 +86,15 @@ export default function Header() {
   const searchResults = React.useMemo(() => {
     if (!searchQuery.trim()) return [];
     const q = searchQuery.toLowerCase().trim();
-    return PRODUCTS.filter(
+    return liveProducts.filter(
       (p) =>
-        p.name.toLowerCase().includes(q) ||
-        p.category.toLowerCase().includes(q) ||
-        p.subcategory.toLowerCase().includes(q) ||
-        p.fabric.toLowerCase().includes(q) ||
-        p.occasion.toLowerCase().includes(q)
+        (p.name || '').toLowerCase().includes(q) ||
+        (p.category || '').toLowerCase().includes(q) ||
+        (p.subcategory || '').toLowerCase().includes(q) ||
+        (p.fabric || '').toLowerCase().includes(q) ||
+        (p.occasion || '').toLowerCase().includes(q)
     ).slice(0, 5);
-  }, [searchQuery]);
+  }, [searchQuery, liveProducts]);
 
   // Focus search input when search is opened
   useEffect(() => {
@@ -113,7 +119,12 @@ export default function Header() {
     { id: 'accessories', label: 'Accessories', href: '/shop/accessories' },
     { id: 'new-in', label: 'New In', href: '/shop?filter=new' },
     { id: 'sale', label: 'Deals', href: '/shop?filter=sale', isSale: true },
+    { id: 'support', label: 'Support', href: '/support' },
   ];
+
+  if (pathname.startsWith('/admin') || pathname.startsWith('/superadmin')) {
+    return null;
+  }
 
   return (
     <>
@@ -196,7 +207,7 @@ export default function Header() {
                 aria-label="View wishlist"
               >
                 <Heart className="w-5 h-5" />
-                {wishlistItems.length > 0 && (
+                {mounted && wishlistItems.length > 0 && (
                   <span className="absolute -top-1 -right-1 bg-[#9A8029] text-white text-[10px] font-sans font-semibold rounded-full w-4 h-4 flex items-center justify-center">
                     {wishlistItems.length}
                   </span>
@@ -204,7 +215,7 @@ export default function Header() {
               </Link>
 
               {/* Account / Login - hidden on mobile as it is docked in bottom bar */}
-              {isLoggedIn ? (
+              {mounted && isLoggedIn ? (
                 <Link
                   href="/account"
                   className="hidden sm:flex p-1.5 text-[#2B1A16] hover:text-[#9A8029] transition-colors relative"
@@ -231,7 +242,7 @@ export default function Header() {
                 aria-label="Shopping bag"
               >
                 <ShoppingBag className="w-5 h-5 transition-transform group-hover:scale-105" />
-                {cartItemCount > 0 && (
+                {mounted && cartItemCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-[#2B1A16] text-[#EFE8DD] text-[10px] font-sans font-semibold rounded-full w-4 h-4 flex items-center justify-center">
                     {cartItemCount}
                   </span>
@@ -299,7 +310,7 @@ export default function Header() {
                     </ul>
                   </div>
                   <div className="col-span-3 grid grid-cols-3 gap-4">
-                    {PRODUCTS.filter((p) => p.isNew)
+                    {liveProducts.filter((p) => p.isNew)
                       .slice(0, 3)
                       .map((np) => (
                         <Link
@@ -352,7 +363,7 @@ export default function Header() {
                     </Link>
                   </div>
                   <div className="col-span-3 grid grid-cols-3 gap-4">
-                    {PRODUCTS.filter((p) => p.discountPercent >= 20)
+                    {liveProducts.filter((p) => (p.discountPercent || 0) >= 20)
                       .slice(0, 3)
                       .map((sp) => (
                         <Link

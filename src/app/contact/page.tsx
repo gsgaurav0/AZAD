@@ -3,9 +3,11 @@
 import React, { useState } from 'react';
 import { Mail, Phone, Send, CheckCircle2, Clock } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
+import { useInquiryStore } from '@/store/inquiryStore';
 
 export default function ContactPage() {
   const addToast = useUIStore((state) => state.addToast);
+  const addInquiry = useInquiryStore((state) => state.addInquiry);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -17,6 +19,18 @@ export default function ContactPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) return;
+
+    addInquiry({
+      name: formData.name.trim(),
+      email: formData.email.trim(),
+      phone: formData.phone.trim(),
+      subject: formData.subject.trim(),
+      message: formData.message.trim(),
+      type: 'consultation',
+      priority: 'normal',
+    });
+
     setSubmitted(true);
     addToast('Your inquiry has reached the Mewak Technical Concierge.', 'success');
   };

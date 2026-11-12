@@ -7,6 +7,7 @@ interface LogoProps {
   size?: 'sm' | 'md' | 'lg';
   showSubtitle?: boolean;
   inverted?: boolean;
+  asLink?: boolean;
 }
 
 export const MewakLeafKIcon: React.FC<{ className?: string; size?: number }> = ({ className = '', size = 24 }) => (
@@ -72,6 +73,7 @@ export default function Logo({
   size = 'md',
   showSubtitle = false,
   inverted = false,
+  asLink = true,
 }: LogoProps) {
   // Dimensions calibrated to trimmed 677x238 (2.84:1) transparent PNGs
   const imageDims = {
@@ -84,12 +86,8 @@ export default function Logo({
     ? '/images/mewak-logo-light.png'
     : '/images/mewak-logo-dark.png';
 
-  return (
-    <Link
-      href="/"
-      className={`inline-flex flex-col items-center group select-none ${className}`}
-      aria-label="Mewak Electronics"
-    >
+  const innerContent = (
+    <>
       <div
         className={`relative ${imageDims[size].wrapper} transition-transform duration-300 group-hover:scale-105`}
       >
@@ -110,6 +108,26 @@ export default function Logo({
           ELECTRONICS & AUDIO
         </span>
       )}
+    </>
+  );
+
+  const containerClasses = `inline-flex flex-col items-center group select-none ${className}`;
+
+  if (!asLink) {
+    return (
+      <div className={containerClasses} aria-label="Mewak Electronics">
+        {innerContent}
+      </div>
+    );
+  }
+
+  return (
+    <Link
+      href="/"
+      className={containerClasses}
+      aria-label="Mewak Electronics"
+    >
+      {innerContent}
     </Link>
   );
 }

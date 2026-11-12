@@ -34,11 +34,23 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
   const router = useRouter();
 
   // State
-  const [selectedImage, setSelectedImage] = useState(product.images[0]);
-  const [selectedColor, setSelectedColor] = useState(product.colors[0]?.name || 'Standard');
+  const defaultImage =
+    (product.images && product.images[0]) ||
+    'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1000&q=80';
+  const [selectedImage, setSelectedImage] = useState(defaultImage);
+  const [selectedColor, setSelectedColor] = useState(product.colors?.[0]?.name || 'Standard');
   const [selectedSize, setSelectedSize] = useState<string>(
-    product.sizes.find((s) => s.inStock)?.size || product.sizes[0]?.size || ''
+    product.sizes?.find((s) => s.inStock)?.size || product.sizes?.[0]?.size || 'Standard'
   );
+
+  // Sync state whenever product changes (e.g., navigating or live updates)
+  useEffect(() => {
+    if (product.images?.[0]) setSelectedImage(product.images[0]);
+    if (product.colors?.[0]?.name) setSelectedColor(product.colors[0].name);
+    if (product.sizes) {
+      setSelectedSize(product.sizes.find((s) => s.inStock)?.size || product.sizes[0]?.size || 'Standard');
+    }
+  }, [product]);
   const [quantity, setQuantity] = useState(1);
   const [isZoomed, setIsZoomed] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -187,7 +199,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                       : 'border-[#DDD2C0] opacity-70 hover:opacity-100'
                   }`}
                 >
-                  <Image src={img} alt={`Thumbnail ${idx + 1}`} fill className="object-cover" />
+                  <Image src={img} alt={`Thumbnail ${idx + 1}`} fill unoptimized className="object-cover" />
                 </button>
               ))}
             </div>
@@ -200,10 +212,11 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
               onMouseMove={handleMouseMove}
             >
               <Image
-                src={selectedImage}
+                src={selectedImage || product.images[0]}
                 alt={product.name}
                 fill
                 priority
+                unoptimized
                 sizes="(max-width: 1024px) 100vw, 55vw"
                 className={`object-cover transition-transform duration-200 ${
                   isZoomed ? 'scale-150' : 'scale-100'

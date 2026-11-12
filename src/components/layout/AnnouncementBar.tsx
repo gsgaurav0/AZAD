@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Sparkles, PhoneCall, ChevronRight } from 'lucide-react';
 
 const MESSAGES = [
@@ -12,6 +13,7 @@ const MESSAGES = [
 ];
 
 export default function AnnouncementBar() {
+  const pathname = usePathname();
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
@@ -20,6 +22,10 @@ export default function AnnouncementBar() {
     }, 4500);
     return () => clearInterval(timer);
   }, []);
+
+  if (pathname.startsWith('/admin') || pathname.startsWith('/superadmin')) {
+    return null;
+  }
 
   return (
     <div className="bg-[#2B1A16] text-[#EFE8DD] text-xs font-sans border-b border-[#DDD2C0]/20 relative z-50">

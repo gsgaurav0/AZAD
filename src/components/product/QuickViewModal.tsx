@@ -27,9 +27,9 @@ export default function QuickViewModal() {
   // Sync state whenever quickViewProduct changes without effect
   if (quickViewProduct && quickViewProduct.id !== prevProductId) {
     setPrevProductId(quickViewProduct.id);
-    setSelectedColor(quickViewProduct.colors[0]?.name || 'Standard');
-    setSelectedImage(quickViewProduct.images[0]);
-    const firstInStock = quickViewProduct.sizes.find((s) => s.inStock)?.size || quickViewProduct.sizes[0]?.size || '';
+    setSelectedColor(quickViewProduct.colors?.[0]?.name || 'Standard');
+    setSelectedImage(quickViewProduct.images?.[0] || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1000&q=80');
+    const firstInStock = quickViewProduct.sizes?.find((s) => s.inStock)?.size || quickViewProduct.sizes?.[0]?.size || 'Standard';
     setSelectedSize(firstInStock);
     setQuantity(1);
   }

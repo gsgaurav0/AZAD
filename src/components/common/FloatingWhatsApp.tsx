@@ -8,7 +8,13 @@ export default function FloatingWhatsApp() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
-  if (pathname === '/checkout') return null;
+  if (
+    pathname === '/checkout' ||
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/superadmin')
+  ) {
+    return null;
+  }
 
   const isPDP = pathname.startsWith('/product/');
 

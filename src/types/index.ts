@@ -72,7 +72,7 @@ export interface Address {
   isDefault: boolean;
 }
 
-export type OrderStatus = 'Placed' | 'Packed' | 'Shipped' | 'Out for Delivery' | 'Delivered';
+export type OrderStatus = 'Placed' | 'Packed' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Cancelled';
 
 export interface OrderStatusStep {
   status: OrderStatus;

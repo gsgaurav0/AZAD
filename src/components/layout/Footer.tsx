@@ -2,21 +2,43 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Mail, ArrowRight, Check } from 'lucide-react';
 import Logo, { GoldFlowerIcon } from '@/components/common/Logo';
 import { InstagramIcon, FacebookIcon, YoutubeIcon } from '@/components/common/SocialIcons';
+import { useCMSStore, DEFAULT_CMS_DATA } from '@/store/cmsStore';
+import { useInquiryStore } from '@/store/inquiryStore';
+import { useIsMounted } from '@/hooks/useIsMounted';
 
 export default function Footer() {
+  const pathname = usePathname();
+  const isMounted = useIsMounted();
+  const cmsSocials = useCMSStore((state) => state.cms.socials);
+  const socials = isMounted && cmsSocials ? cmsSocials : DEFAULT_CMS_DATA.socials;
+  const addInquiry = useInquiryStore((state) => state.addInquiry);
+
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
     if (email.trim() && email.includes('@')) {
+      addInquiry({
+        name: email.split('@')[0],
+        email: email.trim(),
+        subject: 'Newsletter Subscriber Allocation',
+        message: 'Joined private hardware allocations and release notifications newsletter.',
+        type: 'newsletter',
+        priority: 'low',
+      });
       setSubscribed(true);
       setEmail('');
     }
   };
+
+  if (pathname.startsWith('/admin') || pathname.startsWith('/superadmin')) {
+    return null;
+  }
 
   return (
     <footer className="bg-[#2B1A16] text-[#EFE8DD] border-t border-[#DDD2C0]/20 font-sans pt-16 pb-12">
@@ -29,33 +51,50 @@ export default function Footer() {
               Mewak pioneers the convergence of cutting-edge silicon architecture, acoustic purity, and precision materials. Flagship smartphones, planar headphones, and connected wearables.
             </p>
             <div className="flex items-center gap-4 pt-2 text-[#DDD2C0]/80">
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noreferrer"
-                className="hover:text-[#9A8029] transition-colors p-1"
-                aria-label="Instagram"
-              >
-                <InstagramIcon size={18} />
-              </a>
-              <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noreferrer"
-                className="hover:text-[#9A8029] transition-colors p-1"
-                aria-label="Facebook"
-              >
-                <FacebookIcon size={18} />
-              </a>
-              <a
-                href="https://youtube.com"
-                target="_blank"
-                rel="noreferrer"
-                className="hover:text-[#9A8029] transition-colors p-1"
-                aria-label="YouTube"
-              >
-                <YoutubeIcon size={18} />
-              </a>
+              {socials?.instagram && (
+                <a
+                  href={socials.instagram}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hover:text-[#9A8029] transition-colors p-1"
+                  aria-label="Instagram"
+                >
+                  <InstagramIcon size={18} />
+                </a>
+              )}
+              {socials?.facebook && (
+                <a
+                  href={socials.facebook}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hover:text-[#9A8029] transition-colors p-1"
+                  aria-label="Facebook"
+                >
+                  <FacebookIcon size={18} />
+                </a>
+              )}
+              {socials?.youtube && (
+                <a
+                  href={socials.youtube}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hover:text-[#9A8029] transition-colors p-1"
+                  aria-label="YouTube"
+                >
+                  <YoutubeIcon size={18} />
+                </a>
+              )}
+              {socials?.twitter && (
+                <a
+                  href={socials.twitter}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hover:text-[#9A8029] transition-colors p-1 font-bold text-sm"
+                  aria-label="Twitter / X"
+                >
+                  𝕏
+                </a>
+              )}
             </div>
           </div>
 
@@ -146,6 +185,12 @@ export default function Footer() {
               Customer Support
             </h5>
             <ul className="space-y-2.5 text-[#EFE8DD]/70">
+              <li>
+                <Link href="/support" className="text-[#9A8029] font-semibold hover:underline transition-colors flex items-center gap-1.5">
+                  <span>Mewak Tech Support</span>
+                  <span className="text-[9px] bg-[#9A8029]/20 px-1.5 py-0.5 rounded font-mono">24/7</span>
+                </Link>
+              </li>
               <li>
                 <Link href="/account" className="hover:text-[#9A8029] transition-colors">
                   Track Your Order

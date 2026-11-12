@@ -8,9 +8,11 @@ import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
+import { useIsMounted } from '@/hooks/useIsMounted';
 
 export default function MobileBottomNav() {
   const pathname = usePathname();
+  const mounted = useIsMounted();
   const cartItemCount = useCartStore((state) => state.getItemCount());
   const openCart = useCartStore((state) => state.openCart);
   const wishlistItems = useWishlistStore((state) => state.items);
@@ -22,8 +24,13 @@ export default function MobileBottomNav() {
     return pathname.startsWith(path);
   };
 
-  // Hide bottom nav on Product Detail Page (which has its own sticky purchase bar) and Checkout
-  if (pathname.startsWith('/product/') || pathname === '/checkout') {
+  // Hide bottom nav on Product Detail Page, Checkout, and Admin portals
+  if (
+    pathname.startsWith('/product/') ||
+    pathname === '/checkout' ||
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/superadmin')
+  ) {
     return null;
   }
 
@@ -73,7 +80,7 @@ export default function MobileBottomNav() {
         >
           <div className="relative">
             <Heart className="w-5 h-5 mb-0.5" />
-            {wishlistItems.length > 0 && (
+            {mounted && wishlistItems.length > 0 && (
               <span className="absolute -top-1 -right-2 bg-[#9A8029] text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center shadow-xs">
                 {wishlistItems.length}
               </span>
@@ -95,7 +102,7 @@ export default function MobileBottomNav() {
         >
           <div className="relative">
             <ShoppingBag className="w-5 h-5 mb-0.5" />
-            {cartItemCount > 0 && (
+            {mounted && cartItemCount > 0 && (
               <span className="absolute -top-1 -right-2 bg-[#2B1A16] text-[#EFE8DD] text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center shadow-xs">
                 {cartItemCount}
               </span>
@@ -107,7 +114,7 @@ export default function MobileBottomNav() {
         </button>
 
         {/* Account */}
-        {isLoggedIn ? (
+        {mounted && isLoggedIn ? (
           <Link
             href="/account"
             className={`flex flex-col items-center justify-center py-1 transition-colors relative ${

@@ -14,6 +14,9 @@ interface ProductCardProps {
   priority?: boolean;
 }
 
+const DEFAULT_IMAGE =
+  'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1000&q=80';
+
 export default function ProductCard({ product, priority = false }: ProductCardProps) {
   const [selectedColorIndex, setSelectedColorIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
@@ -26,9 +29,12 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
   const openQuickView = useUIStore((state) => state.openQuickView);
   const addToast = useUIStore((state) => state.addToast);
 
-  const activeColor = product.colors[selectedColorIndex] || product.colors[0];
-  const primaryImage = activeColor?.image || product.images[0];
-  const secondaryImage = product.images[1] || primaryImage;
+  const colors = product.colors && product.colors.length > 0 ? product.colors : [];
+  const activeColor = colors[selectedColorIndex] || colors[0];
+  const primaryImage =
+    activeColor?.image || (product.images && product.images[0]) || DEFAULT_IMAGE;
+  const secondaryImage =
+    (product.images && product.images[1]) || primaryImage;
 
   const handleWishlistClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -49,11 +55,17 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // find first in-stock size
-    const availableSize = product.sizes.find((s) => s.inStock)?.size || product.sizes[0]?.size || 'Standard';
-    addItem(product, activeColor.name, availableSize, 1);
+    const sizes = product.sizes && product.sizes.length > 0 ? product.sizes : [];
+    const availableSize =
+      sizes.find((s) => s.inStock)?.size || sizes[0]?.size || 'Standard';
+    const colorName = activeColor?.name || 'Standard';
+    addItem(product, colorName, availableSize, 1);
     addToast(`Added "${product.name}" (${availableSize}) to your bag`, 'success');
   };
+
+  const price = product.price || 0;
+  const originalPrice = product.originalPrice || price;
+  const discountPercent = product.discountPercent || 0;
 
   return (
     <div
@@ -67,8 +79,9 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
           {/* Main Image */}
           <Image
             src={primaryImage}
-            alt={product.name}
+            alt={product.name || 'Hardware Edition'}
             fill
+            unoptimized
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             priority={priority}
             className={`object-cover transition-all duration-700 ease-out ${
@@ -84,6 +97,7 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
               src={secondaryImage}
               alt={`${product.name} alternate view`}
               fill
+              unoptimized
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               className={`object-cover transition-all duration-700 ease-out absolute inset-0 ${
                 isHovered ? 'opacity-100 scale-105' : 'opacity-0 scale-100'
@@ -99,9 +113,9 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
               NEW
             </span>
           )}
-          {product.discountPercent > 0 && (
+          {discountPercent > 0 && (
             <span className="bg-[#B3402F] text-white text-[10px] font-sans font-semibold tracking-widest uppercase px-2 py-0.5 rounded-[2px] shadow-xs">
-              {product.discountPercent}% OFF
+              {discountPercent}% OFF
             </span>
           )}
         </div>
@@ -125,7 +139,7 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
           <button
             type="button"
             onClick={handleQuickViewClick}
-            className="flex-1 bg-white/95 hover:bg-white text-[#2B1A16] text-xs font-semibold py-2 px-2 rounded-[2px] shadow-sm flex items-center justify-center gap-1.5 transition-colors font-sans uppercase tracking-wider"
+            className="flex-1 bg-white/95 hover:bg-white text-[#2B1A16] text-xs font-semibold py-2 px-2 rounded-[2px] shadow-sm flex items-center justify-center gap-1.5 transition-colors font-sans uppercase tracking-wider cursor-pointer"
           >
             <Eye className="w-3.5 h-3.5 text-[#9A8029]" />
             <span className="hidden sm:inline">Quick View</span>
@@ -133,7 +147,7 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
           <button
             type="button"
             onClick={handleQuickAdd}
-            className="bg-[#2B1A16] hover:bg-[#9A8029] text-[#EFE8DD] p-2 rounded-[2px] shadow-sm flex items-center justify-center transition-colors"
+            className="bg-[#2B1A16] hover:bg-[#9A8029] text-[#EFE8DD] p-2 rounded-[2px] shadow-sm flex items-center justify-center transition-colors cursor-pointer"
             title="Instant Add to Bag"
           >
             <ShoppingBag className="w-4 h-4" />
@@ -147,11 +161,11 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
           {/* Subcategory & Rating */}
           <div className="flex items-center justify-between text-[11px] text-[#2B1A16]/60 mb-1 font-sans">
             <span className="uppercase tracking-wider font-medium truncate pr-2">
-              {product.subcategory}
+              {product.subcategory || 'Hardware'}
             </span>
             <div className="flex items-center gap-0.5 text-[#9A8029] shrink-0">
               <Star className="w-3 h-3 fill-current" />
-              <span className="font-semibold text-[#2B1A16]">{product.rating}</span>
+              <span className="font-semibold text-[#2B1A16]">{product.rating ?? 4.9}</span>
             </div>
           </div>
 
@@ -163,19 +177,19 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
             {product.name}
           </Link>
 
-          {/* Fabric Note */}
+          {/* Fabric / Specs Note */}
           <p className="text-[11px] text-[#2B1A16]/60 line-clamp-1 mb-2 font-sans italic">
-            {product.fabric}
+            {product.fabric || 'Aero-grade precision engineered'}
           </p>
         </div>
 
         <div>
           {/* Color Dots */}
-          {product.colors.length > 1 && (
+          {colors.length > 1 && (
             <div className="flex items-center gap-1.5 mb-2.5">
-              {product.colors.map((color, idx) => (
+              {colors.map((color, idx) => (
                 <button
-                  key={color.name}
+                  key={`${color.name}-${idx}`}
                   type="button"
                   onClick={(e) => {
                     e.preventDefault();
@@ -191,7 +205,7 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
                 />
               ))}
               <span className="text-[10px] text-[#2B1A16]/50 ml-1 font-sans">
-                {product.colors.length} colors
+                {colors.length} colors
               </span>
             </div>
           )}
@@ -199,11 +213,11 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
           {/* Pricing */}
           <div className="flex items-baseline gap-2 pt-1 border-t border-[#DDD2C0]/40">
             <span className="font-serif font-bold text-sm sm:text-base text-[#2B1A16]">
-              ₹{product.price.toLocaleString('en-IN')}
+              ₹{price.toLocaleString('en-IN')}
             </span>
-            {product.originalPrice > product.price && (
+            {originalPrice > price && (
               <span className="line-through text-xs text-[#2B1A16]/40 font-sans">
-                ₹{product.originalPrice.toLocaleString('en-IN')}
+                ₹{originalPrice.toLocaleString('en-IN')}
               </span>
             )}
           </div>

@@ -1,6 +1,5 @@
 import React from 'react';
-import { notFound } from 'next/navigation';
-import ProductDetailView from '@/components/product/ProductDetailView';
+import ProductClientWrapper from '@/components/product/ProductClientWrapper';
 import { PRODUCTS } from '@/data/products';
 
 interface ProductPageProps {
@@ -12,7 +11,7 @@ export async function generateMetadata({ params }: ProductPageProps) {
   const product = PRODUCTS.find((p) => p.slug === slug || p.id === slug);
 
   if (!product) {
-    return { title: 'Product Not Found | Mewak' };
+    return { title: 'Product Details | Mewak' };
   }
 
   return {
@@ -28,11 +27,7 @@ export async function generateMetadata({ params }: ProductPageProps) {
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
-  const product = PRODUCTS.find((p) => p.slug === slug || p.id === slug);
+  const product = PRODUCTS.find((p) => p.slug === slug || p.id === slug) || null;
 
-  if (!product) {
-    notFound();
-  }
-
-  return <ProductDetailView product={product} />;
+  return <ProductClientWrapper slug={slug} initialProduct={product} />;
 }

@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import ProductCard from '@/components/product/ProductCard';
 import { PRODUCTS } from '@/data/products';
+import { useProductStore } from '@/store/productStore';
+import { useIsMounted } from '@/hooks/useIsMounted';
 import { Category } from '@/types';
 
 interface ListingViewProps {
@@ -36,6 +38,15 @@ export default function ListingView({
   const occasionParam = searchParams.get('occasion');
 
   // Filter States
+  const storeProducts = useProductStore((state) => state.products);
+  const isMounted = useIsMounted();
+  const allProductsList = isMounted ? storeProducts : PRODUCTS;
+
+  const maxCatalogPrice = useMemo(() => {
+    const prices = allProductsList.map((p) => p.price || 0);
+    return Math.max(300000, ...prices);
+  }, [allProductsList]);
+
   const [prevInitialCategory, setPrevInitialCategory] = useState(initialCategory);
   const [selectedCategory, setSelectedCategory] = useState<Category | 'all'>(initialCategory);
   if (prevInitialCategory !== initialCategory) {
@@ -48,7 +59,7 @@ export default function ListingView({
   );
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState<number>(150000);
+  const [priceRange, setPriceRange] = useState<number>(300000);
   const [selectedFabrics, setSelectedFabrics] = useState<string[]>([]);
   const [selectedFits, setSelectedFits] = useState<string[]>([]);
   const [selectedDiscount, setSelectedDiscount] = useState<number>(0);
@@ -58,6 +69,19 @@ export default function ListingView({
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [visibleCount, setVisibleCount] = useState(12);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Synchronize with URL params
+  React.useEffect(() => {
+    setSelectedCategory(initialCategory);
+  }, [initialCategory]);
+
+  React.useEffect(() => {
+    if (subcategoryParam) {
+      setSelectedSubcategories([subcategoryParam]);
+    } else {
+      setSelectedSubcategories([]);
+    }
+  }, [subcategoryParam]);
 
   // Extract distinct materials & form factors across tech catalog
   const allFabrics = useMemo(() => {
@@ -84,59 +108,66 @@ export default function ListingView({
 
   // Subcategories for current category
   const availableSubcategories = useMemo(() => {
-    const relevant = PRODUCTS.filter((p) =>
+    const relevant = allProductsList.filter((p) =>
       selectedCategory === 'all' ? true : p.category === selectedCategory
     );
-    return Array.from(new Set(relevant.map((p) => p.subcategory)));
-  }, [selectedCategory]);
+    const set = new Set<string>();
+    relevant.forEach((p) => {
+      if (p.subcategory) set.add(p.subcategory.trim());
+    });
+    return Array.from(set);
+  }, [selectedCategory, allProductsList]);
 
   // Filtering Logic
   const filteredProducts = useMemo(() => {
-    return PRODUCTS.filter((product) => {
+    return allProductsList.filter((product) => {
       // Search query
       if (searchQuery) {
-        const q = searchQuery.toLowerCase();
+        const q = searchQuery.toLowerCase().trim();
         const matches =
-          product.name.toLowerCase().includes(q) ||
-          product.category.toLowerCase().includes(q) ||
-          product.subcategory.toLowerCase().includes(q) ||
-          product.fabric.toLowerCase().includes(q) ||
-          product.description.toLowerCase().includes(q);
+          (product.name || '').toLowerCase().includes(q) ||
+          (product.category || '').toLowerCase().includes(q) ||
+          (product.subcategory || '').toLowerCase().includes(q) ||
+          (product.fabric || '').toLowerCase().includes(q) ||
+          (product.description || '').toLowerCase().includes(q);
         if (!matches) return false;
       }
 
       // Route params (new / sale / occasion)
       if (filterParam === 'new' && !product.isNew) return false;
-      if (filterParam === 'sale' && product.discountPercent <= 0) return false;
-      if (occasionParam && product.occasion.toLowerCase() !== occasionParam.toLowerCase()) return false;
+      if (filterParam === 'sale' && (product.discountPercent || 0) <= 0) return false;
+      if (occasionParam && (product.occasion || '').toLowerCase() !== occasionParam.toLowerCase().trim()) return false;
 
       // Category filter
       if (selectedCategory !== 'all' && product.category !== selectedCategory) return false;
 
-      // Subcategory filter
-      if (selectedSubcategories.length > 0 && !selectedSubcategories.includes(product.subcategory)) {
-        return false;
+      // Subcategory filter (case-insensitive & trimmed)
+      if (selectedSubcategories.length > 0) {
+        const matchesSub = selectedSubcategories.some(
+          (sub) => sub.toLowerCase().trim() === (product.subcategory || '').toLowerCase().trim()
+        );
+        if (!matchesSub) return false;
       }
 
       // Size filter
       if (selectedSizes.length > 0) {
-        const hasSize = product.sizes.some((s) => selectedSizes.includes(s.size) && s.inStock);
+        const hasSize = (product.sizes || []).some((s) => selectedSizes.includes(s.size) && s.inStock);
         if (!hasSize) return false;
       }
 
       // Color filter
       if (selectedColors.length > 0) {
-        const hasColor = product.colors.some((c) => selectedColors.includes(c.name));
+        const hasColor = (product.colors || []).some((c) => selectedColors.includes(c.name));
         if (!hasColor) return false;
       }
 
       // Price filter
-      if (product.price > priceRange) return false;
+      if (priceRange < maxCatalogPrice && (product.price || 0) > priceRange) return false;
 
       // Materials & Specs filter
       if (selectedFabrics.length > 0) {
         const matchesFabric = selectedFabrics.some((f) =>
-          product.fabric.toLowerCase().includes(f.toLowerCase())
+          (product.fabric || '').toLowerCase().includes(f.toLowerCase().trim())
         );
         if (!matchesFabric) return false;
       }
@@ -144,22 +175,22 @@ export default function ListingView({
       // Fit filter
       if (selectedFits.length > 0) {
         const matchesFit = selectedFits.some((fit) =>
-          product.fit.toLowerCase().includes(fit.toLowerCase())
+          (product.fit || '').toLowerCase().includes(fit.toLowerCase().trim())
         );
         if (!matchesFit) return false;
       }
 
       // Discount filter
-      if (selectedDiscount > 0 && product.discountPercent < selectedDiscount) return false;
+      if (selectedDiscount > 0 && (product.discountPercent || 0) < selectedDiscount) return false;
 
       // Rating filter
-      if (selectedRating > 0 && product.rating < selectedRating) return false;
+      if (selectedRating > 0 && (product.rating || 0) < selectedRating) return false;
 
       return true;
     }).sort((a, b) => {
-      if (sortBy === 'price-low') return a.price - b.price;
-      if (sortBy === 'price-high') return b.price - a.price;
-      if (sortBy === 'rating') return b.rating - a.rating;
+      if (sortBy === 'price-low') return (a.price || 0) - (b.price || 0);
+      if (sortBy === 'price-high') return (b.price || 0) - (a.price || 0);
+      if (sortBy === 'rating') return (b.rating || 0) - (a.rating || 0);
       if (sortBy === 'newest') return (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0);
       return (b.isTrending ? 1 : 0) - (a.isTrending ? 1 : 0); // default 'featured'
     });
@@ -172,11 +203,13 @@ export default function ListingView({
     selectedSizes,
     selectedColors,
     priceRange,
+    maxCatalogPrice,
     selectedFabrics,
     selectedFits,
     selectedDiscount,
     selectedRating,
     sortBy,
+    allProductsList,
   ]);
 
   const displayedProducts = filteredProducts.slice(0, visibleCount);
@@ -186,7 +219,7 @@ export default function ListingView({
     setSelectedSubcategories([]);
     setSelectedSizes([]);
     setSelectedColors([]);
-    setPriceRange(150000);
+    setPriceRange(maxCatalogPrice);
     setSelectedFabrics([]);
     setSelectedFits([]);
     setSelectedDiscount(0);
@@ -200,7 +233,7 @@ export default function ListingView({
     selectedSubcategories.length +
     selectedSizes.length +
     selectedColors.length +
-    (priceRange < 150000 ? 1 : 0) +
+    (priceRange < maxCatalogPrice ? 1 : 0) +
     selectedFabrics.length +
     selectedFits.length +
     (selectedDiscount > 0 ? 1 : 0) +
@@ -542,7 +575,7 @@ export default function ListingView({
               <input
                 type="range"
                 min={1000}
-                max={150000}
+                max={maxCatalogPrice}
                 step={5000}
                 value={priceRange}
                 onChange={(e) => setPriceRange(Number(e.target.value))}
@@ -550,7 +583,7 @@ export default function ListingView({
               />
               <div className="flex justify-between text-[10px] text-[#2B1A16]/50 mt-1 font-sans">
                 <span>₹1,000</span>
-                <span>₹1,50,000</span>
+                <span>₹{maxCatalogPrice.toLocaleString('en-IN')}</span>
               </div>
             </div>
 
@@ -637,10 +670,10 @@ export default function ListingView({
                   <SlidersHorizontal className="w-8 h-8 opacity-70" />
                 </div>
                 <h3 className="font-serif text-2xl font-semibold text-[#2B1A16] mb-2">
-                  No garments match your filters
+                  No hardware devices match your filters
                 </h3>
                 <p className="text-xs sm:text-sm text-[#2B1A16]/70 max-w-md mx-auto mb-6 font-sans">
-                  Try adjusting your price range, clearing selected shades or sizes to explore more pieces from our catalog.
+                  Try adjusting your price range, clearing selected subcategories, finishes or specs to explore more hardware from our catalog.
                 </p>
                 <button
                   type="button"
@@ -773,7 +806,7 @@ export default function ListingView({
                 <input
                   type="range"
                   min={1000}
-                  max={150000}
+                  max={maxCatalogPrice}
                   step={5000}
                   value={priceRange}
                   onChange={(e) => setPriceRange(Number(e.target.value))}

@@ -5,10 +5,40 @@ import Link from 'next/link';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import ProductCard from '@/components/product/ProductCard';
 import { PRODUCTS } from '@/data/products';
+import { useProductStore } from '@/store/productStore';
+import { useCMSStore, DEFAULT_CMS_DATA } from '@/store/cmsStore';
+import { useIsMounted } from '@/hooks/useIsMounted';
 
 export default function NewArrivalsCarousel() {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const newProducts = PRODUCTS.filter((p) => p.isNew).slice(0, 10);
+  const isMounted = useIsMounted();
+
+  const storeProducts = useProductStore((state) => state.products);
+  const catalog = isMounted ? storeProducts : PRODUCTS;
+
+  const cmsNewArrivals = useCMSStore((state) => state.cms.newArrivals);
+  const config = isMounted ? cmsNewArrivals : DEFAULT_CMS_DATA.newArrivals;
+
+  if (!config.enabled) {
+    return null;
+  }
+
+  // Filter products based on mode
+  let productsToDisplay = catalog;
+  if (config.selectionMode === 'manual' && config.manualProductIds && config.manualProductIds.length > 0) {
+    productsToDisplay = config.manualProductIds
+      .map((id) => catalog.find((p) => p.id === id))
+      .filter((p): p is typeof catalog[0] => Boolean(p));
+  } else {
+    productsToDisplay = catalog.filter((p) => p.isNew);
+  }
+
+  // Fallback if empty
+  if (productsToDisplay.length === 0) {
+    productsToDisplay = catalog.slice(0, config.displayCount || 8);
+  } else {
+    productsToDisplay = productsToDisplay.slice(0, config.displayCount || 10);
+  }
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
@@ -27,20 +57,22 @@ export default function NewArrivalsCarousel() {
         {/* Header with Navigation Controls */}
         <div className="flex items-end justify-between mb-10">
           <div>
-            <span className="text-xs uppercase tracking-[0.25em] text-[#9A8029] font-semibold block mb-2 font-sans">
-              FRESH OFF THE HARDWARE LAB
-            </span>
+            {config.eyebrow && (
+              <span className="text-xs uppercase tracking-[0.25em] text-[#9A8029] font-semibold block mb-2 font-sans">
+                {config.eyebrow}
+              </span>
+            )}
             <h2 className="font-sans text-3xl sm:text-4xl md:text-5xl font-bold text-[#2B1A16]">
-              Latest Releases
+              {config.title}
             </h2>
           </div>
 
           <div className="flex items-center gap-3">
             <Link
-              href="/shop?filter=new"
+              href={config.buttonUrl || '/shop?filter=new'}
               className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#2B1A16] hover:text-[#9A8029] transition-colors mr-4"
             >
-              View All ({newProducts.length}) <ArrowRight className="w-3.5 h-3.5" />
+              {config.buttonLabel || 'View All'} ({productsToDisplay.length}) <ArrowRight className="w-3.5 h-3.5" />
             </Link>
 
             <button
@@ -62,17 +94,15 @@ export default function NewArrivalsCarousel() {
           </div>
         </div>
 
-        {/* Carousel Row */}
+        {/* Horizontal Carousel */}
         <div
           ref={scrollRef}
-          className="flex gap-5 overflow-x-auto scrollbar-none pb-4 scroll-smooth -mx-4 px-4 sm:mx-0 sm:px-0"
-          style={{ scrollSnapType: 'x mandatory' }}
+          className="flex gap-4 sm:gap-6 overflow-x-auto scrollbar-none pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 scroll-smooth"
         >
-          {newProducts.map((product) => (
+          {productsToDisplay.map((product) => (
             <div
               key={product.id}
-              className="w-[260px] sm:w-[290px] md:w-[310px] shrink-0"
-              style={{ scrollSnapAlign: 'start' }}
+              className="w-[260px] sm:w-[280px] md:w-[300px] shrink-0"
             >
               <ProductCard product={product} />
             </div>
