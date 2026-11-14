@@ -146,7 +146,7 @@ export default function AdminInquiriesTab() {
             className="px-3.5 py-2 rounded-xl bg-white hover:bg-rose-50 border border-[#DDD2C0] text-rose-700 font-semibold text-xs flex items-center gap-1.5 transition-colors"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset Demo</span>
+            <span>Reset Inbox</span>
           </button>
         </div>
       </div>
@@ -557,7 +557,7 @@ export default function AdminInquiriesTab() {
         </div>
       )}
 
-      {/* Reset Demo Confirmation Modal */}
+      {/* Reset Inquiries Confirmation Modal */}
       {showResetConfirm && (
         <div className="fixed inset-0 z-50 bg-[#2B1A16]/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white border border-[#E5E0D8] max-w-md w-full rounded-2xl p-6 shadow-2xl">
@@ -570,7 +570,7 @@ export default function AdminInquiriesTab() {
               </h4>
             </div>
             <p className="text-xs text-[#2B1A16]/80 leading-relaxed mb-4">
-              This will restore the support inbox to the initial demo customer emails and warranty tickets.
+              This will restore the support inbox to the initial seed customer inquiries and warranty tickets.
             </p>
             <div className="flex justify-end gap-2.5">
               <button
@@ -584,7 +584,7 @@ export default function AdminInquiriesTab() {
                 type="button"
                 onClick={() => {
                   resetToDefaults();
-                  addToast('Reset support inbox to demo emails', 'info');
+                  addToast('Support inbox records reset successfully', 'info');
                   setShowResetConfirm(false);
                 }}
                 className="px-4 py-2 rounded-xl bg-[#2B1A16] hover:bg-[#9A8029] text-white text-xs font-semibold uppercase tracking-wider"

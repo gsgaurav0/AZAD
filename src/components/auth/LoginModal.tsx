@@ -113,8 +113,8 @@ export default function LoginModal() {
       return;
     }
 
-    if (entered !== generatedOtp && entered !== '123456') {
-      setError('Invalid OTP code. Please enter the generated code or 123456.');
+    if (entered !== generatedOtp) {
+      setError('Invalid OTP code. Please enter the generated authentication code.');
       return;
     }
 

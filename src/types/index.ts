@@ -114,6 +114,16 @@ export interface UserProfile {
   memberTier: string;
   joinedDate: string;
   avatarUrl?: string;
+  headline?: string;
+  company?: string;
+  industry?: string;
+  bio?: string;
+  gstNumber?: string;
+  preferredDeliveryTime?: 'Anytime' | 'Morning (9 AM - 1 PM)' | 'Afternoon (1 PM - 6 PM)' | 'Evening (6 PM - 9 PM)' | 'Weekends Only';
+  isEmailVerified?: boolean;
+  isPhoneVerified?: boolean;
+  communicationEmail?: boolean;
+  communicationSms?: boolean;
 }
 
 export interface FilterState {

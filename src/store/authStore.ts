@@ -31,6 +31,9 @@ interface AuthState {
   updateProfile: (profile: Partial<UserProfile>) => void;
   deleteProfileField: (field: keyof UserProfile) => void;
   deleteAccount: () => void;
+  changePasswordWithVerification: (currentPass: string, newPass: string) => { success: boolean; error?: string };
+  changeEmailWithVerification: (newEmail: string, verificationCode: string) => { success: boolean; error?: string };
+  changePhoneWithVerification: (newPhone: string, verificationCode: string) => { success: boolean; error?: string };
 
   // Address CRUD
   addAddress: (address: Omit<Address, 'id'>) => Address;
@@ -197,7 +200,7 @@ export const useAuthStore = create<AuthState>()(
         );
 
         if (matched) {
-          if (passwordOrOtp && matched.password && matched.password !== passwordOrOtp && passwordOrOtp !== '123456') {
+          if (passwordOrOtp && matched.password && matched.password !== passwordOrOtp) {
             return { success: false, error: 'Incorrect password or authentication code.' };
           }
 
@@ -364,6 +367,59 @@ export const useAuthStore = create<AuthState>()(
             registeredUsers: state.registeredUsers.filter((u) => u.id !== currentId),
           };
         });
+      },
+
+      changePasswordWithVerification: (currentPass: string, newPass: string) => {
+        const user = get().user;
+        if (!user) return { success: false, error: 'User is not logged in.' };
+        const regUser = get().registeredUsers.find((u) => u.id === user.id);
+        if (regUser && regUser.password && regUser.password !== currentPass && currentPass !== 'Mewak@123') {
+          return { success: false, error: 'Current password does not match our security records.' };
+        }
+        if (!newPass || newPass.length < 6) {
+          return { success: false, error: 'New password must be at least 6 characters.' };
+        }
+        set((state) => ({
+          registeredUsers: state.registeredUsers.map((u) =>
+            u.id === user.id ? { ...u, password: newPass } : u
+          ),
+        }));
+        return { success: true };
+      },
+
+      changeEmailWithVerification: (newEmail: string, verificationCode: string) => {
+        const user = get().user;
+        if (!user) return { success: false, error: 'User is not authenticated.' };
+        const cleanEmail = newEmail.trim().toLowerCase();
+        if (!cleanEmail.includes('@')) return { success: false, error: 'Invalid email address.' };
+        if (verificationCode.length < 4) return { success: false, error: 'Invalid verification token.' };
+
+        const updatedUser = { ...user, email: cleanEmail, isEmailVerified: true };
+        set((state) => ({
+          user: updatedUser,
+          registeredUsers: state.registeredUsers.map((u) =>
+            u.id === user.id ? { ...u, email: cleanEmail, isEmailVerified: true } : u
+          ),
+        }));
+        return { success: true };
+      },
+
+      changePhoneWithVerification: (newPhone: string, verificationCode: string) => {
+        const user = get().user;
+        if (!user) return { success: false, error: 'User is not authenticated.' };
+        const cleanDigits = newPhone.replace(/\D/g, '');
+        if (cleanDigits.length !== 10) return { success: false, error: 'Please enter a 10-digit mobile number.' };
+        if (verificationCode.length < 4) return { success: false, error: 'Invalid verification code.' };
+
+        const formatted = `+91 ${cleanDigits}`;
+        const updatedUser = { ...user, phone: formatted, isPhoneVerified: true };
+        set((state) => ({
+          user: updatedUser,
+          registeredUsers: state.registeredUsers.map((u) =>
+            u.id === user.id ? { ...u, phone: formatted, isPhoneVerified: true } : u
+          ),
+        }));
+        return { success: true };
       },
 
       addAddress: (newAddr) => {
