@@ -421,10 +421,6 @@ export default function AccountPage() {
                   <h1 className="font-serif text-2xl sm:text-3xl font-semibold text-[#2B1A16]">
                     {user.name}
                   </h1>
-                  <span className="inline-flex items-center gap-1 text-[10px] bg-[#9A8029]/15 text-[#9A8029] font-bold px-2.5 py-0.5 rounded-[2px] uppercase">
-                    <BadgeCheck className="w-3 h-3 text-[#9A8029]" />
-                    {user.memberTier || 'Gold Patron Member'}
-                  </span>
                 </div>
 
                 <p className="text-xs text-[#2B1A16]/80 font-medium">
@@ -781,19 +777,27 @@ export default function AccountPage() {
                 </div>
               </div>
 
-              {/* Patron Privilege Card */}
-              <div className="bg-[#9A8029]/10 border border-[#9A8029]/30 rounded-[4px] p-6 space-y-3 text-xs">
+              {/* Account Overview Card */}
+              <div className="bg-[#FAF8F5] border border-[#DDD2C0] rounded-[4px] p-6 space-y-3 text-xs">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-[#9A8029]" />
+                  <Clock className="w-4 h-4 text-[#9A8029]" />
                   <h4 className="font-serif text-base font-bold text-[#2B1A16]">
-                    {user.memberTier || 'Gold Patron Member'}
+                    Account Summary
                   </h4>
                 </div>
-                <p className="text-[#2B1A16]/80 leading-relaxed text-xs">
-                  You enjoy complimentary express air dispatch, 15-day risk-free diagnostic home trial, and direct hardware concierge line.
-                </p>
-                <div className="pt-2 border-t border-[#9A8029]/20 text-[11px] text-[#2B1A16]/70">
-                  Account Active Since <strong>{user.joinedDate}</strong>
+                <div className="space-y-2 text-xs text-[#2B1A16]/80 pt-1">
+                  <div className="flex justify-between py-1 border-b border-[#DDD2C0]/50">
+                    <span className="text-[#2B1A16]/60">Registered On</span>
+                    <strong className="text-[#2B1A16]">{user.joinedDate}</strong>
+                  </div>
+                  <div className="flex justify-between py-1 border-b border-[#DDD2C0]/50">
+                    <span className="text-[#2B1A16]/60">Total Orders</span>
+                    <strong className="text-[#2B1A16]">{orders.length}</strong>
+                  </div>
+                  <div className="flex justify-between py-1">
+                    <span className="text-[#2B1A16]/60">Saved Destinations</span>
+                    <strong className="text-[#2B1A16]">{savedAddresses.length}</strong>
+                  </div>
                 </div>
               </div>
 
