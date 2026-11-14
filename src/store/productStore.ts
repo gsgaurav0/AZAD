@@ -246,7 +246,7 @@ if (typeof window !== 'undefined') {
     }
   });
 
-  // Listen for BroadcastChannel updates from other tabs
+  // BroadcastChannel and storage event updates for other tabs only
   if ('BroadcastChannel' in window) {
     try {
       const channel = new BroadcastChannel('mewak_catalog_channel');
@@ -259,9 +259,4 @@ if (typeof window !== 'undefined') {
       // Ignore broadcast channel errors in restricted environments
     }
   }
-
-  // Listen for same-tab custom sync event
-  window.addEventListener(SYNC_EVENT, () => {
-    useProductStore.persist.rehydrate();
-  });
 }

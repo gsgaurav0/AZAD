@@ -29,15 +29,13 @@ export default function TrendingGrid() {
       .map((id) => catalog.find((p) => p.id === id))
       .filter((p): p is typeof catalog[0] => Boolean(p));
   } else {
-    productsToDisplay = catalog.filter((p) => p.isTrending);
+    const trendingItems = catalog.filter((p) => p.isTrending);
+    const otherItems = catalog.filter((p) => !p.isTrending);
+    productsToDisplay = [...trendingItems, ...otherItems];
   }
 
-  // Fallback if empty
-  if (productsToDisplay.length === 0) {
-    productsToDisplay = catalog.slice(0, config.displayCount || 8);
-  } else {
-    productsToDisplay = productsToDisplay.slice(0, config.displayCount || 8);
-  }
+  // Display count
+  productsToDisplay = productsToDisplay.slice(0, config.displayCount || 8);
 
   return (
     <section className="py-20 bg-[#EFE8DD] border-b border-[#DDD2C0]">

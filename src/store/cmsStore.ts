@@ -477,9 +477,5 @@ if (typeof window !== 'undefined') {
       // Ignore
     }
   }
-
-  window.addEventListener(SYNC_EVENT, () => {
-    useCMSStore.persist.rehydrate();
-  });
 }
 

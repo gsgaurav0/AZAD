@@ -4,26 +4,36 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Sparkles, PhoneCall, ChevronRight } from 'lucide-react';
-
-const MESSAGES = [
-  'Complimentary Express Courier Shipping on all orders above ₹999',
-  '15-Day Risk-Free Replacement & 2-Year Official Brand Warranty',
-  'Exclusive Launch Discount: Use code MEWAK10 for 10% Off',
-  'Next-Gen Audio, Flagship Smartphones & Connected Wearables',
-];
+import { useCMSStore, DEFAULT_CMS_DATA } from '@/store/cmsStore';
+import { useIsMounted } from '@/hooks/useIsMounted';
 
 export default function AnnouncementBar() {
   const pathname = usePathname();
+  const isMounted = useIsMounted();
+  const cmsAnnouncement = useCMSStore((state) => state.cms.announcement);
+  const config = isMounted ? cmsAnnouncement : DEFAULT_CMS_DATA.announcement;
+
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  const messages = [
+    config.message || DEFAULT_CMS_DATA.announcement.message,
+    'Complimentary Express Air Logistics on all orders above ₹999',
+    '15-Day Risk-Free Replacement & 2-Year Official Brand Warranty',
+    'Exclusive Launch Privilege: Use code MEWAK10 for 10% Off',
+  ];
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % MESSAGES.length);
+      setCurrentIndex((prev) => (prev + 1) % messages.length);
     }, 4500);
     return () => clearInterval(timer);
-  }, []);
+  }, [messages.length]);
 
   if (pathname.startsWith('/admin') || pathname.startsWith('/superadmin')) {
+    return null;
+  }
+
+  if (!config.enabled) {
     return null;
   }
 
@@ -34,11 +44,11 @@ export default function AnnouncementBar() {
         <div className="hidden lg:flex items-center gap-4 text-[11px] tracking-wider uppercase text-[#EFE8DD]/70">
           <span className="flex items-center gap-1.5 hover:text-[#9A8029] transition-colors">
             <PhoneCall className="w-3 h-3 text-[#9A8029]" />
-            Tech Support & Care: +91 98765 43210
+            Official Hardware Concierge
           </span>
           <span className="text-[#DDD2C0]/30">•</span>
           <span className="text-[#9A8029] font-medium tracking-widest">
-            AUTHENTIC BRAND WARRANTY
+            {config.badge || 'AUTHENTIC BRAND WARRANTY'}
           </span>
         </div>
 
@@ -50,13 +60,13 @@ export default function AnnouncementBar() {
           >
             <Sparkles className="w-3 h-3 text-[#9A8029] shrink-0" />
             <span className="font-medium text-[#EFE8DD]">
-              {MESSAGES[currentIndex]}
+              {messages[currentIndex]}
             </span>
             <Link
-              href="/shop"
+              href={config.linkUrl || '/shop'}
               className="hidden sm:inline-flex items-center gap-0.5 text-[#9A8029] hover:underline ml-1 font-semibold"
             >
-              Shop Now <ChevronRight className="w-3 h-3" />
+              {config.linkText || 'Shop Now'} <ChevronRight className="w-3 h-3" />
             </Link>
           </div>
         </div>

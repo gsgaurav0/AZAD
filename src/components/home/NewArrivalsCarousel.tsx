@@ -30,14 +30,16 @@ export default function NewArrivalsCarousel() {
       .map((id) => catalog.find((p) => p.id === id))
       .filter((p): p is typeof catalog[0] => Boolean(p));
   } else {
-    productsToDisplay = catalog.filter((p) => p.isNew);
+    const newItems = catalog.filter((p) => p.isNew);
+    const otherItems = catalog.filter((p) => !p.isNew);
+    productsToDisplay = [...newItems, ...otherItems];
   }
 
   // Fallback if empty
   if (productsToDisplay.length === 0) {
-    productsToDisplay = catalog.slice(0, config.displayCount || 8);
+    productsToDisplay = catalog.slice(0, config.displayCount || 10);
   } else {
-    productsToDisplay = productsToDisplay.slice(0, config.displayCount || 10);
+    productsToDisplay = productsToDisplay.slice(0, Math.max(config.displayCount || 10, 8));
   }
 
   const scroll = (direction: 'left' | 'right') => {
