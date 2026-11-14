@@ -17,6 +17,7 @@ import {
 import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
 import { useUIStore } from '@/store/uiStore';
+import { useCouponStore } from '@/store/couponStore';
 
 export default function CartPage() {
   const [couponInput, setCouponInput] = useState('');
@@ -40,6 +41,7 @@ export default function CartPage() {
 
   const toggleWishlist = useWishlistStore((state) => state.toggleWishlist);
   const addToast = useUIStore((state) => state.addToast);
+  const availableCoupons = useCouponStore((state) => state.coupons).filter((c) => c.isActive);
 
   const subtotal = getSubtotal();
   const shipping = getShippingFee();
@@ -335,29 +337,31 @@ export default function CartPage() {
                   )}
 
                   {/* Quick Click-to-Apply Coupons */}
-                  {!appliedCoupon && (
+                  {!appliedCoupon && availableCoupons.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mt-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const res = applyCoupon('MEWAK10');
-                          if (res.success) addToast(res.message, 'success');
-                        }}
-                        className="text-[10px] bg-[#EFE8DD] hover:bg-[#DDD2C0] text-[#2B1A16] px-2 py-0.5 rounded-[2px] border border-[#DDD2C0]"
-                      >
-                        Use <strong>MEWAK10</strong> (10% Off)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const res = applyCoupon('WELCOME50');
-                          if (res.success) addToast(res.message, 'success');
-                          else setCouponError(res.message);
-                        }}
-                        className="text-[10px] bg-[#EFE8DD] hover:bg-[#DDD2C0] text-[#2B1A16] px-2 py-0.5 rounded-[2px] border border-[#DDD2C0]"
-                      >
-                        Use <strong>WELCOME50</strong> (₹500 Off &gt; ₹1999)
-                      </button>
+                      {availableCoupons.map((cp) => (
+                        <button
+                          key={cp.id}
+                          type="button"
+                          onClick={() => {
+                            const res = applyCoupon(cp.code);
+                            if (res.success) {
+                              addToast(res.message, 'success');
+                              setCouponError('');
+                            } else {
+                              setCouponError(res.message);
+                            }
+                          }}
+                          className="text-[10px] bg-[#EFE8DD] hover:bg-[#DDD2C0] text-[#2B1A16] px-2.5 py-1 rounded-[2px] border border-[#DDD2C0] transition-colors flex items-center gap-1 font-mono"
+                          title={cp.description}
+                        >
+                          <Tag className="w-2.5 h-2.5 text-[#9A8029]" />
+                          <strong>{cp.code}</strong>
+                          <span className="text-[#9A8029] font-sans">
+                            ({cp.discountType === 'percentage' ? `${cp.discountValue}%` : `₹${cp.discountValue}`} Off)
+                          </span>
+                        </button>
+                      ))}
                     </div>
                   )}
                 </div>

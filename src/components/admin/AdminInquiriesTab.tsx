@@ -34,6 +34,8 @@ export default function AdminInquiriesTab() {
   const [typeFilter, setTypeFilter] = useState<InquiryType | 'all'>('all');
   const [selectedInquiry, setSelectedInquiry] = useState<SupportInquiry | null>(null);
   const [replyText, setReplyText] = useState('');
+  const [inquiryToDelete, setInquiryToDelete] = useState<SupportInquiry | null>(null);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   // Filtered inquiries
   const filtered = useMemo(() => {
@@ -140,12 +142,7 @@ export default function AdminInquiriesTab() {
 
           <button
             type="button"
-            onClick={() => {
-              if (window.confirm('Reset inbox to demo customer emails?')) {
-                resetToDefaults();
-                addToast('Reset support inbox to demo emails', 'info');
-              }
-            }}
+            onClick={() => setShowResetConfirm(true)}
             className="px-3.5 py-2 rounded-xl bg-white hover:bg-rose-50 border border-[#DDD2C0] text-rose-700 font-semibold text-xs flex items-center gap-1.5 transition-colors"
           >
             <RotateCcw className="w-3.5 h-3.5" />
@@ -273,13 +270,11 @@ export default function AdminInquiriesTab() {
                           </button>
                           <button
                             type="button"
-                            onClick={() => {
-                              if (window.confirm(`Delete inquiry #${inq.id}?`)) {
-                                deleteInquiry(inq.id);
-                                addToast(`Removed inquiry #${inq.id}`, 'info');
-                              }
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setInquiryToDelete(inq);
                             }}
-                            className="p-1.5 rounded-lg border border-[#DDD2C0] hover:bg-rose-50 text-rose-600"
+                            className="p-1.5 rounded-lg border border-[#DDD2C0] hover:bg-rose-50 text-rose-600 transition-colors"
                             title="Delete"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -324,20 +319,25 @@ export default function AdminInquiriesTab() {
                       <span className="font-semibold text-[#2B1A16] block">{inq.name}</span>
                       <span className="text-[11px]">{inq.email}</span>
                     </div>
-                    <div className="text-right">
-                      <span className="text-[10px] uppercase font-mono block">
-                        {new Date(inq.createdAt).toLocaleDateString('en-IN', {
-                          day: 'numeric',
-                          month: 'short',
-                        })}
-                      </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setInquiryToDelete(inq);
+                        }}
+                        className="p-1.5 text-rose-600 rounded-lg border border-rose-200 bg-rose-50/50 hover:bg-rose-100 transition-colors"
+                        title="Delete Inquiry"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedInquiry(inq);
                         }}
-                        className="text-[#9A8029] font-bold text-xs underline mt-0.5 inline-block"
+                        className="text-[#9A8029] font-bold text-xs underline inline-block"
                       >
                         View & Reply
                       </button>
@@ -468,18 +468,29 @@ export default function AdminInquiriesTab() {
                   placeholder="Type official response, warranty instructions, or doorstep dispatch schedule..."
                   className="w-full bg-[#FAF8F5] border border-[#DDD2C0] focus:border-[#9A8029] focus:bg-white rounded-xl p-3 text-xs outline-none"
                 />
-                <div className="flex items-center justify-between">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      updateInquiryStatus(selectedInquiry.id, 'resolved');
-                      setSelectedInquiry({ ...selectedInquiry, status: 'resolved' });
-                      addToast(`Marked #${selectedInquiry.id} as resolved`, 'info');
-                    }}
-                    className="px-3.5 py-2 rounded-xl border border-[#DDD2C0] text-[#2B1A16] font-semibold text-xs hover:bg-[#FAF8F5]"
-                  >
-                    Mark as Resolved
-                  </button>
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        updateInquiryStatus(selectedInquiry.id, 'resolved');
+                        setSelectedInquiry({ ...selectedInquiry, status: 'resolved' });
+                        addToast(`Marked #${selectedInquiry.id} as resolved`, 'info');
+                      }}
+                      className="px-3.5 py-2 rounded-xl border border-[#DDD2C0] text-[#2B1A16] font-semibold text-xs hover:bg-[#FAF8F5]"
+                    >
+                      Mark as Resolved
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setInquiryToDelete(selectedInquiry)}
+                      className="px-3.5 py-2 rounded-xl border border-rose-200 text-rose-600 font-semibold text-xs hover:bg-rose-50 flex items-center gap-1.5"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Delete</span>
+                    </button>
+                  </div>
 
                   <button
                     type="submit"
@@ -490,6 +501,96 @@ export default function AdminInquiriesTab() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Luxury Delete Confirmation Modal (NO window.confirm) */}
+      {inquiryToDelete && (
+        <div className="fixed inset-0 z-50 bg-[#2B1A16]/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white border border-[#E5E0D8] max-w-md w-full rounded-2xl p-6 shadow-2xl">
+            <div className="flex items-center gap-3 text-rose-600 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="font-serif text-lg font-bold text-[#2B1A16]">
+                  Delete Customer Inquiry?
+                </h4>
+                <span className="font-mono text-xs text-[#9A8029] font-bold">
+                  #{inquiryToDelete.id}
+                </span>
+              </div>
+            </div>
+
+            <p className="text-xs text-[#2B1A16]/80 leading-relaxed mb-4">
+              Are you sure you want to permanently delete this inquiry from{' '}
+              <strong className="text-[#2B1A16]">{inquiryToDelete.name}</strong> ({inquiryToDelete.email}) regarding{' '}
+              <span className="italic">&ldquo;{inquiryToDelete.subject}&rdquo;</span>? This action cannot be undone.
+            </p>
+
+            <div className="flex justify-end gap-2.5">
+              <button
+                type="button"
+                onClick={() => setInquiryToDelete(null)}
+                className="px-4 py-2 rounded-xl border border-[#DDD2C0] hover:bg-[#FAF8F5] text-xs font-semibold text-[#2B1A16]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  deleteInquiry(inquiryToDelete.id);
+                  addToast(`Permanently deleted inquiry #${inquiryToDelete.id}`, 'info');
+                  if (selectedInquiry?.id === inquiryToDelete.id) {
+                    setSelectedInquiry(null);
+                  }
+                  setInquiryToDelete(null);
+                }}
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold uppercase tracking-wider shadow-sm"
+              >
+                Confirm Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reset Demo Confirmation Modal */}
+      {showResetConfirm && (
+        <div className="fixed inset-0 z-50 bg-[#2B1A16]/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white border border-[#E5E0D8] max-w-md w-full rounded-2xl p-6 shadow-2xl">
+            <div className="flex items-center gap-3 text-[#9A8029] mb-3">
+              <div className="w-10 h-10 rounded-xl bg-[#9A8029]/10 flex items-center justify-center">
+                <RotateCcw className="w-5 h-5" />
+              </div>
+              <h4 className="font-serif text-lg font-bold text-[#2B1A16]">
+                Reset Support Inbox?
+              </h4>
+            </div>
+            <p className="text-xs text-[#2B1A16]/80 leading-relaxed mb-4">
+              This will restore the support inbox to the initial demo customer emails and warranty tickets.
+            </p>
+            <div className="flex justify-end gap-2.5">
+              <button
+                type="button"
+                onClick={() => setShowResetConfirm(false)}
+                className="px-4 py-2 rounded-xl border border-[#DDD2C0] hover:bg-[#FAF8F5] text-xs font-semibold text-[#2B1A16]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  resetToDefaults();
+                  addToast('Reset support inbox to demo emails', 'info');
+                  setShowResetConfirm(false);
+                }}
+                className="px-4 py-2 rounded-xl bg-[#2B1A16] hover:bg-[#9A8029] text-white text-xs font-semibold uppercase tracking-wider"
+              >
+                Confirm Reset
+              </button>
             </div>
           </div>
         </div>

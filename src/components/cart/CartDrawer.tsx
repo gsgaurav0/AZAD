@@ -19,6 +19,7 @@ import {
 import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
 import { useUIStore } from '@/store/uiStore';
+import { useCouponStore } from '@/store/couponStore';
 
 export default function CartDrawer() {
   const router = useRouter();
@@ -44,6 +45,7 @@ export default function CartDrawer() {
 
   const toggleWishlist = useWishlistStore((state) => state.toggleWishlist);
   const addToast = useUIStore((state) => state.addToast);
+  const availableCoupons = useCouponStore((state) => state.coupons).filter((c) => c.isActive);
 
   if (!isCartOpen) return null;
 
@@ -325,6 +327,35 @@ export default function CartDrawer() {
               )}
               {couponError && (
                 <p className="text-[11px] text-[#B3402F]">{couponError}</p>
+              )}
+
+              {/* Quick Click-to-Apply Active Coupons */}
+              {!appliedCoupon && availableCoupons.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {availableCoupons.slice(0, 3).map((cp) => (
+                    <button
+                      key={cp.id}
+                      type="button"
+                      onClick={() => {
+                        const res = applyCoupon(cp.code);
+                        if (res.success) {
+                          addToast(res.message, 'success');
+                          setCouponError('');
+                        } else {
+                          setCouponError(res.message);
+                        }
+                      }}
+                      className="text-[10px] bg-[#EFE8DD] hover:bg-[#DDD2C0] text-[#2B1A16] px-2 py-0.5 rounded-[2px] border border-[#DDD2C0] transition-colors flex items-center gap-1 font-mono"
+                      title={cp.description}
+                    >
+                      <Tag className="w-2.5 h-2.5 text-[#9A8029]" />
+                      <strong>{cp.code}</strong>
+                      <span className="text-[#9A8029] font-sans">
+                        ({cp.discountType === 'percentage' ? `${cp.discountValue}%` : `₹${cp.discountValue}`})
+                      </span>
+                    </button>
+                  ))}
+                </div>
               )}
 
               {/* Price Breakdown */}

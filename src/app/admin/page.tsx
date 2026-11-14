@@ -11,12 +11,14 @@ import {
   Layers,
   Mail,
   Star,
+  Tag,
 } from 'lucide-react';
 import Logo from '@/components/common/Logo';
 import { useProductStore } from '@/store/productStore';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
 import { useInquiryStore } from '@/store/inquiryStore';
+import { useCouponStore } from '@/store/couponStore';
 import { useIsMounted } from '@/hooks/useIsMounted';
 import { Product, Order, OrderStatus } from '@/types';
 
@@ -27,6 +29,7 @@ import AdminAnalyticsTab from '@/components/admin/AdminAnalyticsTab';
 import AdminStorefrontTab from '@/components/admin/AdminStorefrontTab';
 import AdminInquiriesTab from '@/components/admin/AdminInquiriesTab';
 import AdminReviewsTab from '@/components/admin/AdminReviewsTab';
+import AdminCouponsTab from '@/components/admin/AdminCouponsTab';
 import AdminProductModal from '@/components/admin/AdminProductModal';
 import AdminOrderDetailModal from '@/components/admin/AdminOrderDetailModal';
 import AdminCreateOrderModal from '@/components/admin/AdminCreateOrderModal';
@@ -60,7 +63,7 @@ export default function AdminPage() {
   };
 
   // Active Tab
-  type AdminTab = 'products' | 'orders' | 'inquiries' | 'reviews' | 'sections' | 'analytics';
+  type AdminTab = 'products' | 'orders' | 'coupons' | 'inquiries' | 'reviews' | 'sections' | 'analytics';
   const [activeTab, setActiveTab] = useState<AdminTab>('products');
 
   // Stores
@@ -86,6 +89,8 @@ export default function AdminPage() {
   const inquiries = useInquiryStore((state) => state.inquiries);
   const unreadInquiriesCount = inquiries.filter((i) => i.status === 'new').length;
   const totalReviewsCount = products.reduce((acc, p) => acc + (p.reviews?.length || 0), 0);
+  const coupons = useCouponStore((state) => state.coupons);
+  const activeCouponsCount = coupons.filter((c) => c.isActive).length;
 
   // Modals state
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
@@ -276,6 +281,22 @@ export default function AdminPage() {
               </span>
             </button>
 
+            {/* Discounts & Promo Codes */}
+            <button
+              onClick={() => setActiveTab('coupons')}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all whitespace-nowrap shrink-0 ${
+                activeTab === 'coupons'
+                  ? 'bg-[#2B1A16] text-[#EFE8DD] shadow-sm'
+                  : 'text-[#2B1A16]/60 hover:text-[#2B1A16]'
+              }`}
+            >
+              <Tag className="w-3.5 h-3.5 text-[#9A8029]" />
+              <span>Discounts</span>
+              <span className="bg-[#9A8029]/20 text-[#9A8029] text-[10px] font-mono px-2 py-0.5 rounded-full font-bold">
+                {activeCouponsCount}
+              </span>
+            </button>
+
             {/* Received Emails & Support Tickets */}
             <button
               onClick={() => setActiveTab('inquiries')}
@@ -370,6 +391,11 @@ export default function AdminPage() {
             onDeleteOrder={handleDeleteOrder}
             onResetOrders={resetOrdersToDefault}
           />
+        )}
+
+        {/* Tab 3: Discounts & Promo Codes Management */}
+        {activeTab === 'coupons' && (
+          <AdminCouponsTab />
         )}
 
         {/* Tab 3: Received Emails & Support Tickets Inbox */}

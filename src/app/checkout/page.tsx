@@ -17,6 +17,7 @@ import {
 import { useCartStore } from '@/store/cartStore';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
+import { useCouponStore } from '@/store/couponStore';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -116,6 +117,10 @@ export default function CheckoutPage() {
         address: selectedAddress,
         paymentMethod,
       });
+
+      if (appliedCoupon) {
+        useCouponStore.getState().incrementUsage(appliedCoupon);
+      }
 
       clearCart();
       setIsPlacingOrder(false);

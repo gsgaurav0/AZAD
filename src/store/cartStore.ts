@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { CartItem, Product } from '@/types';
+import { useCouponStore } from '@/store/couponStore';
 
 interface CartState {
   items: CartItem[];
@@ -112,40 +113,39 @@ export const useCartStore = create<CartState>()(
       },
 
       applyCoupon: (rawCode: string) => {
-        const code = rawCode.trim().toUpperCase();
         const subtotal = get().getSubtotal();
+        const result = useCouponStore.getState().validateCoupon(rawCode, subtotal);
 
-        if (code === 'AZAD10' || code === 'MEWAK10') {
-          set({
-            appliedCoupon: code,
-            couponDiscountPercent: 10,
-            couponDiscountFlat: 0,
-          });
-          return { success: true, message: `Coupon ${code} applied: 10% Off!` };
-        }
-
-        if (code === 'WELCOME50') {
-          if (subtotal < 1999) {
-            return {
-              success: false,
-              message: 'Coupon WELCOME50 requires a minimum order of ₹1,999.',
-            };
-          }
-          set({
-            appliedCoupon: 'WELCOME50',
-            couponDiscountPercent: 0,
-            couponDiscountFlat: 500,
-          });
+        if (!result.valid || !result.coupon) {
           return {
-            success: true,
-            message: 'Coupon WELCOME50 applied: ₹500 Instant Discount!',
+            success: false,
+            message: result.error || 'Invalid promo code. Verify code or active promotions.',
           };
         }
 
-        return {
-          success: false,
-          message: 'Invalid promo code. Try MEWAK10 or WELCOME50.',
-        };
+        const coupon = result.coupon;
+        if (coupon.discountType === 'percentage') {
+          set({
+            appliedCoupon: coupon.code,
+            couponDiscountPercent: coupon.discountValue,
+            couponDiscountFlat: 0,
+          });
+          const capText = coupon.maxDiscount ? ` (capped at ₹${coupon.maxDiscount.toLocaleString('en-IN')})` : '';
+          return {
+            success: true,
+            message: `Coupon "${coupon.code}" applied: ${coupon.discountValue}% Off${capText}!`,
+          };
+        } else {
+          set({
+            appliedCoupon: coupon.code,
+            couponDiscountPercent: 0,
+            couponDiscountFlat: coupon.discountValue,
+          });
+          return {
+            success: true,
+            message: `Coupon "${coupon.code}" applied: ₹${coupon.discountValue.toLocaleString('en-IN')} Flat Discount!`,
+          };
+        }
       },
 
       removeCoupon: () => {
@@ -172,10 +172,21 @@ export const useCartStore = create<CartState>()(
       },
 
       getCouponDiscount: () => {
-        const { couponDiscountPercent, couponDiscountFlat } = get();
+        const { appliedCoupon, couponDiscountPercent, couponDiscountFlat } = get();
         const subtotal = get().getSubtotal();
+        if (subtotal === 0) return 0;
+
         if (couponDiscountPercent > 0) {
-          return Math.round((subtotal * couponDiscountPercent) / 100);
+          let discount = Math.round((subtotal * couponDiscountPercent) / 100);
+          if (appliedCoupon) {
+            const found = useCouponStore.getState().coupons.find(
+              (c) => c.code.toUpperCase() === appliedCoupon.toUpperCase()
+            );
+            if (found?.maxDiscount && discount > found.maxDiscount) {
+              discount = found.maxDiscount;
+            }
+          }
+          return discount;
         }
         if (couponDiscountFlat > 0) {
           return Math.min(couponDiscountFlat, subtotal);
