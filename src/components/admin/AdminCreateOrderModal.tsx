@@ -151,12 +151,12 @@ export default function AdminCreateOrderModal({
     <div className="fixed inset-0 z-50 bg-[#2B1A16]/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 overflow-y-auto font-sans">
       <div className="bg-white border border-[#E5E0D8] w-full max-w-2xl rounded-2xl shadow-2xl my-6 overflow-hidden flex flex-col max-h-[92vh]">
         {/* Header */}
-        <div className="px-6 py-5 border-b border-[#E5E0D8] bg-[#FAF8F5] flex items-center justify-between">
+        <div className="px-4 sm:px-6 py-3.5 sm:py-5 border-b border-[#E5E0D8] bg-[#FAF8F5] flex items-center justify-between">
           <div>
             <span className="text-[10px] font-mono uppercase tracking-widest text-[#9A8029] bg-[#9A8029]/10 px-2.5 py-0.5 rounded font-bold">
               MANUAL PROVISIONING
             </span>
-            <h2 className="font-serif text-2xl font-bold text-[#2B1A16] mt-1">
+            <h2 className="font-serif text-lg sm:text-2xl font-bold text-[#2B1A16] mt-1">
               Create New Patron Order
             </h2>
           </div>
@@ -170,7 +170,7 @@ export default function AdminCreateOrderModal({
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-6 flex-1 text-xs">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1 text-xs">
           {/* Section 1: Item Selection */}
           <div className="space-y-4">
             <h3 className="font-bold uppercase tracking-wider text-[#2B1A16]/70 border-b border-[#E5E0D8] pb-2 flex items-center gap-2">

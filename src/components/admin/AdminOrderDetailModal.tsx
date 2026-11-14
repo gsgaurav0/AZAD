@@ -74,9 +74,9 @@ export default function AdminOrderDetailModal({
     <div className="fixed inset-0 z-50 bg-[#2B1A16]/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 overflow-y-auto font-sans">
       <div className="bg-white border border-[#E5E0D8] w-full max-w-4xl rounded-2xl shadow-2xl my-6 overflow-hidden flex flex-col max-h-[92vh]">
         {/* Header */}
-        <div className="px-6 py-5 border-b border-[#E5E0D8] bg-[#FAF8F5] flex items-center justify-between">
+        <div className="px-4 sm:px-6 py-3.5 sm:py-5 border-b border-[#E5E0D8] bg-[#FAF8F5] flex items-center justify-between">
           <div>
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
               <span className="font-mono text-xs uppercase tracking-wider text-[#9A8029] font-bold">
                 ORDER #{order.id}
               </span>
@@ -90,7 +90,7 @@ export default function AdminOrderDetailModal({
               <span className="text-[#DDD2C0]">•</span>
               <span className="text-xs text-[#2B1A16]/60">{order.date}</span>
             </div>
-            <h2 className="font-serif text-2xl font-bold text-[#2B1A16] mt-1">
+            <h2 className="font-serif text-lg sm:text-2xl font-bold text-[#2B1A16] mt-1">
               Fulfillment & Dispatch Inspection
             </h2>
           </div>
@@ -104,7 +104,7 @@ export default function AdminOrderDetailModal({
         </div>
 
         {/* Content Body */}
-        <div className="p-6 overflow-y-auto space-y-6 flex-1 text-xs">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1 text-xs">
           {/* Status Changer & Quick Actions Bar */}
           <div className="bg-[#FAF8F5] border border-[#DDD2C0] p-5 rounded-2xl">
             <h3 className="font-semibold text-[#2B1A16] mb-3 flex items-center justify-between">

@@ -392,7 +392,7 @@ export default function AdminProductModal({
     <div className="fixed inset-0 z-50 bg-[#2B1A16]/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
       <div className="bg-white border border-[#E5E0D8] w-full max-w-4xl rounded-2xl shadow-2xl my-6 overflow-hidden flex flex-col max-h-[92vh]">
         {/* Modal Top Header */}
-        <div className="px-6 py-5 border-b border-[#E5E0D8] bg-[#FAF8F5] flex items-center justify-between">
+        <div className="px-4 sm:px-6 py-3.5 sm:py-5 border-b border-[#E5E0D8] bg-[#FAF8F5] flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-mono uppercase tracking-widest text-[#9A8029] bg-[#9A8029]/10 px-2.5 py-0.5 rounded font-bold">
@@ -401,7 +401,7 @@ export default function AdminProductModal({
               <span className="text-[#DDD2C0]">•</span>
               <span className="text-xs text-[#2B1A16]/60 font-sans">Mewak Engine</span>
             </div>
-            <h2 className="font-serif text-2xl font-bold text-[#2B1A16] mt-1">
+            <h2 className="font-serif text-lg sm:text-2xl font-bold text-[#2B1A16] mt-1">
               {isEditing ? `Edit: ${productToEdit?.name}` : 'Provision New Product'}
             </h2>
           </div>
@@ -415,7 +415,7 @@ export default function AdminProductModal({
         </div>
 
         {/* Tab Navigation in Modal */}
-        <div className="flex items-center gap-1 px-6 pt-3 border-b border-[#E5E0D8] bg-[#FAF8F5] overflow-x-auto">
+        <div className="flex items-center gap-1 px-4 sm:px-6 pt-3 border-b border-[#E5E0D8] bg-[#FAF8F5] overflow-x-auto scrollbar-none flex-nowrap">
           {[
             { id: 'info', label: '1. Identity & Pricing', icon: DollarSign },
             { id: 'images', label: '2. Images & Cover', icon: ImageIcon },
