@@ -31,13 +31,13 @@ export default function AdminCreateOrderModal({
   );
 
   // Customer Details
-  const [customerName, setCustomerName] = useState('Devendra Chauhan');
-  const [customerPhone, setCustomerPhone] = useState('+91 98112 34567');
-  const [street, setStreet] = useState('Villa 14, The Magnolias, Golf Course Road');
-  const [locality, setLocality] = useState('Sector 42');
-  const [city, setCity] = useState('Gurugram');
-  const [state, setState] = useState('Haryana');
-  const [pincode, setPincode] = useState('122002');
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [street, setStreet] = useState('');
+  const [locality, setLocality] = useState('');
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('');
+  const [pincode, setPincode] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<
     'UPI' | 'Credit/Debit Card' | 'Net Banking' | 'Cash on Delivery'
   >('Credit/Debit Card');

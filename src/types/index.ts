@@ -78,11 +78,13 @@ export interface OrderStatusStep {
   status: OrderStatus;
   timestamp: string;
   note: string;
+  location?: string;
   completed: boolean;
 }
 
 export interface Order {
   id: string;
+  userId?: string;
   date: string;
   items: CartItem[];
   subtotal: number;
@@ -96,6 +98,22 @@ export interface Order {
   status: OrderStatus;
   statusHistory: OrderStatusStep[];
   trackingNumber: string;
+  courierPartner?: string;
+  estimatedDelivery?: string;
+  currentLocation?: string;
+}
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  alternatePhone?: string;
+  dateOfBirth?: string;
+  gender?: 'Male' | 'Female' | 'Non-Binary' | 'Prefer not to say';
+  memberTier: string;
+  joinedDate: string;
+  avatarUrl?: string;
 }
 
 export interface FilterState {

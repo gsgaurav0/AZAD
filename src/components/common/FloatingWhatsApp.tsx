@@ -19,7 +19,7 @@ export default function FloatingWhatsApp() {
   const isPDP = pathname.startsWith('/product/');
 
   const handleOpenWhatsApp = () => {
-    const phoneNumber = '919876543210';
+    const phoneNumber = '918000123456';
     const message = encodeURIComponent(
       'Hello Mewak Tech Support, I would like assistance with your electronics and audio gear.'
     );

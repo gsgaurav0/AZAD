@@ -25,7 +25,7 @@ export default function CheckoutPage() {
   // Stores
   const { items, getSubtotal, getShippingFee, getCouponDiscount, getTotal, appliedCoupon, clearCart } =
     useCartStore();
-  const { savedAddresses, addAddress, placeOrder } = useAuthStore();
+  const { savedAddresses, addAddress, placeOrder, user, isLoggedIn } = useAuthStore();
   const addToast = useUIStore((state) => state.addToast);
 
   // Stepper State (1: Address, 2: Payment, 3: Review)
@@ -33,17 +33,17 @@ export default function CheckoutPage() {
 
   // Selected Address & New Address Form
   const [selectedAddressId, setSelectedAddressId] = useState<string>(
-    savedAddresses[0]?.id || ''
+    savedAddresses.find((a) => a.isDefault)?.id || savedAddresses[0]?.id || ''
   );
   const [isAddingNewAddress, setIsAddingNewAddress] = useState(savedAddresses.length === 0);
   const [addressForm, setAddressForm] = useState({
-    name: 'Siddharth Kashyap',
-    phone: '9876543210',
+    name: user?.name || '',
+    phone: user?.phone?.replace(/\D/g, '').slice(-10) || '',
     street: '',
     locality: '',
-    city: 'New Delhi',
-    state: 'Delhi',
-    pincode: '110001',
+    city: '',
+    state: '',
+    pincode: '',
     type: 'Home' as 'Home' | 'Work' | 'Other',
   });
   const [addressError, setAddressError] = useState('');
@@ -52,12 +52,12 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState<
     'UPI' | 'Credit/Debit Card' | 'Net Banking' | 'Cash on Delivery'
   >('UPI');
-  const [upiId, setUpiId] = useState('patron@okhdfcbank');
+  const [upiId, setUpiId] = useState('');
   const [cardForm, setCardForm] = useState({
-    number: '•••• •••• •••• 4242',
-    name: 'SIDDHARTH KASHYAP',
-    expiry: '12/28',
-    cvv: '829',
+    number: '',
+    name: user?.name ? user.name.toUpperCase() : '',
+    expiry: '',
+    cvv: '',
   });
   const [netBank, setNetBank] = useState('HDFC Bank');
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);

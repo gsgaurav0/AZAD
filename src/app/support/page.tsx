@@ -239,7 +239,7 @@ export default function TechSupportPage() {
                       required
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="e.g. Siddharth Kashyap"
+                      placeholder="e.g. Your Full Name"
                       className="w-full bg-white border border-[#DDD2C0] focus:border-[#9A8029] rounded-xl px-3.5 py-2.5 text-xs text-[#2B1A16] outline-none"
                     />
                   </div>
