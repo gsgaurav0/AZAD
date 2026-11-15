@@ -99,6 +99,15 @@ export default function AdminAuthGate({ onAuthenticated }: AdminAuthGateProps) {
             <Lock className="w-3.5 h-3.5" />
             Authenticate to Command Portal
           </button>
+
+          <div className="text-center pt-2">
+            <a
+              href="/"
+              className="text-xs text-[#2B1A16]/60 hover:text-[#9A8029] font-medium transition-colors"
+            >
+              ← Back to Live Storefront
+            </a>
+          </div>
         </form>
 
         <div className="mt-8 pt-4 border-t border-[#E5E0D8] text-center">

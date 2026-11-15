@@ -120,11 +120,11 @@ export default function AdminStorefrontTab() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
           <Link
             href="/"
             target="_blank"
-            className="px-3.5 py-2 rounded-xl bg-[#FAF8F5] hover:bg-[#EFE8DD] border border-[#DDD2C0] text-[#2B1A16] font-semibold text-xs flex items-center gap-1.5 transition-colors"
+            className="px-3 py-2 rounded-xl bg-[#FAF8F5] hover:bg-[#EFE8DD] border border-[#DDD2C0] text-[#2B1A16] font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
           >
             <Eye className="w-3.5 h-3.5 text-[#9A8029]" />
             <span>Preview Store</span>
@@ -134,7 +134,7 @@ export default function AdminStorefrontTab() {
           <button
             type="button"
             onClick={handleExport}
-            className="px-3.5 py-2 rounded-xl bg-white hover:bg-[#FAF8F5] border border-[#DDD2C0] text-[#2B1A16] font-semibold text-xs flex items-center gap-1.5 transition-colors"
+            className="px-3 py-2 rounded-xl bg-white hover:bg-[#FAF8F5] border border-[#DDD2C0] text-[#2B1A16] font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Export CMS</span>
@@ -143,7 +143,7 @@ export default function AdminStorefrontTab() {
           <button
             type="button"
             onClick={() => setShowJsonModal(true)}
-            className="px-3.5 py-2 rounded-xl bg-white hover:bg-[#FAF8F5] border border-[#DDD2C0] text-[#2B1A16] font-semibold text-xs flex items-center gap-1.5 transition-colors"
+            className="px-3 py-2 rounded-xl bg-white hover:bg-[#FAF8F5] border border-[#DDD2C0] text-[#2B1A16] font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
           >
             <Upload className="w-3.5 h-3.5" />
             <span>Import</span>
@@ -152,7 +152,7 @@ export default function AdminStorefrontTab() {
           <button
             type="button"
             onClick={handleReset}
-            className="px-3.5 py-2 rounded-xl bg-white hover:bg-rose-50 border border-[#DDD2C0] text-rose-700 font-semibold text-xs flex items-center gap-1.5 transition-colors"
+            className="px-3 py-2 rounded-xl bg-white hover:bg-rose-50 border border-[#DDD2C0] text-rose-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Reset Defaults</span>

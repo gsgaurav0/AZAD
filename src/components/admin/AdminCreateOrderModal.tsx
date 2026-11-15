@@ -383,17 +383,17 @@ export default function AdminCreateOrderModal({
           </div>
 
           {/* Submit */}
-          <div className="pt-2 flex justify-end gap-3">
+          <div className="pt-2 flex items-center justify-end gap-2 w-full sm:w-auto">
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 rounded-xl border border-[#DDD2C0] text-[#2B1A16] text-xs font-semibold hover:bg-[#FAF8F5]"
+              className="px-4 py-2.5 rounded-xl border border-[#DDD2C0] text-[#2B1A16] text-xs font-semibold hover:bg-[#FAF8F5] flex-1 sm:flex-initial"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 rounded-xl bg-[#2B1A16] hover:bg-[#9A8029] text-white text-xs font-semibold uppercase tracking-wider transition-all shadow-md active:scale-[0.99]"
+              className="px-5 py-2.5 rounded-xl bg-[#2B1A16] hover:bg-[#9A8029] text-white text-xs font-semibold uppercase tracking-wider transition-all shadow-md active:scale-[0.99] flex-1 sm:flex-initial"
             >
               Create & Dispatch Order
             </button>

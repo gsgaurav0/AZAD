@@ -1011,20 +1011,20 @@ export default function AdminProductModal({
               )}
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-5 py-2.5 rounded-xl border border-[#DDD2C0] text-[#2B1A16] font-semibold hover:bg-[#FAF8F5]"
+                className="px-4 py-2.5 rounded-xl border border-[#DDD2C0] text-[#2B1A16] font-semibold hover:bg-[#FAF8F5] flex-1 sm:flex-initial"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-6 py-2.5 rounded-xl bg-[#2B1A16] hover:bg-[#9A8029] text-white font-semibold uppercase tracking-wider flex items-center gap-2 shadow-md transition-all active:scale-[0.99]"
+                className="px-5 py-2.5 rounded-xl bg-[#2B1A16] hover:bg-[#9A8029] text-white font-semibold uppercase tracking-wider flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.99] flex-1 sm:flex-initial"
               >
                 <Check className="w-4 h-4" />
-                {isEditing ? 'Save Spec Updates' : 'Add Product to Catalog'}
+                <span>{isEditing ? 'Save Spec Updates' : 'Add to Catalog'}</span>
               </button>
             </div>
           </div>

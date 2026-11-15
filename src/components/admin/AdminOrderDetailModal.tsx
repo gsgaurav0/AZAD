@@ -363,10 +363,10 @@ export default function AdminOrderDetailModal({
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-4 border-t border-[#E5E0D8] bg-[#FAF8F5] flex justify-end">
+        <div className="px-4 sm:px-6 py-3.5 border-t border-[#E5E0D8] bg-[#FAF8F5] flex justify-end">
           <button
             onClick={onClose}
-            className="px-6 py-2.5 rounded-xl bg-[#2B1A16] hover:bg-[#9A8029] text-white text-xs font-semibold uppercase tracking-wider transition-colors shadow-xs"
+            className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-[#2B1A16] hover:bg-[#9A8029] text-white text-xs font-semibold uppercase tracking-wider transition-colors shadow-xs"
           >
             Close Details
           </button>

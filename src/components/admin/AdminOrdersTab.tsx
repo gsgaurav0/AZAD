@@ -149,11 +149,11 @@ export default function AdminOrdersTab({
         </div>
 
         {/* Buttons */}
-        <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
           <button
             onClick={exportOrdersJSON}
             title="Download orders JSON audit file"
-            className="p-2.5 rounded-xl border border-[#DDD2C0] bg-[#FAF8F5] hover:bg-[#EFE8DD] text-[#2B1A16]/80 hover:text-[#2B1A16] text-xs transition-colors flex items-center gap-1.5 font-medium"
+            className="p-2.5 rounded-xl border border-[#DDD2C0] bg-[#FAF8F5] hover:bg-[#EFE8DD] text-[#2B1A16]/80 hover:text-[#2B1A16] text-xs transition-colors flex items-center gap-1.5 font-medium shrink-0"
           >
             <Download className="w-3.5 h-3.5 text-[#9A8029]" />
             <span className="hidden sm:inline">Export Audit</span>
@@ -166,23 +166,23 @@ export default function AdminOrdersTab({
               }
             }}
             title="Reset orders to sample state"
-            className="p-2.5 rounded-xl border border-[#DDD2C0] bg-[#FAF8F5] hover:bg-[#EFE8DD] text-[#2B1A16]/60 hover:text-[#2B1A16] text-xs transition-colors"
+            className="p-2.5 rounded-xl border border-[#DDD2C0] bg-[#FAF8F5] hover:bg-[#EFE8DD] text-[#2B1A16]/60 hover:text-[#2B1A16] text-xs transition-colors shrink-0"
           >
             <RotateCcw className="w-4 h-4" />
           </button>
 
           <button
             onClick={onOpenCreateOrderModal}
-            className="bg-[#2B1A16] hover:bg-[#9A8029] text-white text-xs font-semibold uppercase tracking-wider px-4 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-md active:scale-[0.99] shrink-0"
+            className="bg-[#2B1A16] hover:bg-[#9A8029] text-white text-xs font-semibold uppercase tracking-wider px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-[0.99] w-full sm:w-auto shrink-0"
           >
             <Plus className="w-4 h-4" />
-            Create Manual Order
+            <span>Create Manual Order</span>
           </button>
         </div>
       </div>
 
       {/* Status Filter Pills */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none -mx-3 px-3 sm:mx-0 sm:px-0">
         {statusTabs.map((t) => (
           <button
             key={t.value}

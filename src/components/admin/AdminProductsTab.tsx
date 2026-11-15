@@ -117,11 +117,11 @@ export default function AdminProductsTab({
         </div>
 
         {/* Stock Filter & Action Buttons */}
-        <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
           <select
             value={stockFilter}
             onChange={(e) => setStockFilter(e.target.value as 'all' | 'in_stock' | 'out_of_stock')}
-            className="bg-[#FAF8F5] border border-[#DDD2C0] focus:border-[#9A8029] rounded-xl px-3 py-2.5 text-xs text-[#2B1A16] outline-none font-medium"
+            className="bg-[#FAF8F5] border border-[#DDD2C0] focus:border-[#9A8029] rounded-xl px-3 py-2.5 text-xs text-[#2B1A16] outline-none font-medium flex-1 sm:flex-initial"
           >
             <option value="all">All Inventory</option>
             <option value="in_stock">In Stock Only</option>
@@ -138,16 +138,16 @@ export default function AdminProductsTab({
 
           <button
             onClick={onOpenAddModal}
-            className="bg-[#2B1A16] hover:bg-[#9A8029] text-white text-xs font-semibold uppercase tracking-wider px-4 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-md active:scale-[0.99] shrink-0"
+            className="bg-[#2B1A16] hover:bg-[#9A8029] text-white text-xs font-semibold uppercase tracking-wider px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-[0.99] w-full sm:w-auto shrink-0"
           >
             <Plus className="w-4 h-4" />
-            Add Product
+            <span>Add Product</span>
           </button>
         </div>
       </div>
 
       {/* Category Filter Pills */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none -mx-3 px-3 sm:mx-0 sm:px-0">
         {categories.map((c) => (
           <button
             key={c.value}
