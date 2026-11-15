@@ -284,8 +284,20 @@ function LoginFormContent() {
         )}
 
         {error && (
-          <div className="mb-4 p-3 bg-[#B3402F]/10 border border-[#B3402F]/30 text-[#B3402F] text-xs rounded-[3px]">
-            {error}
+          <div className="mb-4 p-3 bg-[#B3402F]/10 border border-[#B3402F]/30 text-[#B3402F] text-xs rounded-[3px] flex items-center justify-between gap-2">
+            <span>{error}</span>
+            {error.includes('create an account') && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMode('signup');
+                  setError('');
+                }}
+                className="underline font-bold text-[#2B1A16] whitespace-nowrap hover:text-[#9A8029] text-xs shrink-0"
+              >
+                Sign Up Now →
+              </button>
+            )}
           </div>
         )}
 

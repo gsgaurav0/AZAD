@@ -409,7 +409,7 @@ export const useAuthStore = create<AuthState>()(
           console.warn('Supabase signInWithPassword notice:', err);
         }
 
-        // Local fallback / instant OTP check
+        // Local fallback / registered users check
         const users = get().registeredUsers;
         const matched = users.find(
           (u) =>
@@ -420,7 +420,7 @@ export const useAuthStore = create<AuthState>()(
 
         if (matched) {
           if (passwordOrOtp && matched.password && matched.password !== passwordOrOtp && passwordOrOtp !== '8528') {
-            return { success: false, error: 'Incorrect password or authentication code.' };
+            return { success: false, error: 'Incorrect password. Please verify your credentials.' };
           }
 
           set({
@@ -431,52 +431,56 @@ export const useAuthStore = create<AuthState>()(
           return { success: true, user: matched };
         }
 
-        // Create user seamlessly
-        const phoneFormatted = cleanDigits.length === 10 ? `+91 ${cleanDigits}` : identifier;
-        const newId = `usr-${Date.now()}`;
-        const createdUser: RegisteredUser = {
-          id: newId,
-          name: isEmail ? clean.split('@')[0].replace(/[^a-zA-Z]/g, ' ').trim() || 'Patron Member' : 'Patron Member',
-          email: isEmail ? clean : `${cleanDigits || 'user'}@patron.mewak.tech`,
-          phone: phoneFormatted,
-          memberTier: 'Gold Patron Member',
-          joinedDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-          password: passwordOrOtp || 'Mewak@123',
-          savedAddresses: [],
+        // New user must create an account first - DO NOT auto-create!
+        return {
+          success: false,
+          error: isEmail
+            ? 'No patron account found with this email. Please create an account first.'
+            : 'No patron account found with this mobile number. Please create an account first.',
         };
-
-        set((state) => ({
-          registeredUsers: [...state.registeredUsers, createdUser],
-          isLoggedIn: true,
-          user: createdUser,
-        }));
-
-        return { success: true, user: createdUser };
       },
 
-      loginWithOtp: async (phone, otp, name) => {
+      loginWithOtp: async (phone, otp) => {
         const clean = phone.replace(/\D/g, '');
         if (clean.length !== 10) {
           return { success: false, error: 'Please enter a valid 10-digit Indian mobile number.' };
         }
 
-        // Simulation OTP 8528 or random 4-digit token
-        if (otp !== '8528' && otp.length !== 4) {
-          return { success: false, error: 'Invalid verification code. Please check your SMS code.' };
-        }
-
         const supabase = getBrowserClient();
         try {
-          await supabase.auth.verifyOtp({
+          const { data, error } = await supabase.auth.verifyOtp({
             phone: `+91${clean}`,
             token: otp,
             type: 'sms',
           });
+          if (!error && data.user) {
+            await get().syncUserData(data.user.id);
+            return { success: true, user: get().user || undefined };
+          }
         } catch {
           // Dev OTP fallback
         }
 
-        return get().login(clean, '8528');
+        // Verify if user is registered first
+        const users = get().registeredUsers;
+        const matched = users.find(
+          (u) => u.phone.replace(/\D/g, '') === clean || (clean.length === 10 && u.phone.includes(clean))
+        );
+
+        if (!matched) {
+          return {
+            success: false,
+            error: `No patron account found for +91 ${clean}. Please create an account first.`,
+          };
+        }
+
+        set({
+          isLoggedIn: true,
+          user: matched,
+          savedAddresses: matched.savedAddresses || get().savedAddresses,
+        });
+
+        return { success: true, user: matched };
       },
 
       sendOtp: async (phoneOrEmail: string) => {

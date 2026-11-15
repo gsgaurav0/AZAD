@@ -50,6 +50,7 @@ export default function CheckoutPage() {
     addAddress,
     placeOrder,
     login,
+    loginWithOtp,
     signup,
   } = useAuthStore();
 
@@ -177,7 +178,11 @@ export default function CheckoutPage() {
       }
     }
 
-    const res = await login(authIdentifier, loginMethod === 'otp' ? 'Mewak@123' : authPassword);
+    const res =
+      loginMethod === 'otp'
+        ? await loginWithOtp(authIdentifier, authOtp)
+        : await login(authIdentifier, authPassword);
+
     if (!res.success) {
       setAuthError(res.error || 'Authentication failed. Please verify credentials.');
       return;
@@ -519,9 +524,23 @@ export default function CheckoutPage() {
                 </div>
 
                 {authError && (
-                  <div className="mb-5 p-3 rounded-[3px] bg-[#B3402F]/10 border border-[#B3402F]/30 text-[#B3402F] text-xs font-sans flex items-start gap-2">
-                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                    <span>{authError}</span>
+                  <div className="mb-5 p-3 rounded-[3px] bg-[#B3402F]/10 border border-[#B3402F]/30 text-[#B3402F] text-xs font-sans flex items-start justify-between gap-2">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                      <span>{authError}</span>
+                    </div>
+                    {authError.includes('create an account') && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAuthTab('signup');
+                          setAuthError('');
+                        }}
+                        className="underline font-bold text-[#2B1A16] whitespace-nowrap hover:text-[#9A8029] text-xs shrink-0"
+                      >
+                        Register Now →
+                      </button>
+                    )}
                   </div>
                 )}
 

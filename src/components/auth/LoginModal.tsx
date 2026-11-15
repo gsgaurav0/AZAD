@@ -297,8 +297,20 @@ export default function LoginModal() {
 
         {/* Error Alert */}
         {error && (
-          <div className="mb-4 p-2.5 bg-[#B3402F]/10 border border-[#B3402F]/30 text-[#B3402F] text-xs rounded-[3px] flex items-center gap-2">
+          <div className="mb-4 p-2.5 bg-[#B3402F]/10 border border-[#B3402F]/30 text-[#B3402F] text-xs rounded-[3px] flex items-center justify-between gap-2">
             <span className="font-medium">{error}</span>
+            {error.includes('create an account') && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMode('signup');
+                  setError('');
+                }}
+                className="underline font-bold text-[#2B1A16] whitespace-nowrap hover:text-[#9A8029] text-xs shrink-0"
+              >
+                Sign Up Now →
+              </button>
+            )}
           </div>
         )}
 
