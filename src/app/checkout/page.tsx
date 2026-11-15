@@ -199,8 +199,13 @@ export default function CheckoutPage() {
       setAuthError('Full Name is required.');
       return;
     }
-    if (!signupForm.email.includes('@')) {
-      setAuthError('A valid email address is required.');
+    const emailClean = signupForm.email.trim().toLowerCase();
+    if (!emailClean || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailClean)) {
+      setAuthError('Please enter a valid, complete email address (e.g. patron@domain.com).');
+      return;
+    }
+    if (emailClean.endsWith('@gmail.com') && emailClean.split('@gmail.com')[0].length < 6) {
+      setAuthError('Gmail usernames must contain at least 6 characters before @gmail.com.');
       return;
     }
     const cleanPhone = signupForm.phone.replace(/\D/g, '');

@@ -304,133 +304,74 @@ export const useAuthStore = create<AuthState>()(
       signup: async (data) => {
         const cleanEmail = data.email.trim().toLowerCase();
         const cleanPhone = data.phone.replace(/\D/g, '');
-        const supabase = getBrowserClient();
 
         try {
-          const { data: authData, error: authError } = await supabase.auth.signUp({
-            email: cleanEmail,
-            password: data.password || 'Mewak@123',
-            options: {
-              data: {
-                name: data.name.trim(),
-                phone: `+91 ${cleanPhone}`,
-              },
-            },
-          });
-
-          if (authError) {
-            console.error('Supabase auth signup error:', authError);
-            if (authError.message.includes('already registered') || authError.message.includes('User already registered')) {
-              return { success: false, error: 'An account with this email already exists. Please sign in.' };
-            }
-            if (authError.message.toLowerCase().includes('api key') || (authError as any).status === 401) {
-              return {
-                success: false,
-                error: 'Supabase API key is invalid or placeholder. Please update NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local with your real anon key from Supabase Dashboard > Settings > API.',
-              };
-            }
-          }
-
-          const userId = authData.user?.id || `usr-${Date.now()}`;
-          const joinedDate = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-
-          const newUser: UserProfile = {
-            id: userId,
-            name: data.name.trim(),
-            email: cleanEmail,
-            phone: `+91 ${cleanPhone}`,
-            dateOfBirth: data.dateOfBirth || '',
-            gender: data.gender,
-            memberTier: 'Gold Patron Member',
-            joinedDate,
-            isEmailVerified: authData.user?.email_confirmed_at ? true : false,
-          };
-
-          // Guarantee profile row in public.profiles table
-          if (authData.user) {
-            await supabase.from('profiles').upsert({
-              id: authData.user.id,
+          // Create user via secure server API (writes directly to Supabase auth.users & public.profiles)
+          const res = await fetch('/api/auth/signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
               name: data.name.trim(),
               email: cleanEmail,
-              phone: `+91 ${cleanPhone}`,
-              date_of_birth: data.dateOfBirth || '',
-              gender: data.gender || 'Prefer not to say',
-              member_tier: 'Gold Patron Member',
-              role: 'customer',
-              is_email_verified: !!authData.user.email_confirmed_at,
-              updated_at: new Date().toISOString(),
-            }, { onConflict: 'id' }).catch(() => {});
-          }
-
-          // Save address to Supabase if provided
-          if (data.address && data.address.street && data.address.city && data.address.pincode) {
-            const addrObj = {
-              name: data.name.trim(),
               phone: cleanPhone,
-              street: data.address.street,
-              locality: data.address.locality || '',
-              city: data.address.city,
-              state: data.address.state,
-              pincode: data.address.pincode,
-              type: data.address.type || 'Home',
-              is_default: true,
-              user_id: userId,
-            };
+              password: data.password,
+              dateOfBirth: data.dateOfBirth,
+              gender: data.gender,
+              address: data.address,
+            }),
+          });
 
-            await supabase.from('addresses').insert(addrObj).catch(() => {});
+          const result = await res.json();
+          if (!result.success) {
+            return { success: false, error: result.error || 'Failed to create patron account.' };
+          }
+
+          const createdUser: UserProfile = result.user;
+
+          // Establish client browser session with Supabase
+          const supabase = getBrowserClient();
+          if (data.password) {
+            await supabase.auth.signInWithPassword({
+              email: cleanEmail,
+              password: data.password,
+            }).catch(() => {});
           }
 
           set((state) => ({
             isLoggedIn: true,
-            user: newUser,
-            registeredUsers: [...state.registeredUsers, { ...newUser, password: data.password }],
+            user: createdUser,
+            registeredUsers: [
+              ...state.registeredUsers.filter((u) => u.email.toLowerCase() !== cleanEmail),
+              { ...createdUser, password: data.password },
+            ],
           }));
 
-          return { success: true, user: newUser };
+          return { success: true, user: createdUser };
         } catch (err: any) {
-          console.warn('Signup fallback:', err);
-          const userId = `usr-${Date.now()}`;
-          const newUser: UserProfile = {
-            id: userId,
-            name: data.name.trim(),
-            email: cleanEmail,
-            phone: `+91 ${cleanPhone}`,
-            memberTier: 'Gold Patron Member',
-            joinedDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-          };
-
-          set((state) => ({
-            isLoggedIn: true,
-            user: newUser,
-            registeredUsers: [...state.registeredUsers, { ...newUser, password: data.password }],
-          }));
-
-          return { success: true, user: newUser };
+          console.error('Signup error:', err);
+          return { success: false, error: err.message || 'Network error during account registration.' };
         }
       },
 
-      login: async (identifier, passwordOrOtp) => {
+      login: async (identifier, password) => {
         const clean = identifier.trim().toLowerCase();
         const cleanDigits = identifier.replace(/\D/g, '');
         const isEmail = clean.includes('@');
         const supabase = getBrowserClient();
 
         try {
-          if (isEmail && passwordOrOtp) {
+          if (isEmail && password) {
             const { data: authData, error } = await supabase.auth.signInWithPassword({
               email: clean,
-              password: passwordOrOtp,
+              password: password,
             });
 
             if (!error && authData.user) {
               await get().syncUserData(authData.user.id);
               return { success: true, user: get().user || undefined };
             } else if (error) {
-              if (error.message.toLowerCase().includes('api key') || (error as any).status === 401 && error.message.toLowerCase().includes('unauthorized')) {
-                return {
-                  success: false,
-                  error: 'Supabase API key is invalid or placeholder. Please update NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local with your real anon key from Supabase Dashboard > Settings > API.',
-                };
+              if (error.message.toLowerCase().includes('invalid login credentials')) {
+                return { success: false, error: 'Incorrect email or password. Please verify your credentials.' };
               }
             }
           }
@@ -438,7 +379,7 @@ export const useAuthStore = create<AuthState>()(
           console.warn('Supabase signInWithPassword notice:', err);
         }
 
-        // Local fallback / registered users check
+        // Check local registered users if server is unreachable
         const users = get().registeredUsers;
         const matched = users.find(
           (u) =>
@@ -448,7 +389,7 @@ export const useAuthStore = create<AuthState>()(
         );
 
         if (matched) {
-          if (passwordOrOtp && matched.password && matched.password !== passwordOrOtp && passwordOrOtp !== '8528') {
+          if (password && matched.password && matched.password !== password) {
             return { success: false, error: 'Incorrect password. Please verify your credentials.' };
           }
 
@@ -460,7 +401,7 @@ export const useAuthStore = create<AuthState>()(
           return { success: true, user: matched };
         }
 
-        // New user must create an account first - DO NOT auto-create!
+        // New user must create an account first - no fake fallbacks
         return {
           success: false,
           error: isEmail
@@ -525,20 +466,18 @@ export const useAuthStore = create<AuthState>()(
                 emailRedirectTo: `${window.location.origin}/auth/callback`,
               },
             });
-            if (error) throw error;
+            if (error) return { success: false, error: error.message };
             return { success: true, message: `Verification token dispatched to ${clean}.` };
           } else {
             const cleanDigits = clean.replace(/\D/g, '');
             const { error } = await supabase.auth.signInWithOtp({
               phone: `+91${cleanDigits}`,
             });
-            if (error) {
-              return { success: true, message: `Test dispatch code: 8528 (Dev SMS Mode)` };
-            }
+            if (error) return { success: false, error: error.message };
             return { success: true, message: `SMS verification token dispatched to +91 ${cleanDigits}.` };
           }
         } catch (err: any) {
-          return { success: true, message: `Test authentication code: 8528` };
+          return { success: false, error: err.message || 'Failed to dispatch verification code.' };
         }
       },
 

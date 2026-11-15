@@ -166,8 +166,13 @@ function LoginFormContent() {
       setError('Please enter your full name.');
       return;
     }
-    if (!signupForm.email.trim() || !signupForm.email.includes('@')) {
-      setError('Please enter a valid email address.');
+    const emailClean = signupForm.email.trim().toLowerCase();
+    if (!emailClean || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailClean)) {
+      setError('Please enter a valid, complete email address (e.g. patron@domain.com).');
+      return;
+    }
+    if (emailClean.endsWith('@gmail.com') && emailClean.split('@gmail.com')[0].length < 6) {
+      setError('Gmail usernames must contain at least 6 characters before @gmail.com.');
       return;
     }
     const cleanPhone = signupForm.phone.replace(/\D/g, '');
