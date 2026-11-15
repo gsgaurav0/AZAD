@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { buildCleanMilestoneHistory, getLocationForStatus } from '@/lib/orderMilestones';
 
 interface CheckoutRequestBody {
+  userId?: string;
   items: Array<{
     productId: string;
     selectedColor: string;
@@ -193,55 +195,32 @@ export async function POST(request: Request) {
     // 5. Generate Tracking and Identification
     const orderId = `MWK-${Math.floor(100000 + Math.random() * 900000)}`;
     const trackingNumber = `BLD-${Math.floor(10000000 + Math.random() * 90000000)}`;
-    const nowIso = new Date().toISOString();
+    const statusHistory = buildCleanMilestoneHistory('Placed', body.address);
+    const initialLocation = getLocationForStatus('Placed', body.address);
 
-    const statusHistory = [
-      {
-        status: 'Placed',
-        timestamp: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
-        location: 'Mewak Central Fulfillment Hub, New Delhi',
-        note: 'Order confirmed and allocated for diagnostic quality checks.',
-        completed: true,
-      },
-      {
-        status: 'Packed',
-        timestamp: 'Pending verification',
-        location: 'Central Distribution Center, New Delhi',
-        note: 'Hardware serialized, sealed with tamper-proof band, and invoiced.',
-        completed: false,
-      },
-      {
-        status: 'Shipped',
-        timestamp: 'Pending dispatch',
-        location: 'BlueDart Express Air Gateway',
-        note: 'Handed over to BlueDart express cargo team.',
-        completed: false,
-      },
-      {
-        status: 'Out for Delivery',
-        timestamp: 'Pending transit',
-        location: `${body.address.city} Delivery Hub`,
-        note: 'Out with delivery marshal for doorstep handover.',
-        completed: false,
-      },
-      {
-        status: 'Delivered',
-        timestamp: 'Estimated 3-4 days',
-        location: `${body.address.street}, ${body.address.city}`,
-        note: 'Delivered securely to patron.',
-        completed: false,
-      },
-    ];
-
-    // 6. Customer Identification
+    // 6. Customer & User Identification (resilient session fallback)
     const customerName = body.customer?.name || body.address.name;
     const customerEmail = body.customer?.email || user?.email || '';
     const customerPhone = body.customer?.phone || body.address.phone;
 
+    let effectiveUserId: string | null = user?.id || body.userId || null;
+    if (!effectiveUserId && customerEmail) {
+      try {
+        const { data: matchedProfile } = await adminSupabase
+          .from('profiles')
+          .select('id')
+          .eq('email', customerEmail)
+          .single();
+        if (matchedProfile?.id) {
+          effectiveUserId = matchedProfile.id;
+        }
+      } catch {}
+    }
+
     // 7. Atomic Order Creation
     const { error: insertErr } = await adminSupabase.from('orders').insert({
       id: orderId,
-      user_id: user?.id || null,
+      user_id: effectiveUserId,
       customer_name: customerName,
       customer_email: customerEmail,
       customer_phone: customerPhone,
@@ -259,7 +238,7 @@ export async function POST(request: Request) {
       tracking_number: trackingNumber,
       courier_partner: 'BlueDart Express Air',
       estimated_delivery: 'Within 3-4 Business Days',
-      current_location: 'Mewak Central Fulfillment Hub, New Delhi',
+      current_location: initialLocation,
       status_history: statusHistory,
     });
 
@@ -291,11 +270,18 @@ export async function POST(request: Request) {
       orderId,
       order: {
         id: orderId,
+        userId: effectiveUserId,
         total,
         subtotal,
         discount,
         shipping,
+        tax: Math.round(total * 0.18),
+        status: 'Placed',
+        statusHistory,
         trackingNumber,
+        courierPartner: 'BlueDart Express Air',
+        estimatedDelivery: 'Within 3-4 Business Days',
+        currentLocation: initialLocation,
         items: verifiedOrderItems,
         address: body.address,
         paymentMethod: body.paymentMethod,

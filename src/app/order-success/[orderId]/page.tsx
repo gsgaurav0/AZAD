@@ -31,7 +31,26 @@ export default function OrderSuccessPage({ params }: OrderSuccessProps) {
   const addToast = useUIStore((state) => state.addToast);
   const [copiedTracking, setCopiedTracking] = useState(false);
 
-  const order = orders.find((o) => o.id === orderId) || orders[0];
+  const storeOrder = orders.find((o) => o.id === orderId);
+  const [liveOrder, setLiveOrder] = useState<any>(storeOrder || null);
+
+  useEffect(() => {
+    if (!storeOrder && orderId) {
+      fetch(`/api/orders?orderId=${encodeURIComponent(orderId)}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data?.order) {
+            setLiveOrder(data.order);
+            useAuthStore.getState().addOrderToStore(data.order);
+          }
+        })
+        .catch((err) => console.warn('Order fetch error:', err));
+    } else if (storeOrder) {
+      setLiveOrder(storeOrder);
+    }
+  }, [storeOrder, orderId]);
+
+  const order = liveOrder || storeOrder || orders[0];
 
   useEffect(() => {
     // Fire festive celebration confetti!
@@ -217,7 +236,7 @@ export default function OrderSuccessPage({ params }: OrderSuccessProps) {
               </span>
 
               <div className="divide-y divide-[#DDD2C0]/40">
-                {order.items.map((item, idx) => (
+                {order.items.map((item: any, idx: number) => (
                   <div key={idx} className="py-3 flex items-center justify-between text-xs">
                     <div className="flex items-center gap-3">
                       <div className="relative w-12 h-14 rounded-[2px] overflow-hidden bg-[#DDD2C0]/30 shrink-0">

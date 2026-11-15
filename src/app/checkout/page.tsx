@@ -298,6 +298,7 @@ export default function CheckoutPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          userId: user?.id,
           items: items.map((i) => ({
             productId: i.product.id,
             selectedColor: i.selectedColor,
@@ -323,6 +324,11 @@ export default function CheckoutPage() {
       }
 
       const createdOrderId = checkoutData.orderId;
+
+      // Immediately cache created order in patron's local state
+      if (checkoutData.order) {
+        useAuthStore.getState().addOrderToStore(checkoutData.order);
+      }
 
       // 2. If Cash on Delivery, complete immediately
       if (paymentMethod === 'Cash on Delivery') {

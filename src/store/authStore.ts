@@ -2,6 +2,12 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Address, Order, OrderStatus, OrderStatusStep, UserProfile } from '@/types';
 import { getBrowserClient } from '@/lib/supabase/client';
+import {
+  ORDER_MILESTONES,
+  buildCleanMilestoneHistory,
+  getLocationForStatus,
+  getNoteForStatus,
+} from '@/lib/orderMilestones';
 
 export interface ReturnRequest {
   id: string;
@@ -70,6 +76,8 @@ interface AuthState {
 
   // Order Lifecycle & Step-by-Step Tracking
   fetchAdminOrders: () => Promise<void>;
+  fetchUserOrders: () => Promise<void>;
+  addOrderToStore: (order: Order) => void;
   placeOrder: (order: Omit<Order, 'id' | 'date' | 'status' | 'statusHistory' | 'trackingNumber'>) => Promise<Order>;
   advanceOrderStatus: (orderId: string) => Promise<void>;
   cancelOrder: (orderId: string, reason?: string) => Promise<boolean>;
@@ -830,7 +838,35 @@ export const useAuthStore = create<AuthState>()(
         return newOrder;
       },
 
+      addOrderToStore: (order: Order) => {
+        set((state) => ({
+          orders: [order, ...state.orders.filter((o) => o.id !== order.id)],
+        }));
+      },
+
+      fetchUserOrders: async () => {
+        const user = get().user;
+        if (!user?.id) return;
+        try {
+          const res = await fetch(`/api/orders?userId=${encodeURIComponent(user.id)}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data.orders)) {
+              set({ orders: data.orders });
+            }
+          }
+        } catch (err) {
+          console.warn('fetchUserOrders notice:', err);
+        }
+      },
+
       advanceOrderStatus: async (orderId: string) => {
+        const user = get().user;
+        if (user?.role !== 'admin') {
+          console.warn('Unauthorized: only administrator accounts can advance order milestones.');
+          return;
+        }
+
         const order = get().orders.find((o) => o.id === orderId);
         if (!order || order.status === 'Cancelled' || order.status === 'Delivered') return;
 
@@ -953,73 +989,23 @@ export const useAuthStore = create<AuthState>()(
           console.warn('API update order status notice:', err);
         }
 
-        const now = formatDateTime();
-        const sequence: OrderStatus[] = ['Placed', 'Packed', 'Shipped', 'Out for Delivery', 'Delivered'];
-        const targetIdx = sequence.indexOf(newStatus);
-
         set((state) => ({
           orders: state.orders.map((o) => {
             if (o.id !== orderId) return o;
 
-            const city = o.address.city || 'Destination City';
-            const street = o.address.street || 'Destination Address';
-
-            const locationMap: Record<OrderStatus, string> = {
-              Placed: 'Mewak Central Fulfillment Hub, New Delhi',
-              Packed: 'Mewak Fulfillment Center, Gurugram',
-              Shipped: 'IGI Air Logistics Terminal, New Delhi',
-              'Out for Delivery': `${city} Local Courier Hub`,
-              Delivered: `${street}, ${city}`,
-              Cancelled: o.currentLocation || 'Customer Service Desk',
-              'Return Requested': `${city} Doorstep Verification`,
-              'Return Approved': 'Mewak Reverse Logistics Depot',
-              'Return Rejected': 'Customer Service Desk',
-              Refunded: 'Razorpay / Banking Settlement Center',
-            };
-
-            const noteMap: Record<OrderStatus, string> = {
-              Placed: 'Order confirmed & verified. Queued for diagnostic inspection.',
-              Packed: '18-point hardware audit passed. Sealed in tamper-evident security packaging.',
-              Shipped: 'Dispatched via express air freight. In transit to destination hub.',
-              'Out for Delivery': `Assigned to courier agent for doorstep delivery to ${street}.`,
-              Delivered: 'Safe doorstep handover completed to recipient.',
-              Cancelled: customNote || 'Order cancelled.',
-              'Return Requested': customNote || 'Return / exchange requested by customer.',
-              'Return Approved': customNote || 'Return approved. Reverse pickup scheduled.',
-              'Return Rejected': customNote || 'Return rejected after hardware inspection.',
-              Refunded: customNote || 'Refund settlement credited to source account.',
-            };
-
-            const updatedHistory = o.statusHistory.map((step) => {
-              if (newStatus === 'Cancelled') return step;
-              const stepIdx = sequence.indexOf(step.status);
-
-              if (stepIdx <= targetIdx) {
-                return {
-                  ...step,
-                  completed: true,
-                  timestamp: step.completed && step.timestamp !== 'Pending' ? step.timestamp : now,
-                  location: customLocation && step.status === newStatus ? customLocation : step.location || locationMap[step.status],
-                  note: customNote && step.status === newStatus ? customNote : step.note || noteMap[step.status],
-                };
-              }
-              return { ...step, completed: false, timestamp: 'Pending' };
-            });
-
-            if (newStatus === 'Cancelled') {
-              updatedHistory.push({
-                status: 'Cancelled',
-                timestamp: now,
-                location: customLocation || o.currentLocation || 'Support Desk',
-                note: customNote || 'Order cancelled by administration.',
-                completed: true,
-              });
-            }
+            const updatedHistory = buildCleanMilestoneHistory(
+              newStatus,
+              o.address,
+              customNote,
+              customLocation,
+              o.statusHistory
+            );
+            const newLocation = customLocation || getLocationForStatus(newStatus, o.address);
 
             return {
               ...o,
               status: newStatus,
-              currentLocation: customLocation || locationMap[newStatus],
+              currentLocation: newLocation,
               statusHistory: updatedHistory,
             };
           }),

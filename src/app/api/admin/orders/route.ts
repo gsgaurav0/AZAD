@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { buildCleanMilestoneHistory, getLocationForStatus } from '@/lib/orderMilestones';
+import { OrderStatus } from '@/types';
 
 export async function GET() {
   try {
@@ -65,28 +67,27 @@ export async function PUT(request: Request) {
     }
 
     const currentHistory = Array.isArray(currentOrder.status_history) ? currentOrder.status_history : [];
-    const newStatus = status || currentOrder.status;
+    const newStatus: OrderStatus = (status || currentOrder.status) as OrderStatus;
+    const address = currentOrder.address || {};
 
-    // Check if status changed and append new status step to history
-    let updatedHistory = [...currentHistory];
-    if (status && status !== currentOrder.status) {
-      const newStep = {
-        status: newStatus,
-        timestamp: new Date().toISOString(),
-        note: note || `Order updated to ${newStatus} by store logistics administrator.`,
-        location: location || currentOrder.current_location || 'Mewak Central Fulfillment Hub, New Delhi',
-        completed: true,
-      };
-      updatedHistory.push(newStep);
-    }
+    // Rebuild clean, deduplicated milestone history
+    const updatedHistory = buildCleanMilestoneHistory(
+      newStatus,
+      address,
+      note,
+      location,
+      currentHistory
+    );
+
+    const newLocation = location || getLocationForStatus(newStatus, address);
 
     const dbUpdates: any = {
       updated_at: new Date().toISOString(),
+      status: newStatus,
+      current_location: newLocation,
       status_history: updatedHistory,
     };
 
-    if (status) dbUpdates.status = status;
-    if (location) dbUpdates.current_location = location;
     if (trackingNumber !== undefined) dbUpdates.tracking_number = trackingNumber;
     if (courierPartner !== undefined) dbUpdates.courier_partner = courierPartner;
 

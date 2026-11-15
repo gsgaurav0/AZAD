@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -71,12 +71,20 @@ export default function AccountPage() {
     changePasswordWithVerification,
     changeEmailWithVerification,
     changePhoneWithVerification,
+    fetchUserOrders,
   } = useAuthStore();
 
   const openLoginModal = useUIStore((state) => state.openLoginModal);
   const addToast = useUIStore((state) => state.addToast);
 
   const [activeTab, setActiveTab] = useState<'profile' | 'orders' | 'addresses' | 'returns'>('profile');
+
+  // Sync fresh patron orders on mount and tab switch
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchUserOrders();
+    }
+  }, [isLoggedIn, activeTab, fetchUserOrders]);
 
   // Modal States
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
@@ -832,9 +840,9 @@ export default function AccountPage() {
         {activeTab === 'orders' && (() => {
           const userOrders = orders.filter(
             (o) =>
-              !o.userId ||
               o.userId === user?.id ||
-              (user?.phone && o.address?.phone?.replace(/\D/g, '').includes(user.phone.replace(/\D/g, '').slice(-10)))
+              (user?.email && (o as any).customerEmail && (o as any).customerEmail.toLowerCase() === user.email.toLowerCase()) ||
+              (user?.phone && o.address?.phone && o.address.phone.replace(/\D/g, '').includes(user.phone.replace(/\D/g, '').slice(-10)))
           );
 
           return (
@@ -942,19 +950,26 @@ export default function AccountPage() {
                           </div>
                         </div>
 
-                        {/* Interactive Advance Step Simulation Button */}
-                        {order.status !== 'Delivered' && order.status !== 'Cancelled' && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              advanceOrderStatus(order.id);
-                              addToast(`Order #${order.id} tracking milestone updated!`, 'success');
-                            }}
-                            className="bg-[#2B1A16] hover:bg-[#9A8029] text-[#EFE8DD] text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-[2px] transition-colors flex items-center gap-1 shrink-0"
-                            title="Advance to next step to test real-time tracking progression"
-                          >
-                            <PlayCircle className="w-3 h-3 text-[#9A8029]" /> Next Tracking Step
-                          </button>
+                        {/* Admin-only Advance Step Simulation Button or Patron Live Status Badge */}
+                        {user?.role === 'admin' ? (
+                          order.status !== 'Delivered' && order.status !== 'Cancelled' && (
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                await advanceOrderStatus(order.id);
+                                addToast(`[Admin] Order #${order.id} milestone advanced!`, 'success');
+                              }}
+                              className="bg-[#2B1A16] hover:bg-[#9A8029] text-[#EFE8DD] text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-[2px] transition-colors flex items-center gap-1 shrink-0 cursor-pointer"
+                              title="Admin privilege: Advance order tracking milestone"
+                            >
+                              <PlayCircle className="w-3 h-3 text-[#9A8029]" /> Admin: Next Step
+                            </button>
+                          )
+                        ) : (
+                          <div className="flex items-center gap-1.5 text-[11px] font-semibold text-[#4C7A34] bg-[#4C7A34]/10 px-2.5 py-1 rounded-[2px] shrink-0 border border-[#4C7A34]/20">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#4C7A34] animate-pulse" />
+                            <span>Live Dispatch: {order.status}</span>
+                          </div>
                         )}
                       </div>
 
