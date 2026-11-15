@@ -6,6 +6,7 @@ import { useProductStore } from '@/store/productStore';
 import { useCouponStore } from '@/store/couponStore';
 import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
+import { useCMSStore } from '@/store/cmsStore';
 
 export default function AppInitializer() {
   useEffect(() => {
@@ -18,7 +19,10 @@ export default function AppInitializer() {
     // 3. Fetch active coupons from Supabase
     useCouponStore.getState().fetchCoupons();
 
-    // 4. Sync Cart & Wishlist with Supabase if logged in
+    // 4. Fetch live storefront CMS configurations from Supabase
+    useCMSStore.getState().fetchCMS();
+
+    // 5. Sync Cart & Wishlist with Supabase if logged in
     useCartStore.getState().syncWithSupabase();
     useWishlistStore.getState().syncWithSupabase();
   }, []);

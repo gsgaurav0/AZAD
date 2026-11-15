@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import {
@@ -39,8 +39,13 @@ export default function ListingView({
 
   // Filter States
   const storeProducts = useProductStore((state) => state.products);
+  const fetchProducts = useProductStore((state) => state.fetchProducts);
   const isMounted = useIsMounted();
   const allProductsList = isMounted ? storeProducts : PRODUCTS;
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   const maxCatalogPrice = useMemo(() => {
     const prices = allProductsList.map((p) => p.price || 0);

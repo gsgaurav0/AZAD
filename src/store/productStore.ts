@@ -48,10 +48,60 @@ export const useProductStore = create<ProductState>()(
 
       fetchProducts: async () => {
         if (typeof window === 'undefined') return;
-        const supabase = getBrowserClient();
         set({ isLoading: true });
 
         try {
+          // Attempt admin API endpoint (auto-seeds if empty)
+          const apiRes = await fetch('/api/admin/products');
+          if (apiRes.ok) {
+            const apiData = await apiRes.json();
+            if (apiData.products && apiData.products.length > 0) {
+              const mapped: Product[] = apiData.products.map((p: any) => ({
+                id: p.id,
+                name: p.name,
+                slug: p.slug,
+                subtitle: p.subtitle || '',
+                category: p.category as Category,
+                subcategory: p.subcategory || 'Hardware',
+                price: Number(p.price),
+                originalPrice: Number(p.original_price || p.price),
+                discountPercent: p.discount_percent || 0,
+                isNew: Boolean(p.is_new),
+                isTrending: Boolean(p.is_trending),
+                isFeatured: Boolean(p.is_featured),
+                occasion: (p.occasion as Occasion) || 'Everyday',
+                rating: Number(p.rating || 5.0),
+                reviewCount: p.review_count || (p.reviews ? p.reviews.length : 0),
+                colors: Array.isArray(p.colors) ? p.colors : [],
+                sizes: Array.isArray(p.sizes) ? p.sizes : [],
+                images: Array.isArray(p.images) ? p.images : [],
+                fabric: p.fabric || '',
+                fit: p.fit || '',
+                care: Array.isArray(p.care) ? p.care : [],
+                description: p.description || '',
+                details: Array.isArray(p.details) ? p.details : [],
+                returns: p.returns || '',
+                reviews: Array.isArray(p.reviews)
+                  ? p.reviews.map((r: any) => ({
+                      id: r.id,
+                      userName: r.user_name,
+                      rating: r.rating,
+                      title: r.title,
+                      comment: r.comment,
+                      verified: r.verified,
+                      helpfulCount: r.helpful_count || 0,
+                      date: new Date(r.created_at).toLocaleDateString('en-GB'),
+                    }))
+                  : [],
+              }));
+
+              set({ products: mapped, isLoading: false });
+              return;
+            }
+          }
+
+          // Fallback to direct client
+          const supabase = getBrowserClient();
           const { data, error } = await supabase
             .from('products')
             .select('*, reviews(*)')
@@ -101,7 +151,7 @@ export const useProductStore = create<ProductState>()(
             return;
           }
         } catch (err) {
-          console.warn('Supabase fetchProducts notice:', err);
+          console.warn('fetchProducts notice:', err);
         }
 
         set({ isLoading: false });
@@ -162,38 +212,15 @@ export const useProductStore = create<ProductState>()(
           reviews: [],
         };
 
-        // Insert into Supabase
-        const supabase = getBrowserClient();
+        // Write directly to Supabase via server API
         try {
-          await supabase.from('products').insert({
-            id: createdProduct.id,
-            slug: createdProduct.slug,
-            name: createdProduct.name,
-            subtitle: createdProduct.subtitle,
-            category: createdProduct.category,
-            subcategory: createdProduct.subcategory,
-            price: createdProduct.price,
-            original_price: createdProduct.originalPrice,
-            discount_percent: createdProduct.discountPercent,
-            is_new: createdProduct.isNew,
-            is_trending: createdProduct.isTrending,
-            is_featured: createdProduct.isFeatured,
-            occasion: createdProduct.occasion,
-            rating: createdProduct.rating,
-            review_count: createdProduct.reviewCount,
-            colors: createdProduct.colors,
-            sizes: createdProduct.sizes,
-            images: createdProduct.images,
-            fabric: createdProduct.fabric,
-            fit: createdProduct.fit,
-            care: createdProduct.care,
-            description: createdProduct.description,
-            details: createdProduct.details,
-            returns: createdProduct.returns,
-            in_stock: true,
+          await fetch('/api/admin/products', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(createdProduct),
           });
         } catch (err) {
-          console.warn('Supabase product insert notice:', err);
+          console.warn('API product POST notice:', err);
         }
 
         set((state) => ({
@@ -209,34 +236,15 @@ export const useProductStore = create<ProductState>()(
           products: state.products.map((p) => (p.id === id ? { ...p, ...updates } : p)),
         }));
 
-        const supabase = getBrowserClient();
+        // Write directly to Supabase via server API
         try {
-          const dbUpdates: any = { updated_at: new Date().toISOString() };
-          if (updates.name !== undefined) dbUpdates.name = updates.name;
-          if (updates.slug !== undefined) dbUpdates.slug = updates.slug;
-          if (updates.subtitle !== undefined) dbUpdates.subtitle = updates.subtitle;
-          if (updates.category !== undefined) dbUpdates.category = updates.category;
-          if (updates.subcategory !== undefined) dbUpdates.subcategory = updates.subcategory;
-          if (updates.price !== undefined) dbUpdates.price = updates.price;
-          if (updates.originalPrice !== undefined) dbUpdates.original_price = updates.originalPrice;
-          if (updates.discountPercent !== undefined) dbUpdates.discount_percent = updates.discountPercent;
-          if (updates.isNew !== undefined) dbUpdates.is_new = updates.isNew;
-          if (updates.isTrending !== undefined) dbUpdates.is_trending = updates.isTrending;
-          if (updates.isFeatured !== undefined) dbUpdates.is_featured = updates.isFeatured;
-          if (updates.occasion !== undefined) dbUpdates.occasion = updates.occasion;
-          if (updates.colors !== undefined) dbUpdates.colors = updates.colors;
-          if (updates.sizes !== undefined) dbUpdates.sizes = updates.sizes;
-          if (updates.images !== undefined) dbUpdates.images = updates.images;
-          if (updates.fabric !== undefined) dbUpdates.fabric = updates.fabric;
-          if (updates.fit !== undefined) dbUpdates.fit = updates.fit;
-          if (updates.care !== undefined) dbUpdates.care = updates.care;
-          if (updates.description !== undefined) dbUpdates.description = updates.description;
-          if (updates.details !== undefined) dbUpdates.details = updates.details;
-          if (updates.returns !== undefined) dbUpdates.returns = updates.returns;
-
-          await supabase.from('products').update(dbUpdates).eq('id', id);
+          await fetch('/api/admin/products', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, ...updates }),
+          });
         } catch (err) {
-          console.warn('Supabase product update notice:', err);
+          console.warn('API product PUT notice:', err);
         }
 
         notifyCatalogChange();
@@ -247,11 +255,13 @@ export const useProductStore = create<ProductState>()(
           products: state.products.filter((p) => p.id !== id),
         }));
 
-        const supabase = getBrowserClient();
+        // Delete directly in Supabase via server API
         try {
-          await supabase.from('products').delete().eq('id', id);
+          await fetch(`/api/admin/products?id=${encodeURIComponent(id)}`, {
+            method: 'DELETE',
+          });
         } catch (err) {
-          console.warn('Supabase product delete notice:', err);
+          console.warn('API product DELETE notice:', err);
         }
 
         notifyCatalogChange();
@@ -304,10 +314,13 @@ export const useProductStore = create<ProductState>()(
       },
 
       deleteReview: async (productId, reviewId) => {
-        const supabase = getBrowserClient();
         try {
-          await supabase.from('reviews').delete().eq('id', reviewId);
-        } catch {}
+          await fetch(`/api/admin/reviews?id=${encodeURIComponent(reviewId)}`, {
+            method: 'DELETE',
+          });
+        } catch (err) {
+          console.warn('API review delete notice:', err);
+        }
 
         set((state) => ({
           products: state.products.map((p) => {
@@ -330,20 +343,22 @@ export const useProductStore = create<ProductState>()(
       },
 
       addReview: async (productId, review) => {
-        const supabase = getBrowserClient();
         try {
-          await supabase.from('reviews').insert({
-            product_id: productId,
-            user_name: review.userName,
-            rating: review.rating,
-            title: review.title,
-            comment: review.comment,
-            verified: review.verified,
-            helpful_count: review.helpfulCount || 0,
-            status: 'approved',
+          await fetch('/api/admin/reviews', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              productId,
+              userName: review.userName,
+              rating: review.rating,
+              title: review.title,
+              comment: review.comment,
+              verified: review.verified,
+              helpfulCount: review.helpfulCount || 0,
+            }),
           });
         } catch (err) {
-          console.warn('Supabase review insert notice:', err);
+          console.warn('API review insert notice:', err);
         }
 
         set((state) => ({
@@ -369,10 +384,18 @@ export const useProductStore = create<ProductState>()(
         const product = get().products.find((p) => p.id === productId);
         const review = (product?.reviews || []).find((r) => r.id === reviewId);
         if (review) {
-          const supabase = getBrowserClient();
           try {
-            await supabase.from('reviews').update({ verified: !review.verified }).eq('id', reviewId);
-          } catch {}
+            await fetch('/api/admin/reviews', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                id: reviewId,
+                verified: !review.verified,
+              }),
+            });
+          } catch (err) {
+            console.warn('API review verify toggle notice:', err);
+          }
         }
 
         set((state) => ({

@@ -69,6 +69,7 @@ interface AuthState {
   setDefaultAddress: (id: string) => Promise<void>;
 
   // Order Lifecycle & Step-by-Step Tracking
+  fetchAdminOrders: () => Promise<void>;
   placeOrder: (order: Omit<Order, 'id' | 'date' | 'status' | 'statusHistory' | 'trackingNumber'>) => Promise<Order>;
   advanceOrderStatus: (orderId: string) => Promise<void>;
   cancelOrder: (orderId: string, reason?: string) => Promise<boolean>;
@@ -922,15 +923,35 @@ export const useAuthStore = create<AuthState>()(
         return true;
       },
 
-      updateOrderStatus: async (orderId, newStatus, customNote, customLocation) => {
-        const supabase = getBrowserClient();
+      fetchAdminOrders: async () => {
         try {
-          await supabase.from('orders').update({
-            status: newStatus,
-            current_location: customLocation,
-            updated_at: new Date().toISOString(),
-          }).eq('id', orderId);
-        } catch {}
+          const res = await fetch('/api/admin/orders');
+          if (res.ok) {
+            const data = await res.json();
+            if (data.orders) {
+              set({ orders: data.orders });
+            }
+          }
+        } catch (err) {
+          console.warn('Admin orders fetch notice:', err);
+        }
+      },
+
+      updateOrderStatus: async (orderId, newStatus, customNote, customLocation) => {
+        try {
+          await fetch('/api/admin/orders', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              orderId,
+              status: newStatus,
+              note: customNote,
+              location: customLocation,
+            }),
+          });
+        } catch (err) {
+          console.warn('API update order status notice:', err);
+        }
 
         const now = formatDateTime();
         const sequence: OrderStatus[] = ['Placed', 'Packed', 'Shipped', 'Out for Delivery', 'Delivered'];
@@ -1006,13 +1027,15 @@ export const useAuthStore = create<AuthState>()(
       },
 
       updateOrder: async (orderId, updates) => {
-        const supabase = getBrowserClient();
         try {
-          await supabase.from('orders').update({
-            ...updates,
-            updated_at: new Date().toISOString(),
-          }).eq('id', orderId);
-        } catch {}
+          await fetch('/api/admin/orders', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ orderId, ...updates }),
+          });
+        } catch (err) {
+          console.warn('API update order notice:', err);
+        }
 
         set((state) => ({
           orders: state.orders.map((o) => (o.id === orderId ? { ...o, ...updates } : o)),
@@ -1020,10 +1043,13 @@ export const useAuthStore = create<AuthState>()(
       },
 
       deleteOrder: async (orderId) => {
-        const supabase = getBrowserClient();
         try {
-          await supabase.from('orders').delete().eq('id', orderId);
-        } catch {}
+          await fetch(`/api/admin/orders?id=${encodeURIComponent(orderId)}`, {
+            method: 'DELETE',
+          });
+        } catch (err) {
+          console.warn('API delete order notice:', err);
+        }
 
         set((state) => ({
           orders: state.orders.filter((o) => o.id !== orderId),

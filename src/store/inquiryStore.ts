@@ -55,10 +55,20 @@ export const useInquiryStore = create<InquiryState>()(
 
       fetchInquiries: async () => {
         if (typeof window === 'undefined') return;
-        const supabase = getBrowserClient();
         set({ isLoading: true });
 
         try {
+          const apiRes = await fetch('/api/admin/inquiries');
+          if (apiRes.ok) {
+            const apiData = await apiRes.json();
+            if (apiData.inquiries && apiData.inquiries.length > 0) {
+              set({ inquiries: apiData.inquiries, isLoading: false });
+              return;
+            }
+          }
+
+          // Fallback to direct client
+          const supabase = getBrowserClient();
           const { data, error } = await supabase
             .from('inquiries')
             .select('*')
@@ -86,7 +96,7 @@ export const useInquiryStore = create<InquiryState>()(
             return;
           }
         } catch (err) {
-          console.warn('Inquiry Supabase fetch notice:', err);
+          console.warn('Inquiry fetch notice:', err);
         }
 
         set({ isLoading: false });
@@ -119,54 +129,60 @@ export const useInquiryStore = create<InquiryState>()(
       },
 
       updateInquiryStatus: async (id, status) => {
-        const supabase = getBrowserClient();
-        try {
-          await supabase.from('inquiries').update({ status, updated_at: new Date().toISOString() }).eq('id', id);
-        } catch {}
-
         set((state) => ({
           inquiries: state.inquiries.map((inq) =>
             inq.id === id ? { ...inq, status } : inq
           ),
         }));
+
+        try {
+          await fetch('/api/admin/inquiries', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, status }),
+          });
+        } catch (err) {
+          console.warn('API update inquiry status error:', err);
+        }
       },
 
       updateInquiryPriority: async (id, priority) => {
-        const supabase = getBrowserClient();
-        try {
-          await supabase.from('inquiries').update({ priority, updated_at: new Date().toISOString() }).eq('id', id);
-        } catch {}
-
         set((state) => ({
           inquiries: state.inquiries.map((inq) =>
             inq.id === id ? { ...inq, priority } : inq
           ),
         }));
+
+        try {
+          await fetch('/api/admin/inquiries', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, priority }),
+          });
+        } catch (err) {
+          console.warn('API update inquiry priority error:', err);
+        }
       },
 
       addAdminNote: async (id, note) => {
-        const supabase = getBrowserClient();
-        try {
-          await supabase.from('inquiries').update({ admin_notes: note, updated_at: new Date().toISOString() }).eq('id', id);
-        } catch {}
-
         set((state) => ({
           inquiries: state.inquiries.map((inq) =>
             inq.id === id ? { ...inq, adminNotes: note } : inq
           ),
         }));
+
+        try {
+          await fetch('/api/admin/inquiries', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, adminNotes: note }),
+          });
+        } catch (err) {
+          console.warn('API add admin note error:', err);
+        }
       },
 
       sendReply: async (id, replyMessage) => {
-        const supabase = getBrowserClient();
-        try {
-          await supabase.from('inquiries').update({
-            reply_sent: replyMessage,
-            status: 'resolved',
-            updated_at: new Date().toISOString(),
-          }).eq('id', id);
-        } catch {}
-
         set((state) => ({
           inquiries: state.inquiries.map((inq) =>
             inq.id === id
@@ -174,17 +190,30 @@ export const useInquiryStore = create<InquiryState>()(
               : inq
           ),
         }));
+
+        try {
+          await fetch('/api/admin/inquiries', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, replySent: replyMessage, status: 'resolved' }),
+          });
+        } catch (err) {
+          console.warn('API send reply error:', err);
+        }
       },
 
       deleteInquiry: async (id) => {
-        const supabase = getBrowserClient();
-        try {
-          await supabase.from('inquiries').delete().eq('id', id);
-        } catch {}
-
         set((state) => ({
           inquiries: state.inquiries.filter((inq) => inq.id !== id),
         }));
+
+        try {
+          await fetch(`/api/admin/inquiries?id=${encodeURIComponent(id)}`, {
+            method: 'DELETE',
+          });
+        } catch (err) {
+          console.warn('API delete inquiry error:', err);
+        }
       },
 
       resetToDefaults: async () => {

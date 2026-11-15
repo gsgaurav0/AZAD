@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Package,
@@ -30,6 +30,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
 import { useInquiryStore } from '@/store/inquiryStore';
 import { useCouponStore } from '@/store/couponStore';
+import { useCMSStore } from '@/store/cmsStore';
 import { useIsMounted } from '@/hooks/useIsMounted';
 import { Product, Order, OrderStatus } from '@/types';
 
@@ -82,6 +83,7 @@ export default function AdminPage() {
   // Stores
   const {
     products,
+    fetchProducts,
     addProduct,
     updateProduct,
     deleteProduct,
@@ -93,6 +95,7 @@ export default function AdminPage() {
   const {
     orders,
     registeredUsers,
+    fetchAdminOrders,
     updateOrderStatus,
     updateOrder,
     deleteOrder,
@@ -101,10 +104,24 @@ export default function AdminPage() {
   } = useAuthStore();
 
   const inquiries = useInquiryStore((state) => state.inquiries);
+  const fetchInquiries = useInquiryStore((state) => state.fetchInquiries);
   const unreadInquiriesCount = inquiries.filter((i) => i.status === 'new').length;
   const totalReviewsCount = products.reduce((acc, p) => acc + (p.reviews?.length || 0), 0);
   const coupons = useCouponStore((state) => state.coupons);
+  const fetchCoupons = useCouponStore((state) => state.fetchCoupons);
   const activeCouponsCount = coupons.filter((c) => c.isActive).length;
+  const fetchCMS = useCMSStore((state) => state.fetchCMS);
+
+  // Sync all store collections with Supabase database on mount & auth
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchProducts();
+      fetchAdminOrders();
+      fetchCoupons();
+      fetchInquiries();
+      fetchCMS();
+    }
+  }, [isAuthenticated, fetchProducts, fetchAdminOrders, fetchCoupons, fetchInquiries, fetchCMS]);
 
   // Key Financial & Logistics Metrics for KPI Bar
   const validOrders = orders.filter((o) => o.status !== 'Cancelled');

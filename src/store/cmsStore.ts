@@ -243,6 +243,23 @@ export const DEFAULT_CMS_DATA: StorefrontCMS = {
 const STORAGE_KEY = 'mewak_storefront_cms';
 const SYNC_EVENT = 'mewak_cms_sync';
 
+let saveTimer: any = null;
+function triggerDatabaseSave(cms: StorefrontCMS) {
+  if (typeof window === 'undefined') return;
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    try {
+      await fetch('/api/admin/cms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cms }),
+      });
+    } catch (err) {
+      console.warn('CMS database sync notice:', err);
+    }
+  }, 600);
+}
+
 function notifyCMSChange() {
   if (typeof window === 'undefined') return;
   try {
@@ -259,6 +276,10 @@ function notifyCMSChange() {
 
 interface CMSState {
   cms: StorefrontCMS;
+  isLoading: boolean;
+
+  fetchCMS: () => Promise<void>;
+  saveCMS: (customCMS?: StorefrontCMS) => Promise<void>;
 
   // Granular update actions
   updateAnnouncement: (updates: Partial<AnnouncementConfig>) => void;
@@ -285,8 +306,40 @@ interface CMSState {
 
 export const useCMSStore = create<CMSState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       cms: DEFAULT_CMS_DATA,
+      isLoading: false,
+
+      fetchCMS: async () => {
+        if (typeof window === 'undefined') return;
+        set({ isLoading: true });
+        try {
+          const res = await fetch('/api/admin/cms');
+          if (res.ok) {
+            const data = await res.json();
+            if (data.cms) {
+              set({ cms: data.cms, isLoading: false });
+              return;
+            }
+          }
+        } catch (err) {
+          console.warn('CMS fetch error:', err);
+        }
+        set({ isLoading: false });
+      },
+
+      saveCMS: async (customCMS?: StorefrontCMS) => {
+        const toSave = customCMS || get().cms;
+        try {
+          await fetch('/api/admin/cms', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cms: toSave }),
+          });
+        } catch (err) {
+          console.warn('Save CMS error:', err);
+        }
+      },
 
       updateAnnouncement: (updates) => {
         set((state) => ({
@@ -296,6 +349,7 @@ export const useCMSStore = create<CMSState>()(
           },
         }));
         notifyCMSChange();
+        triggerDatabaseSave(get().cms);
       },
 
       updateHero: (updates) => {
@@ -306,6 +360,7 @@ export const useCMSStore = create<CMSState>()(
           },
         }));
         notifyCMSChange();
+        triggerDatabaseSave(get().cms);
       },
 
       updateBento: (updates) => {
@@ -316,6 +371,7 @@ export const useCMSStore = create<CMSState>()(
           },
         }));
         notifyCMSChange();
+        triggerDatabaseSave(get().cms);
       },
 
       updateBentoTile: (tileId, updates) => {
@@ -429,6 +485,7 @@ export const useCMSStore = create<CMSState>()(
           },
         }));
         notifyCMSChange();
+        triggerDatabaseSave(get().cms);
       },
 
       toggleSection: (sectionKey, enabled) => {
@@ -443,16 +500,19 @@ export const useCMSStore = create<CMSState>()(
           };
         });
         notifyCMSChange();
+        triggerDatabaseSave(get().cms);
       },
 
       setAllCMS: (newCMS) => {
         set({ cms: newCMS });
         notifyCMSChange();
+        triggerDatabaseSave(newCMS);
       },
 
       resetToDefaults: () => {
         set({ cms: DEFAULT_CMS_DATA });
         notifyCMSChange();
+        triggerDatabaseSave(DEFAULT_CMS_DATA);
       },
     }),
     {

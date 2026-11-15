@@ -37,6 +37,7 @@ import { StorefrontCMS } from '@/types/cms';
 export default function AdminStorefrontTab() {
   const {
     cms,
+    saveCMS,
     updateAnnouncement,
     updateHero,
     updateBento,
@@ -57,6 +58,14 @@ export default function AdminStorefrontTab() {
 
   const products = useProductStore((state) => state.products);
   const addToast = useUIStore((state) => state.addToast);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSaveToDatabase = async () => {
+    setIsSaving(true);
+    await saveCMS();
+    setIsSaving(false);
+    addToast('Storefront configuration saved directly to Supabase database!', 'success');
+  };
 
   // Active accordion section
   const [activeSection, setActiveSection] = useState<string>('bento');
@@ -130,6 +139,16 @@ export default function AdminStorefrontTab() {
             <span>Preview Store</span>
             <ExternalLink className="w-3 h-3 text-[#2B1A16]/50" />
           </Link>
+
+          <button
+            type="button"
+            onClick={handleSaveToDatabase}
+            disabled={isSaving}
+            className="px-3 py-2 rounded-xl bg-[#2B1A16] hover:bg-[#9A8029] text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+          >
+            <Save className="w-3.5 h-3.5" />
+            <span>{isSaving ? 'Saving...' : 'Save to DB'}</span>
+          </button>
 
           <button
             type="button"

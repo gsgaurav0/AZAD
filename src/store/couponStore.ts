@@ -78,10 +78,20 @@ export const useCouponStore = create<CouponState>()(
 
       fetchCoupons: async () => {
         if (typeof window === 'undefined') return;
-        const supabase = getBrowserClient();
         set({ isLoading: true });
 
         try {
+          const apiRes = await fetch('/api/admin/coupons');
+          if (apiRes.ok) {
+            const apiData = await apiRes.json();
+            if (apiData.coupons && apiData.coupons.length > 0) {
+              set({ coupons: apiData.coupons, isLoading: false });
+              return;
+            }
+          }
+
+          // Fallback to direct client
+          const supabase = getBrowserClient();
           const { data, error } = await supabase
             .from('coupons')
             .select('*')
@@ -107,7 +117,7 @@ export const useCouponStore = create<CouponState>()(
             return;
           }
         } catch (err) {
-          console.warn('Coupon Supabase fetch notice:', err);
+          console.warn('Coupon fetch notice:', err);
         }
 
         set({ isLoading: false });
@@ -124,22 +134,23 @@ export const useCouponStore = create<CouponState>()(
           createdAt,
         };
 
-        const supabase = getBrowserClient();
         try {
-          await supabase.from('coupons').insert({
-            code: newCoupon.code,
-            description: newCoupon.description,
-            discount_type: newCoupon.discountType,
-            discount_value: newCoupon.discountValue,
-            min_order_value: newCoupon.minOrderValue || 0,
-            max_discount: newCoupon.maxDiscount || null,
-            usage_limit: newCoupon.usageLimit || null,
-            usage_count: 0,
-            is_active: newCoupon.isActive,
-            expires_at: newCoupon.expiresAt || null,
+          const res = await fetch('/api/admin/coupons', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newCoupon),
           });
+          if (res.ok) {
+            const resData = await res.json();
+            if (resData.coupon) {
+              set((state) => ({
+                coupons: [resData.coupon, ...state.coupons.filter((c) => c.id !== id)],
+              }));
+              return resData.coupon;
+            }
+          }
         } catch (err) {
-          console.warn('Coupon Supabase insert notice:', err);
+          console.warn('Coupon API insert notice:', err);
         }
 
         set((state) => ({
@@ -150,36 +161,33 @@ export const useCouponStore = create<CouponState>()(
       },
 
       updateCoupon: async (id, updates) => {
-        const supabase = getBrowserClient();
-        try {
-          const dbUpdates: any = {};
-          if (updates.code) dbUpdates.code = updates.code.toUpperCase();
-          if (updates.description !== undefined) dbUpdates.description = updates.description;
-          if (updates.discountType) dbUpdates.discount_type = updates.discountType;
-          if (updates.discountValue !== undefined) dbUpdates.discount_value = updates.discountValue;
-          if (updates.minOrderValue !== undefined) dbUpdates.min_order_value = updates.minOrderValue;
-          if (updates.maxDiscount !== undefined) dbUpdates.max_discount = updates.maxDiscount;
-          if (updates.usageLimit !== undefined) dbUpdates.usage_limit = updates.usageLimit;
-          if (updates.isActive !== undefined) dbUpdates.is_active = updates.isActive;
-          if (updates.expiresAt !== undefined) dbUpdates.expires_at = updates.expiresAt;
-
-          await supabase.from('coupons').update(dbUpdates).eq('id', id);
-        } catch {}
-
         set((state) => ({
           coupons: state.coupons.map((c) => (c.id === id ? { ...c, ...updates } : c)),
         }));
+
+        try {
+          await fetch('/api/admin/coupons', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, ...updates }),
+          });
+        } catch (err) {
+          console.warn('Coupon API update notice:', err);
+        }
       },
 
       deleteCoupon: async (id) => {
-        const supabase = getBrowserClient();
-        try {
-          await supabase.from('coupons').delete().eq('id', id);
-        } catch {}
-
         set((state) => ({
           coupons: state.coupons.filter((c) => c.id !== id),
         }));
+
+        try {
+          await fetch(`/api/admin/coupons?id=${encodeURIComponent(id)}`, {
+            method: 'DELETE',
+          });
+        } catch (err) {
+          console.warn('Coupon API delete notice:', err);
+        }
       },
 
       toggleCouponActive: async (id) => {

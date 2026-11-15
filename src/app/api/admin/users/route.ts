@@ -46,6 +46,35 @@ export async function GET() {
   }
 }
 
+export async function PUT(request: Request) {
+  try {
+    const { userId, role, memberTier } = await request.json();
+    if (!userId) {
+      return NextResponse.json({ success: false, error: 'User ID is required.' }, { status: 400 });
+    }
+
+    const admin = createAdminClient();
+    const updates: any = { updated_at: new Date().toISOString() };
+    if (role) updates.role = role;
+    if (memberTier) updates.member_tier = memberTier;
+
+    const { data, error } = await admin
+      .from('profiles')
+      .update(updates)
+      .eq('id', userId)
+      .select('*')
+      .single();
+
+    if (error) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    }
+
+    return NextResponse.json({ success: true, user: data });
+  } catch (err: any) {
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  }
+}
+
 export async function DELETE(request: Request) {
   try {
     const { userId } = await request.json();
