@@ -24,6 +24,7 @@ import { useWishlistStore } from '@/store/wishlistStore';
 import { useUIStore } from '@/store/uiStore';
 import { useAuthStore } from '@/store/authStore';
 import { useRecentlyViewedStore } from '@/store/recentlyViewedStore';
+import { useProductStore } from '@/store/productStore';
 import ProductCard from '@/components/product/ProductCard';
 import { PRODUCTS } from '@/data/products';
 
@@ -160,6 +161,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
     };
 
     setReviewsList([newRev, ...reviewsList]);
+    useProductStore.getState().addReview(product.id, newRev);
     setNewReviewAuthor('');
     setNewReviewComment('');
     setReviewSubmitted(true);
@@ -167,7 +169,8 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
   };
 
   // Complete the Look: recommend 2 products from complementary categories
-  const completeTheLook = PRODUCTS.filter(
+  const allStoreProducts = useProductStore((state) => state.products);
+  const completeTheLook = (allStoreProducts.length > 0 ? allStoreProducts : PRODUCTS).filter(
     (p) => p.category !== product.category && p.id !== product.id
   ).slice(0, 2);
 

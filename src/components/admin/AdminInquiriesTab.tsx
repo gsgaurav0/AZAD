@@ -25,7 +25,7 @@ import { useUIStore } from '@/store/uiStore';
 import { SupportInquiry, InquiryStatus, InquiryType } from '@/types/inquiry';
 
 export default function AdminInquiriesTab() {
-  const { inquiries, updateInquiryStatus, replyToInquiry, deleteInquiry, addInquiry, resetToDefaults } =
+  const { inquiries, updateInquiryStatus, sendReply, deleteInquiry, addInquiry, resetToDefaults } =
     useInquiryStore();
   const addToast = useUIStore((state) => state.addToast);
 
@@ -60,18 +60,18 @@ export default function AdminInquiriesTab() {
 
   const newCount = inquiries.filter((i) => i.status === 'new').length;
 
-  const handleSendReply = (e: React.FormEvent) => {
+  const handleSendReply = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedInquiry || !replyText.trim()) return;
 
-    replyToInquiry(selectedInquiry.id, replyText.trim());
+    await sendReply(selectedInquiry.id, replyText.trim());
     addToast(`Dispatched response to ${selectedInquiry.email}`, 'success');
     setSelectedInquiry((prev) => (prev ? { ...prev, status: 'in_progress', replySent: replyText.trim() } : null));
     setReplyText('');
   };
 
-  const handleSimulateTestEmail = () => {
-    const test = addInquiry({
+  const handleSimulateTestEmail = async () => {
+    const test = await addInquiry({
       name: 'Rohan Varma',
       email: 'rohan.varma@studio.audio',
       phone: '+91 98331 99012',

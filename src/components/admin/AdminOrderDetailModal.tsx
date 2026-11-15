@@ -37,8 +37,40 @@ export default function AdminOrderDetailModal({
   const [statusNote, setStatusNote] = useState('');
   const [isEditingTracking, setIsEditingTracking] = useState(false);
   const [trackingNumber, setTrackingNumber] = useState(order?.trackingNumber || '');
+  const [isRefunding, setIsRefunding] = useState(false);
+  const [refundMsg, setRefundMsg] = useState('');
 
   if (!isOpen || !order) return null;
+
+  const handleProcessRefund = async () => {
+    if (!confirm(`Are you sure you want to process a full refund of ₹${order.total} for Order #${order.id}?`)) {
+      return;
+    }
+    setIsRefunding(true);
+    setRefundMsg('');
+    try {
+      const res = await fetch('/api/payments/razorpay/refund', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId: order.id,
+          amount: order.total,
+          reason: 'Customer return request approved by admin',
+        }),
+      });
+      const data = await res.json();
+      setIsRefunding(false);
+      if (data.success) {
+        setRefundMsg(data.message || 'Refund successfully processed.');
+        onUpdateStatus(order.id, 'Refunded', 'Refund processed via Razorpay gateway.');
+      } else {
+        alert(data.error || 'Failed to process refund.');
+      }
+    } catch (err: any) {
+      setIsRefunding(false);
+      alert(err.message || 'Error processing refund.');
+    }
+  };
 
   const handleApplyStatus = (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,6 +97,14 @@ export default function AdminOrderDetailModal({
         return 'bg-emerald-50 text-emerald-800 border-emerald-200';
       case 'Cancelled':
         return 'bg-rose-50 text-rose-800 border-rose-200';
+      case 'Return Requested':
+        return 'bg-orange-50 text-orange-800 border-orange-200';
+      case 'Return Approved':
+        return 'bg-teal-50 text-teal-800 border-teal-200';
+      case 'Return Rejected':
+        return 'bg-red-50 text-red-800 border-red-200';
+      case 'Refunded':
+        return 'bg-emerald-50 text-emerald-800 border-emerald-200';
       default:
         return 'bg-zinc-100 text-zinc-700 border-zinc-200';
     }
@@ -115,7 +155,7 @@ export default function AdminOrderDetailModal({
             </h3>
 
             <form onSubmit={handleApplyStatus} className="space-y-3">
-              <div className="grid grid-cols-2 sm:grid-cols-6 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                 {[
                   'Placed',
                   'Packed',
@@ -123,12 +163,16 @@ export default function AdminOrderDetailModal({
                   'Out for Delivery',
                   'Delivered',
                   'Cancelled',
+                  'Return Requested',
+                  'Return Approved',
+                  'Return Rejected',
+                  'Refunded',
                 ].map((s) => (
                   <button
                     key={s}
                     type="button"
                     onClick={() => setSelectedStatus(s as OrderStatus)}
-                    className={`py-2 px-2 text-xs font-semibold rounded-xl border text-center transition-all ${
+                    className={`py-2 px-2 text-[11px] font-semibold rounded-xl border text-center transition-all ${
                       selectedStatus === s
                         ? 'bg-[#2B1A16] text-[#EFE8DD] border-[#2B1A16] shadow-sm'
                         : 'bg-white text-[#2B1A16]/70 border-[#DDD2C0] hover:border-[#9A8029]'
@@ -138,6 +182,29 @@ export default function AdminOrderDetailModal({
                   </button>
                 ))}
               </div>
+
+              {/* Online Gateway Refund Action */}
+              {(order.status === 'Return Requested' || order.status === 'Return Approved' || order.status === 'Cancelled') && (
+                <div className="mt-3 p-3 bg-amber-50/70 border border-amber-200 rounded-xl flex items-center justify-between gap-3 flex-wrap">
+                  <div>
+                    <span className="font-semibold text-[#2B1A16] block">
+                      Refund Action Available ({order.paymentMethod === 'Razorpay' ? 'Razorpay Gateway' : 'Manual / Bank'})
+                    </span>
+                    <span className="text-[11px] text-[#2B1A16]/70">
+                      Issue complete refund of ₹{order.total.toLocaleString('en-IN')} to customer.
+                    </span>
+                    {refundMsg && <span className="text-[11px] text-emerald-700 block font-medium mt-1">{refundMsg}</span>}
+                  </div>
+                  <button
+                    type="button"
+                    disabled={isRefunding}
+                    onClick={handleProcessRefund}
+                    className="bg-[#B3402F] hover:bg-[#8F2F20] text-white text-[11px] font-semibold uppercase tracking-wider px-4 py-2 rounded-xl transition-colors disabled:opacity-50 shadow-xs"
+                  >
+                    {isRefunding ? 'Processing Refund...' : 'Process ₹' + order.total + ' Refund'}
+                  </button>
+                </div>
+              )}
 
               <div className="flex gap-2 pt-1">
                 <input

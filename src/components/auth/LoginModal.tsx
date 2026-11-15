@@ -10,15 +10,19 @@ export default function LoginModal() {
   const isLoginModalOpen = useUIStore((state) => state.isLoginModalOpen);
   const closeLoginModal = useUIStore((state) => state.closeLoginModal);
   const addToast = useUIStore((state) => state.addToast);
-  const { login, signup, loginWithOtp } = useAuthStore();
+  const { login, signup, loginWithOtp, resetPasswordForEmail } = useAuthStore();
 
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+  const [mode, setMode] = useState<'signin' | 'signup' | 'forgot'>('signin');
   const [authMethod, setAuthMethod] = useState<'password' | 'otp'>('password');
 
   // Sign In State
   const [signInIdentifier, setSignInIdentifier] = useState('');
   const [signInPassword, setSignInPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+
+  // Forgot Password State
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotSent, setForgotSent] = useState(false);
 
   // OTP State
   const [otpPhone, setOtpPhone] = useState('');
@@ -62,7 +66,7 @@ export default function LoginModal() {
   if (!isLoginModalOpen) return null;
 
   // Handle Sign In with Password / Email / Phone
-  const handleSignInPassword = (e: React.FormEvent) => {
+  const handleSignInPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -76,8 +80,8 @@ export default function LoginModal() {
     }
 
     setLoading(true);
-    setTimeout(() => {
-      const res = login(signInIdentifier, signInPassword);
+    try {
+      const res = await login(signInIdentifier, signInPassword);
       setLoading(false);
       if (res.success) {
         addToast(`Welcome back, ${res.user?.name || 'Patron'}!`, 'success');
@@ -85,7 +89,10 @@ export default function LoginModal() {
       } else {
         setError(res.error || 'Authentication failed. Please verify credentials.');
       }
-    }, 400);
+    } catch (err: any) {
+      setLoading(false);
+      setError(err.message || 'Authentication error.');
+    }
   };
 
   // Handle Request OTP
@@ -105,7 +112,7 @@ export default function LoginModal() {
   };
 
   // Handle Verify OTP
-  const handleVerifyOtp = (e?: React.FormEvent) => {
+  const handleVerifyOtp = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const entered = otpDigits.join('');
     if (entered.length < 6) {
@@ -119,8 +126,8 @@ export default function LoginModal() {
     }
 
     setLoading(true);
-    setTimeout(() => {
-      const res = loginWithOtp(otpPhone, entered);
+    try {
+      const res = await loginWithOtp(otpPhone, entered);
       setLoading(false);
       if (res.success) {
         addToast(`Welcome to Mewak, ${res.user?.name || 'Patron'}!`, 'success');
@@ -128,7 +135,10 @@ export default function LoginModal() {
       } else {
         setError(res.error || 'Could not verify OTP.');
       }
-    }, 400);
+    } catch (err: any) {
+      setLoading(false);
+      setError(err.message || 'OTP verification error.');
+    }
   };
 
   const handleOtpInput = (index: number, val: string) => {
@@ -149,7 +159,7 @@ export default function LoginModal() {
   };
 
   // Handle Sign Up
-  const handleSignupSubmit = (e: React.FormEvent) => {
+  const handleSignupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -172,8 +182,8 @@ export default function LoginModal() {
     }
 
     setLoading(true);
-    setTimeout(() => {
-      const res = signup({
+    try {
+      const res = await signup({
         name: signupForm.name,
         email: signupForm.email,
         phone: cleanPhone,
@@ -188,7 +198,35 @@ export default function LoginModal() {
       } else {
         setError(res.error || 'Registration failed. Try again.');
       }
-    }, 400);
+    } catch (err: any) {
+      setLoading(false);
+      setError(err.message || 'Registration failed.');
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    if (!forgotEmail.trim() || !forgotEmail.includes('@')) {
+      setError('Please enter your registered email address.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await resetPasswordForEmail(forgotEmail);
+      setLoading(false);
+      if (res.success) {
+        setForgotSent(true);
+        addToast('Password reset link sent to your email!', 'success');
+      } else {
+        setError(res.error || 'Failed to send password reset email.');
+      }
+    } catch (err: any) {
+      setLoading(false);
+      setError(err.message || 'Failed to send password reset email.');
+    }
   };
 
   return (
@@ -208,46 +246,54 @@ export default function LoginModal() {
         <div className="text-center mb-6">
           <Logo size="md" showSubtitle />
           <h2 className="font-serif text-2xl font-medium text-[#2B1A16] mt-3">
-            {mode === 'signin' ? 'Patron Authentication' : 'Create Patron Profile'}
+            {mode === 'signin'
+              ? 'Patron Authentication'
+              : mode === 'signup'
+              ? 'Create Patron Profile'
+              : 'Recover Password'}
           </h2>
           <p className="text-xs text-[#2B1A16]/70 mt-1">
             {mode === 'signin'
               ? 'Access your orders, bespoke delivery addresses, and concierge.'
-              : 'Join Mewak for authentic hardware, lifetime warranties, and priority dispatch.'}
+              : mode === 'signup'
+              ? 'Join Mewak for authentic hardware, lifetime warranties, and priority dispatch.'
+              : 'Enter your registered email to receive an encrypted reset link.'}
           </p>
         </div>
 
         {/* Mode Toggle (Sign In vs Sign Up) */}
-        <div className="flex border border-[#DDD2C0] rounded-[4px] p-1 bg-[#EFE8DD]/70 mb-5 text-xs font-semibold uppercase tracking-wider">
-          <button
-            type="button"
-            onClick={() => {
-              setMode('signin');
-              setError('');
-            }}
-            className={`flex-1 py-2 text-center rounded-[3px] transition-colors ${
-              mode === 'signin'
-                ? 'bg-[#2B1A16] text-[#EFE8DD] shadow-xs'
-                : 'text-[#2B1A16]/70 hover:text-[#2B1A16]'
-            }`}
-          >
-            Sign In
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setMode('signup');
-              setError('');
-            }}
-            className={`flex-1 py-2 text-center rounded-[3px] transition-colors ${
-              mode === 'signup'
-                ? 'bg-[#2B1A16] text-[#EFE8DD] shadow-xs'
-                : 'text-[#2B1A16]/70 hover:text-[#2B1A16]'
-            }`}
-          >
-            Create Profile
-          </button>
-        </div>
+        {mode !== 'forgot' && (
+          <div className="flex border border-[#DDD2C0] rounded-[4px] p-1 bg-[#EFE8DD]/70 mb-5 text-xs font-semibold uppercase tracking-wider">
+            <button
+              type="button"
+              onClick={() => {
+                setMode('signin');
+                setError('');
+              }}
+              className={`flex-1 py-2 text-center rounded-[3px] transition-colors ${
+                mode === 'signin'
+                  ? 'bg-[#2B1A16] text-[#EFE8DD] shadow-xs'
+                  : 'text-[#2B1A16]/70 hover:text-[#2B1A16]'
+              }`}
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMode('signup');
+                setError('');
+              }}
+              className={`flex-1 py-2 text-center rounded-[3px] transition-colors ${
+                mode === 'signup'
+                  ? 'bg-[#2B1A16] text-[#EFE8DD] shadow-xs'
+                  : 'text-[#2B1A16]/70 hover:text-[#2B1A16]'
+              }`}
+            >
+              Create Profile
+            </button>
+          </div>
+        )}
 
         {/* Error Alert */}
         {error && (
@@ -343,6 +389,19 @@ export default function LoginModal() {
                       className="px-3 text-[#2B1A16]/50 hover:text-[#2B1A16]"
                     >
                       {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                  <div className="flex justify-end mt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMode('forgot');
+                        setError('');
+                        setForgotSent(false);
+                      }}
+                      className="text-[11px] text-[#9A8029] hover:underline"
+                    >
+                      Forgot password?
                     </button>
                   </div>
                 </div>
@@ -594,6 +653,75 @@ export default function LoginModal() {
               <CheckCircle2 className="w-3.5 h-3.5" />
             </button>
           </form>
+        )}
+
+        {/* FORGOT PASSWORD */}
+        {mode === 'forgot' && (
+          <div className="space-y-4 text-xs">
+            {forgotSent ? (
+              <div className="p-4 bg-[#4C7A34]/10 border border-[#4C7A34]/30 rounded-[4px] text-center space-y-2">
+                <CheckCircle2 className="w-7 h-7 text-[#4C7A34] mx-auto" />
+                <h3 className="font-serif text-base text-[#2B1A16] font-normal">Recovery Email Sent</h3>
+                <p className="text-xs text-[#2B1A16]/80">
+                  We have dispatched a password reset link to <strong>{forgotEmail}</strong>.
+                  Please check your inbox to choose a new password.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode('signin');
+                    setError('');
+                  }}
+                  className="mt-2 inline-block bg-[#2B1A16] hover:bg-[#9A8029] text-[#EFE8DD] px-4 py-1.5 rounded-[3px] font-semibold uppercase tracking-wider text-[11px] transition-colors"
+                >
+                  Return to Sign In
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <div>
+                  <label className="block font-semibold uppercase tracking-wider text-[#2B1A16]/80 mb-1">
+                    Registered Email Address *
+                  </label>
+                  <div className="flex rounded-[3px] border border-[#DDD2C0] bg-white overflow-hidden">
+                    <span className="bg-[#EFE8DD] px-3 py-2 text-[#9A8029] border-r border-[#DDD2C0] flex items-center">
+                      <Mail className="w-3.5 h-3.5" />
+                    </span>
+                    <input
+                      type="email"
+                      required
+                      value={forgotEmail}
+                      onChange={(e) => setForgotEmail(e.target.value)}
+                      placeholder="e.g. patron@domain.com"
+                      className="w-full px-3 py-2 text-xs text-[#2B1A16] outline-none"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-[#2B1A16] hover:bg-[#9A8029] text-[#EFE8DD] py-2.5 rounded-[3px] font-semibold uppercase tracking-widest transition-colors flex items-center justify-center gap-2 mt-2 disabled:opacity-50"
+                >
+                  {loading ? 'Sending Recovery Link...' : 'Send Password Reset Link'}
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+
+                <div className="text-center pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode('signin');
+                      setError('');
+                    }}
+                    className="text-xs text-[#9A8029] font-medium hover:underline"
+                  >
+                    ← Back to Sign In
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
         )}
 
         {/* Footer Guarantee */}

@@ -143,12 +143,12 @@ export default function AdminPage() {
     setIsProductModalOpen(true);
   };
 
-  const handleSaveProduct = (productData: Partial<Product>) => {
+  const handleSaveProduct = async (productData: Partial<Product>) => {
     if (productToEdit) {
-      updateProduct(productToEdit.id, productData);
+      await updateProduct(productToEdit.id, productData);
       addToast(`Updated specifications for "${productData.name}"`, 'success');
     } else {
-      const created = addProduct(productData as Omit<Product, 'id' | 'reviews'>);
+      const created = await addProduct(productData as Omit<Product, 'id' | 'reviews'>);
       addToast(`Added new product "${created.name}" to catalog`, 'success');
     }
     setIsProductModalOpen(false);
@@ -165,8 +165,8 @@ export default function AdminPage() {
     addToast('Updated inventory status', 'success');
   };
 
-  const handleDuplicateProduct = (id: string) => {
-    const duplicated = duplicateProduct(id);
+  const handleDuplicateProduct = async (id: string) => {
+    const duplicated = await duplicateProduct(id);
     if (duplicated) {
       addToast(`Duplicated into "${duplicated.name}"`, 'success');
     }

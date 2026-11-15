@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Coupon } from '@/types/coupon';
+import { getBrowserClient } from '@/lib/supabase/client';
 
 export const DEFAULT_COUPONS: Coupon[] = [
   {
@@ -32,221 +33,240 @@ export const DEFAULT_COUPONS: Coupon[] = [
   },
   {
     id: 'coup-3',
-    code: 'STUDIO20',
-    description: '20% off high-end planar audio & accessories above ₹4,999.',
-    discountType: 'percentage',
-    discountValue: 20,
-    minOrderValue: 4999,
-    maxDiscount: 3000,
-    usageLimit: 150,
-    usageCount: 29,
-    isActive: true,
-    expiresAt: '2026-11-30',
-    createdAt: '2026-10-15',
-  },
-  {
-    id: 'coup-4',
-    code: 'VIP5000',
-    description: '₹5,000 Direct Concierge Voucher on titanium flagships above ₹25,000.',
+    code: 'VIP1000',
+    description: 'Exclusive ₹1,000 privilege savings on flagship orders above ₹20,000.',
     discountType: 'flat',
-    discountValue: 5000,
-    minOrderValue: 25000,
-    usageLimit: 50,
+    discountValue: 1000,
+    minOrderValue: 20000,
+    usageLimit: 250,
     usageCount: 11,
     isActive: true,
     expiresAt: '2026-12-15',
     createdAt: '2026-10-20',
   },
-  {
-    id: 'coup-5',
-    code: 'AUDIO25',
-    description: '25% Acoustic Celebration on Planar Driver headphones above ₹9,999.',
-    discountType: 'percentage',
-    discountValue: 25,
-    minOrderValue: 9999,
-    maxDiscount: 4000,
-    usageLimit: 100,
-    usageCount: 18,
-    isActive: false, // Paused promo
-    expiresAt: '2026-11-15',
-    createdAt: '2026-11-01',
-  },
 ];
-
-interface CouponValidationResult {
-  valid: boolean;
-  coupon?: Coupon;
-  error?: string;
-  discountAmount?: number;
-}
 
 interface CouponState {
   coupons: Coupon[];
-  addCoupon: (coupon: Omit<Coupon, 'id' | 'usageCount' | 'createdAt'>) => Coupon;
-  updateCoupon: (id: string, updates: Partial<Coupon>) => void;
-  deleteCoupon: (id: string) => void;
-  toggleCouponActive: (id: string) => void;
-  validateCoupon: (code: string, subtotal: number) => CouponValidationResult;
-  incrementUsage: (code: string) => void;
-  resetToDefaults: () => void;
-}
+  isLoading: boolean;
 
-// Cross-tab broadcast channel
-let couponChannel: BroadcastChannel | null = null;
-if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
-  try {
-    couponChannel = new BroadcastChannel('mewak_coupons_channel');
-  } catch {
-    // Ignore in unsupported environments
-  }
-}
+  // Supabase Sync
+  fetchCoupons: () => Promise<void>;
 
-const broadcastCouponSync = () => {
-  if (couponChannel) {
-    couponChannel.postMessage({ type: 'COUPONS_UPDATED', timestamp: Date.now() });
-  }
-};
+  // Actions
+  addCoupon: (coupon: Omit<Coupon, 'id' | 'usageCount' | 'createdAt'>) => Promise<Coupon>;
+  updateCoupon: (id: string, updates: Partial<Coupon>) => Promise<void>;
+  deleteCoupon: (id: string) => Promise<void>;
+  toggleCouponActive: (id: string) => Promise<void>;
+  incrementUsage: (code: string) => Promise<void>;
+  resetToDefaults: () => Promise<void>;
+
+  // Helpers
+  getCouponByCode: (code: string) => Coupon | undefined;
+  validateCoupon: (code: string, cartSubtotal: number) => {
+    isValid: boolean;
+    coupon?: Coupon;
+    message: string;
+  };
+}
 
 export const useCouponStore = create<CouponState>()(
   persist(
     (set, get) => ({
       coupons: DEFAULT_COUPONS,
+      isLoading: false,
 
-      addCoupon: (newCouponData) => {
+      fetchCoupons: async () => {
+        if (typeof window === 'undefined') return;
+        const supabase = getBrowserClient();
+        set({ isLoading: true });
+
+        try {
+          const { data, error } = await supabase
+            .from('coupons')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+          if (!error && data && data.length > 0) {
+            const mapped: Coupon[] = data.map((c: any) => ({
+              id: c.id,
+              code: c.code,
+              description: c.description || '',
+              discountType: c.discount_type,
+              discountValue: Number(c.discount_value),
+              minOrderValue: c.min_order_value ? Number(c.min_order_value) : 0,
+              maxDiscount: c.max_discount ? Number(c.max_discount) : undefined,
+              usageLimit: c.usage_limit || undefined,
+              usageCount: c.usage_count || 0,
+              isActive: c.is_active,
+              expiresAt: c.expires_at ? c.expires_at.split('T')[0] : undefined,
+              createdAt: c.created_at ? c.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
+            }));
+
+            set({ coupons: mapped, isLoading: false });
+            return;
+          }
+        } catch (err) {
+          console.warn('Coupon Supabase fetch notice:', err);
+        }
+
+        set({ isLoading: false });
+      },
+
+      addCoupon: async (couponData) => {
         const id = `coup-${Date.now()}`;
+        const createdAt = new Date().toISOString().split('T')[0];
         const newCoupon: Coupon = {
-          ...newCouponData,
+          ...couponData,
           id,
-          code: newCouponData.code.trim().toUpperCase(),
+          code: couponData.code.trim().toUpperCase(),
           usageCount: 0,
-          createdAt: new Date().toISOString().split('T')[0],
+          createdAt,
         };
+
+        const supabase = getBrowserClient();
+        try {
+          await supabase.from('coupons').insert({
+            code: newCoupon.code,
+            description: newCoupon.description,
+            discount_type: newCoupon.discountType,
+            discount_value: newCoupon.discountValue,
+            min_order_value: newCoupon.minOrderValue || 0,
+            max_discount: newCoupon.maxDiscount || null,
+            usage_limit: newCoupon.usageLimit || null,
+            usage_count: 0,
+            is_active: newCoupon.isActive,
+            expires_at: newCoupon.expiresAt || null,
+          });
+        } catch (err) {
+          console.warn('Coupon Supabase insert notice:', err);
+        }
 
         set((state) => ({
           coupons: [newCoupon, ...state.coupons],
         }));
 
-        broadcastCouponSync();
         return newCoupon;
       },
 
-      updateCoupon: (id, updates) => {
+      updateCoupon: async (id, updates) => {
+        const supabase = getBrowserClient();
+        try {
+          const dbUpdates: any = {};
+          if (updates.code) dbUpdates.code = updates.code.toUpperCase();
+          if (updates.description !== undefined) dbUpdates.description = updates.description;
+          if (updates.discountType) dbUpdates.discount_type = updates.discountType;
+          if (updates.discountValue !== undefined) dbUpdates.discount_value = updates.discountValue;
+          if (updates.minOrderValue !== undefined) dbUpdates.min_order_value = updates.minOrderValue;
+          if (updates.maxDiscount !== undefined) dbUpdates.max_discount = updates.maxDiscount;
+          if (updates.usageLimit !== undefined) dbUpdates.usage_limit = updates.usageLimit;
+          if (updates.isActive !== undefined) dbUpdates.is_active = updates.isActive;
+          if (updates.expiresAt !== undefined) dbUpdates.expires_at = updates.expiresAt;
+
+          await supabase.from('coupons').update(dbUpdates).eq('id', id);
+        } catch {}
+
         set((state) => ({
-          coupons: state.coupons.map((c) =>
-            c.id === id
-              ? {
-                  ...c,
-                  ...updates,
-                  ...(updates.code ? { code: updates.code.trim().toUpperCase() } : {}),
-                }
-              : c
-          ),
+          coupons: state.coupons.map((c) => (c.id === id ? { ...c, ...updates } : c)),
         }));
-        broadcastCouponSync();
       },
 
-      deleteCoupon: (id) => {
+      deleteCoupon: async (id) => {
+        const supabase = getBrowserClient();
+        try {
+          await supabase.from('coupons').delete().eq('id', id);
+        } catch {}
+
         set((state) => ({
           coupons: state.coupons.filter((c) => c.id !== id),
         }));
-        broadcastCouponSync();
       },
 
-      toggleCouponActive: (id) => {
+      toggleCouponActive: async (id) => {
+        const target = get().coupons.find((c) => c.id === id);
+        if (!target) return;
+        await get().updateCoupon(id, { isActive: !target.isActive });
+      },
+
+      incrementUsage: async (code) => {
+        const clean = code.trim().toUpperCase();
+        const supabase = getBrowserClient();
+        try {
+          await supabase.rpc('increment_coupon_usage', { p_code: clean });
+        } catch {}
+
         set((state) => ({
           coupons: state.coupons.map((c) =>
-            c.id === id ? { ...c, isActive: !c.isActive } : c
+            c.code.toUpperCase() === clean ? { ...c, usageCount: c.usageCount + 1 } : c
           ),
         }));
-        broadcastCouponSync();
       },
 
-      validateCoupon: (rawCode, subtotal) => {
-        const cleanCode = rawCode.trim().toUpperCase();
-        if (!cleanCode) {
-          return { valid: false, error: 'Please enter a promo code.' };
-        }
+      resetToDefaults: async () => {
+        set({ coupons: DEFAULT_COUPONS });
+      },
 
-        const coupon = get().coupons.find(
-          (c) => c.code.toUpperCase() === cleanCode
-        );
+      getCouponByCode: (code) => {
+        const clean = code.trim().toUpperCase();
+        return get().coupons.find((c) => c.code.toUpperCase() === clean);
+      },
+
+      validateCoupon: (code, cartSubtotal) => {
+        const coupon = get().getCouponByCode(code);
 
         if (!coupon) {
           return {
-            valid: false,
-            error: `Promo code "${cleanCode}" was not found. Please verify spelling.`,
+            isValid: false,
+            message: `Coupon code "${code}" is not recognized.`,
           };
         }
 
         if (!coupon.isActive) {
           return {
-            valid: false,
-            error: `Promo code "${coupon.code}" is currently paused or inactive.`,
+            isValid: false,
+            coupon,
+            message: `Coupon "${coupon.code}" has been deactivated.`,
           };
         }
 
-        // Check expiration
         if (coupon.expiresAt) {
           const expiryDate = new Date(coupon.expiresAt);
-          // Set to end of expiry day
           expiryDate.setHours(23, 59, 59, 999);
           if (new Date() > expiryDate) {
             return {
-              valid: false,
-              error: `Promo code "${coupon.code}" expired on ${coupon.expiresAt}.`,
+              isValid: false,
+              coupon,
+              message: `Coupon "${coupon.code}" expired on ${coupon.expiresAt}.`,
             };
           }
         }
 
-        // Check usage limit
         if (coupon.usageLimit && coupon.usageCount >= coupon.usageLimit) {
           return {
-            valid: false,
-            error: `Promo code "${coupon.code}" has reached its maximum redemption quota.`,
+            isValid: false,
+            coupon,
+            message: `Coupon "${coupon.code}" has reached its maximum redemption limit.`,
           };
         }
 
-        // Check minimum order value
-        if (coupon.minOrderValue && subtotal < coupon.minOrderValue) {
+        if (coupon.minOrderValue && cartSubtotal < coupon.minOrderValue) {
           return {
-            valid: false,
-            error: `Coupon "${coupon.code}" requires a minimum cart subtotal of ₹${coupon.minOrderValue.toLocaleString('en-IN')}. Current subtotal is ₹${subtotal.toLocaleString('en-IN')}.`,
+            isValid: false,
+            coupon,
+            message: `Coupon "${coupon.code}" requires a minimum order of ₹${coupon.minOrderValue.toLocaleString('en-IN')}.`,
           };
         }
 
-        // Compute discount amount
-        let discountAmount = 0;
-        if (coupon.discountType === 'percentage') {
-          discountAmount = Math.round((subtotal * coupon.discountValue) / 100);
-          if (coupon.maxDiscount && discountAmount > coupon.maxDiscount) {
-            discountAmount = coupon.maxDiscount;
-          }
-        } else {
-          discountAmount = Math.min(coupon.discountValue, subtotal);
-        }
+        const discountDesc =
+          coupon.discountType === 'percentage'
+            ? `${coupon.discountValue}% off`
+            : `₹${coupon.discountValue.toLocaleString('en-IN')} off`;
 
         return {
-          valid: true,
+          isValid: true,
           coupon,
-          discountAmount,
+          message: `Coupon "${coupon.code}" applied! (${discountDesc})`,
         };
-      },
-
-      incrementUsage: (code) => {
-        const cleanCode = code.trim().toUpperCase();
-        set((state) => ({
-          coupons: state.coupons.map((c) =>
-            c.code.toUpperCase() === cleanCode
-              ? { ...c, usageCount: c.usageCount + 1 }
-              : c
-          ),
-        }));
-        broadcastCouponSync();
-      },
-
-      resetToDefaults: () => {
-        set({ coupons: DEFAULT_COUPONS });
-        broadcastCouponSync();
       },
     }),
     {
@@ -254,23 +274,3 @@ export const useCouponStore = create<CouponState>()(
     }
   )
 );
-
-// Listen to other tabs for live sync
-if (couponChannel) {
-  couponChannel.onmessage = (event) => {
-    if (event.data?.type === 'COUPONS_UPDATED') {
-      try {
-        const stored = localStorage.getItem('mewak_coupons_storage');
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (parsed?.state?.coupons) {
-            useCouponStore.setState({ coupons: parsed.state.coupons });
-          }
-        }
-      } catch {
-        // Ignore JSON parse errors
-      }
-    }
-  };
-}
-

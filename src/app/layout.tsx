@@ -11,6 +11,7 @@ import SizeGuideModal from '@/components/product/SizeGuideModal';
 import LoginModal from '@/components/auth/LoginModal';
 import ToastContainer from '@/components/common/ToastContainer';
 import FloatingWhatsApp from '@/components/common/FloatingWhatsApp';
+import AppInitializer from '@/components/common/AppInitializer';
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -79,6 +80,7 @@ export default function RootLayout({
         <LoginModal />
         <ToastContainer />
         <FloatingWhatsApp />
+        <AppInitializer />
       </body>
     </html>
   );

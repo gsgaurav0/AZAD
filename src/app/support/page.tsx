@@ -47,14 +47,14 @@ export default function TechSupportPage() {
   const [submittedTicketId, setSubmittedTicketId] = useState<string | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
       addToast('Please fill in your name, email, and description.', 'error');
       return;
     }
 
-    const created = addInquiry({
+    const created = await addInquiry({
       name: formData.name.trim(),
       email: formData.email.trim(),
       phone: formData.phone.trim(),

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { getBrowserClient } from '@/lib/supabase/client';
 import {
   StorefrontCMS,
   HeroSectionConfig,

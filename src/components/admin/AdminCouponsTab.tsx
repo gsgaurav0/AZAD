@@ -109,7 +109,7 @@ export default function AdminCouponsTab() {
     setIsModalOpen(true);
   };
 
-  const handleSaveCoupon = (e: React.FormEvent) => {
+  const handleSaveCoupon = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!code.trim()) {
       addToast('Please enter a coupon code', 'error');
@@ -122,7 +122,7 @@ export default function AdminCouponsTab() {
     }
 
     if (editingCoupon) {
-      updateCoupon(editingCoupon.id, {
+      await updateCoupon(editingCoupon.id, {
         code: code.trim().toUpperCase(),
         description: description.trim(),
         discountType,
@@ -135,7 +135,7 @@ export default function AdminCouponsTab() {
       });
       addToast(`Updated promo code "${code.trim().toUpperCase()}"`, 'success');
     } else {
-      const created = addCoupon({
+      const created = await addCoupon({
         code: code.trim().toUpperCase(),
         description: description.trim() || `${discountValue}${discountType === 'percentage' ? '%' : '₹'} discount code`,
         discountType,
@@ -152,9 +152,9 @@ export default function AdminCouponsTab() {
     setIsModalOpen(false);
   };
 
-  const handleDuplicate = (c: Coupon) => {
+  const handleDuplicate = async (c: Coupon) => {
     const copyCode = `${c.code}_COPY`;
-    addCoupon({
+    await addCoupon({
       ...c,
       code: copyCode,
       description: `${c.description} (Duplicate)`,

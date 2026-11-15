@@ -93,6 +93,21 @@ export default function AdminOrdersTab({
       value: 'Cancelled',
       count: orders.filter((o) => o.status === 'Cancelled').length,
     },
+    {
+      label: 'Return Requested',
+      value: 'Return Requested',
+      count: orders.filter((o) => o.status === 'Return Requested').length,
+    },
+    {
+      label: 'Return Approved',
+      value: 'Return Approved',
+      count: orders.filter((o) => o.status === 'Return Approved').length,
+    },
+    {
+      label: 'Refunded',
+      value: 'Refunded',
+      count: orders.filter((o) => o.status === 'Refunded').length,
+    },
   ];
 
   const getStatusBadgeStyle = (status: OrderStatus) => {
@@ -109,6 +124,14 @@ export default function AdminOrdersTab({
         return 'bg-emerald-50 text-emerald-800 border-emerald-200';
       case 'Cancelled':
         return 'bg-rose-50 text-rose-800 border-rose-200';
+      case 'Return Requested':
+        return 'bg-orange-50 text-orange-800 border-orange-200';
+      case 'Return Approved':
+        return 'bg-teal-50 text-teal-800 border-teal-200';
+      case 'Return Rejected':
+        return 'bg-red-50 text-red-800 border-red-200';
+      case 'Refunded':
+        return 'bg-emerald-50 text-emerald-800 border-emerald-200';
       default:
         return 'bg-zinc-100 text-zinc-700 border-zinc-200';
     }

@@ -37,10 +37,12 @@ import {
   FileText,
   BadgeCheck,
   Send,
+  Upload,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
 import { Address, Order, OrderStatus } from '@/types';
+import { uploadFileToSupabase } from '@/lib/supabase/storage';
 
 const AVATAR_PRESETS = [
   'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
@@ -141,6 +143,8 @@ export default function AccountPage() {
   const [returnReason, setReturnReason] = useState('Comfort or fit issue with ear cushions / watch band');
   const [returnRefundMode, setReturnRefundMode] = useState('Original Payment Method');
   const [returnSuccess, setReturnSuccess] = useState(false);
+  const [returnImages, setReturnImages] = useState<string[]>([]);
+  const [isUploadingReturnImage, setIsUploadingReturnImage] = useState(false);
 
   if (!isLoggedIn || !user) {
     return (
@@ -249,13 +253,13 @@ export default function AccountPage() {
     addToast(`Verification code sent to ${clean}`, 'info');
   };
 
-  const handleConfirmEmailVerification = (e: React.FormEvent) => {
+  const handleConfirmEmailVerification = async (e: React.FormEvent) => {
     e.preventDefault();
     if (inputEmailCode.trim() !== emailToken) {
       addToast('Invalid verification token. Please enter the generated code.', 'error');
       return;
     }
-    const res = changeEmailWithVerification(newEmail, inputEmailCode);
+    const res = await changeEmailWithVerification(newEmail, inputEmailCode);
     if (res.success) {
       addToast('Email verified and updated successfully!', 'success');
       setShowEmailVerifyModal(false);
@@ -285,13 +289,13 @@ export default function AccountPage() {
     addToast(`OTP transmitted to +91 ${clean}`, 'info');
   };
 
-  const handleConfirmPhoneVerification = (e: React.FormEvent) => {
+  const handleConfirmPhoneVerification = async (e: React.FormEvent) => {
     e.preventDefault();
     if (inputPhoneCode.trim() !== phoneToken) {
       addToast('Invalid verification OTP code. Please enter the generated code.', 'error');
       return;
     }
-    const res = changePhoneWithVerification(newPhone, inputPhoneCode);
+    const res = await changePhoneWithVerification(newPhone, inputPhoneCode);
     if (res.success) {
       addToast('Mobile number verified and updated successfully!', 'success');
       setShowPhoneVerifyModal(false);
@@ -301,7 +305,7 @@ export default function AccountPage() {
   };
 
   // Handlers for Password Change
-  const handleSavePasswordChange = (e: React.FormEvent) => {
+  const handleSavePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
     setPasswordError('');
 
@@ -318,7 +322,7 @@ export default function AccountPage() {
       return;
     }
 
-    const res = changePasswordWithVerification(passwordForm.currentPassword, passwordForm.newPassword);
+    const res = await changePasswordWithVerification(passwordForm.currentPassword, passwordForm.newPassword);
     if (res.success) {
       addToast('Security credentials updated successfully.', 'success');
       setShowPasswordChangeModal(false);
@@ -1274,10 +1278,16 @@ export default function AccountPage() {
               </div>
             ) : (
               <form
-                onSubmit={(e) => {
+                onSubmit={async (e) => {
                   e.preventDefault();
                   if (!returnOrderId) return;
-                  requestReturn(returnOrderId, returnReason);
+                  await requestReturn(
+                    returnOrderId,
+                    returnReason,
+                    returnReason.includes('Exchange') ? 'exchange' : 'return',
+                    `Refund preference: ${returnRefundMode}`,
+                    returnImages
+                  );
                   setReturnSuccess(true);
                   addToast(`Return request initiated for Order #${returnOrderId}`, 'success');
                 }}
@@ -1317,6 +1327,58 @@ export default function AccountPage() {
                     <option>Packaging arrived damaged in courier transit</option>
                     <option>Changed mind / 15-day risk-free return</option>
                   </select>
+                </div>
+
+                {/* Evidence Image Upload */}
+                <div>
+                  <label className="block font-semibold text-[#2B1A16]/80 mb-1">
+                    Photo Evidence / Package Condition (Optional)
+                  </label>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {returnImages.map((imgUrl, i) => (
+                      <div key={i} className="relative w-16 h-16 rounded-[3px] border border-[#DDD2C0] overflow-hidden group">
+                        <img src={imgUrl} alt={`Evidence ${i + 1}`} className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => setReturnImages((prev) => prev.filter((_, idx) => idx !== i))}
+                          className="absolute inset-0 bg-[#2B1A16]/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                    <label className="w-16 h-16 border border-dashed border-[#9A8029] bg-[#EFE8DD]/40 rounded-[3px] flex flex-col items-center justify-center cursor-pointer hover:bg-[#EFE8DD] transition-colors">
+                      <Camera className="w-4 h-4 text-[#9A8029]" />
+                      <span className="text-[9px] text-[#2B1A16]/70 mt-1">
+                        {isUploadingReturnImage ? 'Uploading...' : 'Add'}
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={isUploadingReturnImage}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          setIsUploadingReturnImage(true);
+                          try {
+                            const res = await uploadFileToSupabase('returns', file, 'evidence');
+                            setIsUploadingReturnImage(false);
+                            if (res.success && res.publicUrl) {
+                              const uploadedUrl = res.publicUrl;
+                              setReturnImages((prev) => [...prev, uploadedUrl]);
+                              addToast('Evidence image uploaded', 'success');
+                            } else {
+                              addToast(res.error || 'Upload failed', 'error');
+                            }
+                          } catch (err: any) {
+                            setIsUploadingReturnImage(false);
+                            addToast(err.message || 'Upload failed', 'error');
+                          }
+                        }}
+                      />
+                    </label>
+                  </div>
                 </div>
 
                 <div>
@@ -1862,7 +1924,7 @@ export default function AccountPage() {
               Choose an executive profile portrait or use default initials.
             </p>
 
-            <div className="grid grid-cols-4 gap-3 mb-6">
+            <div className="grid grid-cols-4 gap-3 mb-4">
               {AVATAR_PRESETS.map((url, i) => (
                 <button
                   key={i}
@@ -1878,6 +1940,30 @@ export default function AccountPage() {
                 </button>
               ))}
             </div>
+
+            <label className="w-full flex items-center justify-center gap-2 border border-dashed border-[#DDD2C0] hover:border-[#9A8029] bg-white p-2.5 rounded-[3px] text-xs font-semibold text-[#2B1A16] cursor-pointer mb-4 transition-colors">
+              <Camera className="w-3.5 h-3.5 text-[#9A8029]" />
+              <span>Upload Custom Portrait (Supabase Storage)</span>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    addToast('Uploading portrait to Supabase...', 'info');
+                    const res = await uploadFileToSupabase('avatars', file, user.id);
+                    if (res.success && res.url) {
+                      await updateProfile({ avatarUrl: res.url });
+                      setShowAvatarModal(false);
+                      addToast('Custom portrait updated successfully!', 'success');
+                    } else {
+                      addToast(res.error || 'Failed to upload photo.', 'error');
+                    }
+                  }
+                }}
+              />
+            </label>
 
             <div className="pt-3 border-t border-[#DDD2C0] flex justify-between items-center text-xs">
               {user.avatarUrl && (

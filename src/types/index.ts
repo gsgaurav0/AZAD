@@ -72,7 +72,17 @@ export interface Address {
   isDefault: boolean;
 }
 
-export type OrderStatus = 'Placed' | 'Packed' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Cancelled';
+export type OrderStatus =
+  | 'Placed'
+  | 'Packed'
+  | 'Shipped'
+  | 'Out for Delivery'
+  | 'Delivered'
+  | 'Cancelled'
+  | 'Return Requested'
+  | 'Return Approved'
+  | 'Return Rejected'
+  | 'Refunded';
 
 export interface OrderStatusStep {
   status: OrderStatus;
@@ -93,7 +103,7 @@ export interface Order {
   total: number;
   couponCode?: string;
   address: Address;
-  paymentMethod: 'UPI' | 'Credit/Debit Card' | 'Net Banking' | 'Cash on Delivery';
+  paymentMethod: 'UPI' | 'Credit/Debit Card' | 'Net Banking' | 'Cash on Delivery' | 'Razorpay';
   paymentId?: string;
   status: OrderStatus;
   statusHistory: OrderStatusStep[];

@@ -20,9 +20,19 @@ export default function Footer() {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
     if (email.trim() && email.includes('@')) {
+      try {
+        await fetch('/api/newsletter', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email.trim() }),
+        });
+      } catch (err) {
+        console.warn('Newsletter API notice:', err);
+      }
+
       addInquiry({
         name: email.split('@')[0],
         email: email.trim(),

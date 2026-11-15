@@ -152,7 +152,7 @@ export default function CheckoutPage() {
     addToast(`Security Verification Code: ${code}`, 'info');
   };
 
-  const handleInlineLogin = (e: React.FormEvent) => {
+  const handleInlineLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
 
@@ -177,7 +177,7 @@ export default function CheckoutPage() {
       }
     }
 
-    const res = login(authIdentifier, loginMethod === 'otp' ? 'Mewak@123' : authPassword);
+    const res = await login(authIdentifier, loginMethod === 'otp' ? 'Mewak@123' : authPassword);
     if (!res.success) {
       setAuthError(res.error || 'Authentication failed. Please verify credentials.');
       return;
@@ -186,7 +186,7 @@ export default function CheckoutPage() {
     addToast(`Welcome back, ${res.user?.name || 'Patron'}! Checkout unlocked.`, 'success');
   };
 
-  const handleInlineSignup = (e: React.FormEvent) => {
+  const handleInlineSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
 
@@ -208,7 +208,7 @@ export default function CheckoutPage() {
       return;
     }
 
-    const res = signup({
+    const res = await signup({
       name: signupForm.name.trim(),
       email: signupForm.email.trim(),
       phone: cleanPhone,
@@ -224,7 +224,7 @@ export default function CheckoutPage() {
   };
 
   // Address Handlers
-  const handleSaveNewAddress = (e: React.FormEvent) => {
+  const handleSaveNewAddress = async (e: React.FormEvent) => {
     e.preventDefault();
     if (
       !addressForm.name ||
@@ -243,7 +243,7 @@ export default function CheckoutPage() {
       return;
     }
 
-    const created = addAddress({
+    const created = await addAddress({
       name: addressForm.name.trim(),
       phone: cleanPhone,
       street: addressForm.street.trim(),
@@ -273,7 +273,7 @@ export default function CheckoutPage() {
     setCurrentStep(3);
   };
 
-  const handleFinalPlaceOrder = () => {
+  const handleFinalPlaceOrder = async () => {
     if (!selectedAddress) {
       addToast('Please select a valid delivery address.', 'error');
       setCurrentStep(1);
@@ -282,16 +282,129 @@ export default function CheckoutPage() {
 
     setIsPlacingOrder(true);
 
-    setTimeout(() => {
-      const order = placeOrder({
-        items,
-        subtotal,
-        discount,
-        shipping,
-        total,
-        couponCode: appliedCoupon || undefined,
-        address: selectedAddress,
-        paymentMethod,
+    try {
+      // 1. Call server-side /api/checkout to validate catalog prices and create order
+      const checkoutRes = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: items.map((i) => ({
+            productId: i.product.id,
+            selectedColor: i.selectedColor,
+            selectedSize: i.selectedSize,
+            quantity: i.quantity,
+          })),
+          address: selectedAddress,
+          couponCode: appliedCoupon || undefined,
+          paymentMethod,
+          customer: {
+            name: user?.name || selectedAddress.name,
+            email: user?.email || '',
+            phone: user?.phone || selectedAddress.phone,
+          },
+        }),
+      });
+
+      const checkoutData = await checkoutRes.json();
+      if (!checkoutRes.ok || !checkoutData.success) {
+        addToast(checkoutData.error || 'Checkout verification failed.', 'error');
+        setIsPlacingOrder(false);
+        return;
+      }
+
+      const createdOrderId = checkoutData.orderId;
+
+      // 2. If Cash on Delivery, complete immediately
+      if (paymentMethod === 'Cash on Delivery') {
+        if (appliedCoupon) {
+          useCouponStore.getState().incrementUsage(appliedCoupon);
+        }
+
+        clearCart();
+        setIsPlacingOrder(false);
+        addToast(`Order #${createdOrderId} confirmed with Doorstep Verification!`, 'success');
+        router.push(`/order-success/${createdOrderId}`);
+        return;
+      }
+
+      // 3. For Online Payments (UPI, Cards, Net Banking, Razorpay): Call Razorpay order API
+      const rzpRes = await fetch('/api/payments/razorpay', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId: createdOrderId,
+          amount: total,
+        }),
+      });
+
+      const rzpData = await rzpRes.json();
+
+      // Check if Razorpay script can be loaded or if simulation mode
+      if (typeof window !== 'undefined' && (window as any).Razorpay && rzpData.keyId && !rzpData.isSandbox) {
+        const options = {
+          key: rzpData.keyId,
+          amount: rzpData.amount,
+          currency: rzpData.currency || 'INR',
+          name: 'Mewak Luxury Tech',
+          description: `Order #${createdOrderId}`,
+          order_id: rzpData.razorpayOrderId,
+          prefill: {
+            name: selectedAddress.name,
+            email: user?.email || '',
+            contact: selectedAddress.phone,
+          },
+          theme: {
+            color: '#2B1A16',
+          },
+          handler: async function (response: any) {
+            // Verify signature server-side
+            const verifyRes = await fetch('/api/payments/razorpay/verify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                orderId: createdOrderId,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }),
+            });
+
+            const verifyData = await verifyRes.json();
+            if (verifyData.success) {
+              if (appliedCoupon) {
+                useCouponStore.getState().incrementUsage(appliedCoupon);
+              }
+              clearCart();
+              addToast(`Payment of ₹${total.toLocaleString('en-IN')} verified successfully!`, 'success');
+              router.push(`/order-success/${createdOrderId}`);
+            } else {
+              addToast(verifyData.error || 'Payment verification failed.', 'error');
+            }
+          },
+          modal: {
+            ondismiss: function () {
+              setIsPlacingOrder(false);
+              addToast('Payment cancelled. Your order remains pending.', 'info');
+            },
+          },
+        };
+
+        const razorpayInstance = new (window as any).Razorpay(options);
+        razorpayInstance.open();
+        setIsPlacingOrder(false);
+        return;
+      }
+
+      // If in sandbox mode or test mode without external Razorpay popup
+      const verifyRes = await fetch('/api/payments/razorpay/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId: createdOrderId,
+          razorpay_order_id: rzpData.razorpayOrderId || `rzp_sim_${Date.now()}`,
+          razorpay_payment_id: `pay_sim_${Date.now()}`,
+          razorpay_signature: 'verified_simulation',
+        }),
       });
 
       if (appliedCoupon) {
@@ -300,9 +413,13 @@ export default function CheckoutPage() {
 
       clearCart();
       setIsPlacingOrder(false);
-      addToast(`Order #${order.id} confirmed and dispatched to fulfillment!`, 'success');
-      router.push(`/order-success/${order.id}`);
-    }, 1200);
+      addToast(`Order #${createdOrderId} confirmed and payment inscribed!`, 'success');
+      router.push(`/order-success/${createdOrderId}`);
+    } catch (err: any) {
+      console.error('Final place order exception:', err);
+      addToast(err.message || 'Error communicating with checkout gateway.', 'error');
+      setIsPlacingOrder(false);
+    }
   };
 
   // SSR Hydration Fallback

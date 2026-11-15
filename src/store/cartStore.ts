@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { CartItem, Product } from '@/types';
 import { useCouponStore } from '@/store/couponStore';
+import { getBrowserClient } from '@/lib/supabase/client';
 
 interface CartState {
   items: CartItem[];
@@ -9,7 +10,10 @@ interface CartState {
   appliedCoupon: string | null;
   couponDiscountPercent: number;
   couponDiscountFlat: number;
-  
+
+  // Supabase Sync
+  syncWithSupabase: (userId?: string) => Promise<void>;
+
   // Actions
   openCart: () => void;
   closeCart: () => void;
@@ -32,7 +36,7 @@ interface CartState {
 }
 
 const FREE_SHIPPING_THRESHOLD = 999;
-const STANDARD_SHIPPING_FEE = 99;
+const STANDARD_SHIPPING_FEE = 150;
 
 export const useCartStore = create<CartState>()(
   persist(
@@ -46,6 +50,60 @@ export const useCartStore = create<CartState>()(
       openCart: () => set({ isCartOpen: true }),
       closeCart: () => set({ isCartOpen: false }),
       toggleCart: () => set((state) => ({ isCartOpen: !state.isCartOpen })),
+
+      syncWithSupabase: async (userId?: string) => {
+        if (typeof window === 'undefined') return;
+        const supabase = getBrowserClient();
+
+        try {
+          let targetUserId = userId;
+          if (!targetUserId) {
+            const { data: { session } } = await supabase.auth.getSession();
+            targetUserId = session?.user?.id;
+          }
+
+          if (!targetUserId) return;
+
+          // Fetch items from server cart
+          const { data: serverCart } = await supabase
+            .from('cart_items')
+            .select('*, product:products(*)')
+            .eq('user_id', targetUserId);
+
+          if (serverCart && serverCart.length > 0) {
+            const serverItems: CartItem[] = serverCart
+              .filter((c: any) => c.product)
+              .map((c: any) => ({
+                product: c.product,
+                selectedColor: c.selected_color,
+                selectedSize: c.selected_size,
+                quantity: c.quantity,
+              }));
+
+            // Merge local guest items with server items
+            const localItems = get().items;
+            const merged = [...serverItems];
+
+            for (const local of localItems) {
+              const existingIdx = merged.findIndex(
+                (m) =>
+                  m.product.id === local.product.id &&
+                  m.selectedColor === local.selectedColor &&
+                  m.selectedSize === local.selectedSize
+              );
+              if (existingIdx > -1) {
+                merged[existingIdx].quantity = Math.max(merged[existingIdx].quantity, local.quantity);
+              } else {
+                merged.push(local);
+              }
+            }
+
+            set({ items: merged });
+          }
+        } catch (err) {
+          console.warn('Cart Supabase sync notice:', err);
+        }
+      },
 
       addItem: (product, selectedColor, selectedSize, quantity = 1) => {
         set((state) => {
@@ -69,6 +127,23 @@ export const useCartStore = create<CartState>()(
 
           return { items: newItems, isCartOpen: true };
         });
+
+        // Sync with Supabase asynchronously
+        if (typeof window !== 'undefined') {
+          const supabase = getBrowserClient();
+          supabase.auth.getSession().then(({ data }: { data: any }) => {
+            if (data.session?.user) {
+              supabase.from('cart_items').upsert({
+                user_id: data.session.user.id,
+                product_id: product.id,
+                selected_color: selectedColor,
+                selected_size: selectedSize,
+                quantity,
+                updated_at: new Date().toISOString(),
+              }, { onConflict: 'user_id,product_id,selected_color,selected_size' }).catch(() => {});
+            }
+          });
+        }
       },
 
       removeItem: (productId, selectedColor, selectedSize) => {
@@ -82,6 +157,21 @@ export const useCartStore = create<CartState>()(
               )
           ),
         }));
+
+        if (typeof window !== 'undefined') {
+          const supabase = getBrowserClient();
+          supabase.auth.getSession().then(({ data }: { data: any }) => {
+            if (data.session?.user) {
+              supabase.from('cart_items')
+                .delete()
+                .eq('user_id', data.session.user.id)
+                .eq('product_id', productId)
+                .eq('selected_color', selectedColor)
+                .eq('selected_size', selectedSize)
+                .catch(() => {});
+            }
+          });
+        }
       },
 
       updateQuantity: (productId, selectedColor, selectedSize, quantity) => {
@@ -89,6 +179,7 @@ export const useCartStore = create<CartState>()(
           get().removeItem(productId, selectedColor, selectedSize);
           return;
         }
+
         set((state) => ({
           items: state.items.map((item) =>
             item.product.id === productId &&
@@ -98,6 +189,21 @@ export const useCartStore = create<CartState>()(
               : item
           ),
         }));
+
+        if (typeof window !== 'undefined') {
+          const supabase = getBrowserClient();
+          supabase.auth.getSession().then(({ data }: { data: any }) => {
+            if (data.session?.user) {
+              supabase.from('cart_items')
+                .update({ quantity, updated_at: new Date().toISOString() })
+                .eq('user_id', data.session.user.id)
+                .eq('product_id', productId)
+                .eq('selected_color', selectedColor)
+                .eq('selected_size', selectedSize)
+                .catch(() => {});
+            }
+          });
+        }
       },
 
       updateSize: (productId, currentColor, currentSize, newSize) => {
@@ -112,40 +218,32 @@ export const useCartStore = create<CartState>()(
         }));
       },
 
-      applyCoupon: (rawCode: string) => {
-        const subtotal = get().getSubtotal();
-        const result = useCouponStore.getState().validateCoupon(rawCode, subtotal);
+      applyCoupon: (code: string) => {
+        const cleanCode = code.trim().toUpperCase();
+        const couponStore = useCouponStore.getState();
+        const currentSubtotal = get().getSubtotal();
 
-        if (!result.valid || !result.coupon) {
-          return {
-            success: false,
-            message: result.error || 'Invalid promo code. Verify code or active promotions.',
-          };
+        const validation = couponStore.validateCoupon(cleanCode, currentSubtotal);
+        if (!validation.isValid || !validation.coupon) {
+          return { success: false, message: validation.message };
         }
 
-        const coupon = result.coupon;
+        const coupon = validation.coupon;
         if (coupon.discountType === 'percentage') {
           set({
             appliedCoupon: coupon.code,
             couponDiscountPercent: coupon.discountValue,
             couponDiscountFlat: 0,
           });
-          const capText = coupon.maxDiscount ? ` (capped at ₹${coupon.maxDiscount.toLocaleString('en-IN')})` : '';
-          return {
-            success: true,
-            message: `Coupon "${coupon.code}" applied: ${coupon.discountValue}% Off${capText}!`,
-          };
         } else {
           set({
             appliedCoupon: coupon.code,
             couponDiscountPercent: 0,
             couponDiscountFlat: coupon.discountValue,
           });
-          return {
-            success: true,
-            message: `Coupon "${coupon.code}" applied: ₹${coupon.discountValue.toLocaleString('en-IN')} Flat Discount!`,
-          };
         }
+
+        return { success: true, message: validation.message };
       },
 
       removeCoupon: () => {
@@ -156,11 +254,26 @@ export const useCartStore = create<CartState>()(
         });
       },
 
-      clearCart: () => set({ items: [], appliedCoupon: null, couponDiscountPercent: 0, couponDiscountFlat: 0 }),
+      clearCart: () => {
+        set({
+          items: [],
+          appliedCoupon: null,
+          couponDiscountPercent: 0,
+          couponDiscountFlat: 0,
+        });
+
+        if (typeof window !== 'undefined') {
+          const supabase = getBrowserClient();
+          supabase.auth.getSession().then(({ data }: { data: any }) => {
+            if (data.session?.user) {
+              supabase.from('cart_items').delete().eq('user_id', data.session.user.id).catch(() => {});
+            }
+          });
+        }
+      },
 
       getSubtotal: () => {
-        const items = get().items;
-        return items.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
+        return get().items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
       },
 
       getShippingFee: () => {
@@ -172,38 +285,29 @@ export const useCartStore = create<CartState>()(
       },
 
       getCouponDiscount: () => {
-        const { appliedCoupon, couponDiscountPercent, couponDiscountFlat } = get();
         const subtotal = get().getSubtotal();
-        if (subtotal === 0) return 0;
+        const { couponDiscountPercent, couponDiscountFlat, appliedCoupon } = get();
+
+        if (!appliedCoupon) return 0;
 
         if (couponDiscountPercent > 0) {
-          let discount = Math.round((subtotal * couponDiscountPercent) / 100);
-          if (appliedCoupon) {
-            const found = useCouponStore.getState().coupons.find(
-              (c) => c.code.toUpperCase() === appliedCoupon.toUpperCase()
-            );
-            if (found?.maxDiscount && discount > found.maxDiscount) {
-              discount = found.maxDiscount;
-            }
-          }
-          return discount;
+          const coupon = useCouponStore.getState().getCouponByCode(appliedCoupon);
+          const raw = (subtotal * couponDiscountPercent) / 100;
+          return coupon?.maxDiscount ? Math.min(raw, coupon.maxDiscount) : raw;
         }
-        if (couponDiscountFlat > 0) {
-          return Math.min(couponDiscountFlat, subtotal);
-        }
-        return 0;
+
+        return Math.min(couponDiscountFlat, subtotal);
       },
 
       getTotal: () => {
         const subtotal = get().getSubtotal();
-        if (subtotal === 0) return 0;
         const shipping = get().getShippingFee();
         const discount = get().getCouponDiscount();
-        return Math.max(0, subtotal + shipping - discount);
+        return Math.max(0, subtotal - discount + shipping);
       },
 
       getItemCount: () => {
-        return get().items.reduce((acc, item) => acc + item.quantity, 0);
+        return get().items.reduce((count, item) => count + item.quantity, 0);
       },
 
       getFreeShippingRemaining: () => {
@@ -213,12 +317,6 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: 'mewak_cart_storage',
-      partialize: (state) => ({
-        items: state.items,
-        appliedCoupon: state.appliedCoupon,
-        couponDiscountPercent: state.couponDiscountPercent,
-        couponDiscountFlat: state.couponDiscountFlat,
-      }),
     }
   )
 );
