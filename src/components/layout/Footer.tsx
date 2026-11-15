@@ -3,9 +3,9 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Mail, ArrowRight, Check } from 'lucide-react';
+import { Mail, ArrowRight, Check, Phone, Headphones } from 'lucide-react';
 import Logo, { GoldFlowerIcon } from '@/components/common/Logo';
-import { InstagramIcon, FacebookIcon, YoutubeIcon } from '@/components/common/SocialIcons';
+import { InstagramIcon, FacebookIcon, YoutubeIcon, TwitterIcon, DiscordIcon, LinkedinIcon } from '@/components/common/SocialIcons';
 import { useCMSStore, DEFAULT_CMS_DATA } from '@/store/cmsStore';
 import { useInquiryStore } from '@/store/inquiryStore';
 import { useIsMounted } from '@/hooks/useIsMounted';
@@ -50,7 +50,7 @@ export default function Footer() {
             <p className="text-xs text-[#EFE8DD]/70 max-w-sm leading-relaxed font-sans">
               Mewak pioneers the convergence of cutting-edge silicon architecture, acoustic purity, and precision materials. Flagship smartphones, planar headphones, and connected wearables.
             </p>
-            <div className="flex items-center gap-4 pt-2 text-[#DDD2C0]/80">
+            <div className="flex items-center flex-wrap gap-3.5 pt-2 text-[#DDD2C0]/80">
               {socials?.instagram && (
                 <a
                   href={socials.instagram}
@@ -89,10 +89,32 @@ export default function Footer() {
                   href={socials.twitter}
                   target="_blank"
                   rel="noreferrer"
-                  className="hover:text-[#9A8029] transition-colors p-1 font-bold text-sm"
+                  className="hover:text-[#9A8029] transition-colors p-1"
                   aria-label="Twitter / X"
                 >
-                  𝕏
+                  <TwitterIcon size={16} />
+                </a>
+              )}
+              {socials?.discord && (
+                <a
+                  href={socials.discord}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hover:text-[#9A8029] transition-colors p-1"
+                  aria-label="Discord Community"
+                >
+                  <DiscordIcon size={18} />
+                </a>
+              )}
+              {socials?.linkedin && (
+                <a
+                  href={socials.linkedin}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hover:text-[#9A8029] transition-colors p-1"
+                  aria-label="LinkedIn"
+                >
+                  <LinkedinIcon size={18} />
                 </a>
               )}
             </div>
@@ -221,6 +243,28 @@ export default function Footer() {
                   Contact Tech Support
                 </Link>
               </li>
+              {socials?.supportEmail && (
+                <li className="pt-2 border-t border-[#DDD2C0]/15">
+                  <a
+                    href={`mailto:${socials.supportEmail}`}
+                    className="hover:text-[#9A8029] transition-colors flex items-center gap-1.5 text-[11px] text-[#EFE8DD]/80 font-mono"
+                  >
+                    <Mail className="w-3 h-3 text-[#9A8029] shrink-0" />
+                    <span className="truncate">{socials.supportEmail}</span>
+                  </a>
+                </li>
+              )}
+              {socials?.supportPhone && (
+                <li>
+                  <a
+                    href={`tel:${socials.supportPhone}`}
+                    className="hover:text-[#9A8029] transition-colors flex items-center gap-1.5 text-[11px] text-[#EFE8DD]/80 font-mono"
+                  >
+                    <Phone className="w-3 h-3 text-[#9A8029] shrink-0" />
+                    <span>{socials.supportPhone}</span>
+                  </a>
+                </li>
+              )}
             </ul>
           </div>
 

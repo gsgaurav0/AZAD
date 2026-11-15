@@ -4,6 +4,8 @@ import React from 'react';
 import Image from 'next/image';
 import { Heart } from 'lucide-react';
 import { InstagramIcon } from '@/components/common/SocialIcons';
+import { useCMSStore, DEFAULT_CMS_DATA } from '@/store/cmsStore';
+import { useIsMounted } from '@/hooks/useIsMounted';
 
 const INSTA_POSTS = [
   {
@@ -45,6 +47,25 @@ const INSTA_POSTS = [
 ];
 
 export default function InstagramGallery() {
+  const isMounted = useIsMounted();
+  const cmsSocials = useCMSStore((state) => state.cms.socials);
+  const socials = isMounted && cmsSocials ? cmsSocials : DEFAULT_CMS_DATA.socials;
+
+  const instagramUrl = socials?.instagram?.trim() || 'https://instagram.com/mewak_electronics';
+
+  // Extract display handle from instagram URL (e.g., https://instagram.com/myhandle -> @myhandle)
+  const instagramHandle = (() => {
+    try {
+      const clean = instagramUrl.replace(/https?:\/\/(www\.)?instagram\.com\/?/, '').replace(/\/$/, '');
+      if (clean && clean.length > 0) {
+        return clean.startsWith('@') ? clean : `@${clean}`;
+      }
+    } catch {
+      // Fallback
+    }
+    return '@mewak_electronics';
+  })();
+
   return (
     <section className="py-20 bg-[#EFE8DD] border-b border-[#DDD2C0]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -57,13 +78,13 @@ export default function InstagramGallery() {
             Engineered in the Wild
           </h2>
           <a
-            href="https://instagram.com"
+            href={instagramUrl}
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-wider text-[#2B1A16] hover:text-[#9A8029] transition-colors uppercase font-sans"
           >
             <InstagramIcon size={16} className="text-[#9A8029]" />
-            @mewaktech
+            {instagramHandle}
           </a>
         </div>
 
@@ -72,7 +93,7 @@ export default function InstagramGallery() {
           {INSTA_POSTS.map((post) => (
             <a
               key={post.id}
-              href="https://instagram.com"
+              href={instagramUrl}
               target="_blank"
               rel="noreferrer"
               className="group relative aspect-square rounded-[4px] overflow-hidden border border-[#DDD2C0] bg-[#0F172A] block"

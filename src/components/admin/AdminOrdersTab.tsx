@@ -253,7 +253,7 @@ export default function AdminOrdersTab({
                         {o.address?.name || 'Valued Patron'}
                       </h4>
                       <p className="text-[11px] text-[#2B1A16]/60 mt-0.5">
-                        {o.address?.phone || '+91 98765 43210'} • {o.address?.city || 'India'}
+                        {o.address?.phone || 'No phone'} • {o.address?.city || 'India'}
                       </p>
                       <p className="text-[10px] text-[#2B1A16]/40 flex items-center gap-1 mt-0.5 font-mono">
                         <Calendar className="w-3 h-3 text-[#2B1A16]/40" />
@@ -347,7 +347,7 @@ export default function AdminOrdersTab({
                         {o.address?.name || 'Valued Patron'}
                       </div>
                       <div className="text-[11px] text-[#2B1A16]/60 mt-0.5">
-                        {o.address?.phone || '+91 98765 43210'}
+                        {o.address?.phone || 'No phone'}
                       </div>
                       <div className="text-[10px] text-[#2B1A16]/40 truncate max-w-[180px]">
                         {o.address?.city}, {o.address?.state}

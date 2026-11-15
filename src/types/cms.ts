@@ -105,12 +105,18 @@ export interface BrandStorySectionConfig {
   sealText: string;
 }
 
+export type AlertType = 'default' | 'urgent' | 'sale' | 'info';
+export type AlertDisplayMode = 'static' | 'rotate';
+
 export interface AnnouncementConfig {
   enabled: boolean;
   badge: string;
   message: string;
   linkText: string;
   linkUrl: string;
+  alertType?: AlertType;
+  displayMode?: AlertDisplayMode;
+  dismissible?: boolean;
 }
 
 export interface TestimonialItem {

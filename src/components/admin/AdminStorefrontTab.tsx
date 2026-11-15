@@ -25,6 +25,9 @@ import {
   Plus,
   Trash2,
   HelpCircle,
+  Bell,
+  AlertTriangle,
+  Radio,
 } from 'lucide-react';
 import { useCMSStore, DEFAULT_CMS_DATA } from '@/store/cmsStore';
 import { useProductStore } from '@/store/productStore';
@@ -34,6 +37,7 @@ import { StorefrontCMS } from '@/types/cms';
 export default function AdminStorefrontTab() {
   const {
     cms,
+    updateAnnouncement,
     updateHero,
     updateBento,
     updateBentoTile,
@@ -158,6 +162,289 @@ export default function AdminStorefrontTab() {
 
       {/* Sections List Accordions */}
       <div className="space-y-4">
+        {/* ================= SECTION 0: STOREFRONT ALERT & ANNOUNCEMENT BANNER ================= */}
+        <div className="bg-white border border-[#E5E0D8] rounded-2xl overflow-hidden shadow-xs transition-all">
+          <div
+            onClick={() => toggleAccordion('announcement')}
+            className="p-5 flex items-center justify-between cursor-pointer hover:bg-[#FAF8F5] transition-colors"
+          >
+            <div className="flex items-center gap-3.5">
+              <div
+                className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                  cms.announcement?.alertType === 'urgent'
+                    ? 'bg-rose-100 text-rose-700'
+                    : cms.announcement?.alertType === 'sale'
+                    ? 'bg-amber-100 text-amber-700'
+                    : 'bg-[#9A8029]/10 text-[#9A8029]'
+                }`}
+              >
+                <Bell className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-serif text-lg font-bold text-[#2B1A16]">
+                    Storefront Alert & Announcement Banner
+                  </h3>
+                  <span
+                    className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${
+                      cms.announcement.enabled ? 'bg-emerald-100 text-emerald-800' : 'bg-zinc-200 text-zinc-600'
+                    }`}
+                  >
+                    {cms.announcement.enabled ? 'Active / Visible' : 'Hidden'}
+                  </span>
+                  {cms.announcement.alertType && cms.announcement.alertType !== 'default' && (
+                    <span
+                      className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${
+                        cms.announcement.alertType === 'urgent'
+                          ? 'bg-rose-100 text-rose-800'
+                          : cms.announcement.alertType === 'sale'
+                          ? 'bg-amber-100 text-amber-800'
+                          : 'bg-sky-100 text-sky-800'
+                      }`}
+                    >
+                      {cms.announcement.alertType}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-[#2B1A16]/60">
+                  Global header announcement bar: configure emergency notices, sale announcements, alert severity, custom badge, and CTA link.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <label
+                onClick={(e) => e.stopPropagation()}
+                className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#2B1A16]/70"
+              >
+                <span>Visible</span>
+                <input
+                  type="checkbox"
+                  checked={cms.announcement.enabled}
+                  onChange={(e) => toggleSection('announcement', e.target.checked)}
+                  className="accent-[#9A8029] w-4 h-4 rounded"
+                />
+              </label>
+              {activeSection === 'announcement' ? (
+                <ChevronUp className="w-5 h-5 text-[#2B1A16]/50" />
+              ) : (
+                <ChevronDown className="w-5 h-5 text-[#2B1A16]/50" />
+              )}
+            </div>
+          </div>
+
+          {activeSection === 'announcement' && (
+            <div className="p-6 border-t border-[#E5E0D8] bg-[#FAF8F5]/50 space-y-6">
+              {/* Alert Type Preset Buttons */}
+              <div>
+                <label className="block text-xs font-semibold text-[#2B1A16] mb-2">
+                  Alert Severity & Visual Style
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => updateAnnouncement({ alertType: 'default' })}
+                    className={`p-3 rounded-xl border text-left flex flex-col justify-between transition-all ${
+                      !cms.announcement.alertType || cms.announcement.alertType === 'default'
+                        ? 'border-[#9A8029] bg-[#2B1A16] text-[#EFE8DD] shadow-sm ring-2 ring-[#9A8029]/30'
+                        : 'border-[#DDD2C0] bg-white text-[#2B1A16] hover:bg-zinc-50'
+                    }`}
+                  >
+                    <span className="font-semibold flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-[#9A8029]" />
+                      Classic Luxury
+                    </span>
+                    <span className="text-[10px] opacity-75 mt-1">Ebony & Gold Theme</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => updateAnnouncement({ alertType: 'urgent', displayMode: 'static' })}
+                    className={`p-3 rounded-xl border text-left flex flex-col justify-between transition-all ${
+                      cms.announcement.alertType === 'urgent'
+                        ? 'border-rose-600 bg-[#881337] text-white shadow-sm ring-2 ring-rose-500/30'
+                        : 'border-[#DDD2C0] bg-white text-[#2B1A16] hover:bg-rose-50/50'
+                    }`}
+                  >
+                    <span className="font-semibold flex items-center gap-1.5 text-rose-500">
+                      <AlertTriangle className="w-3.5 h-3.5" />
+                      Urgent / Emergency
+                    </span>
+                    <span className="text-[10px] opacity-75 mt-1">High-priority Crimson</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => updateAnnouncement({ alertType: 'sale' })}
+                    className={`p-3 rounded-xl border text-left flex flex-col justify-between transition-all ${
+                      cms.announcement.alertType === 'sale'
+                        ? 'border-amber-500 bg-[#451A03] text-amber-50 shadow-sm ring-2 ring-amber-500/30'
+                        : 'border-[#DDD2C0] bg-white text-[#2B1A16] hover:bg-amber-50/50'
+                    }`}
+                  >
+                    <span className="font-semibold flex items-center gap-1.5 text-amber-600">
+                      <Flame className="w-3.5 h-3.5" />
+                      Sale & Flash Drop
+                    </span>
+                    <span className="text-[10px] opacity-75 mt-1">Energetic Warm Amber</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => updateAnnouncement({ alertType: 'info' })}
+                    className={`p-3 rounded-xl border text-left flex flex-col justify-between transition-all ${
+                      cms.announcement.alertType === 'info'
+                        ? 'border-sky-500 bg-[#0F172A] text-sky-50 shadow-sm ring-2 ring-sky-500/30'
+                        : 'border-[#DDD2C0] bg-white text-[#2B1A16] hover:bg-sky-50/50'
+                    }`}
+                  >
+                    <span className="font-semibold flex items-center gap-1.5 text-sky-600">
+                      <Radio className="w-3.5 h-3.5" />
+                      Notice & Info
+                    </span>
+                    <span className="text-[10px] opacity-75 mt-1">Deep Slate / Sapphire</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Inputs */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-[#2B1A16] mb-1.5">
+                    Alert Badge Text
+                  </label>
+                  <input
+                    type="text"
+                    value={cms.announcement.badge || ''}
+                    onChange={(e) => updateAnnouncement({ badge: e.target.value })}
+                    placeholder="e.g. EXCLUSIVE ALLOCATION or EMERGENCY NOTICE"
+                    className="w-full bg-white border border-[#DDD2C0] focus:border-[#9A8029] rounded-xl px-3.5 py-2 text-xs text-[#2B1A16] outline-none"
+                  />
+                  <p className="text-[11px] text-[#2B1A16]/50 mt-1">
+                    Short pill badge shown next to the message.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-[#2B1A16] mb-1.5">
+                    Display Mode
+                  </label>
+                  <select
+                    value={cms.announcement.displayMode || 'rotate'}
+                    onChange={(e) =>
+                      updateAnnouncement({ displayMode: e.target.value as 'static' | 'rotate' })
+                    }
+                    className="w-full bg-white border border-[#DDD2C0] focus:border-[#9A8029] rounded-xl px-3.5 py-2 text-xs text-[#2B1A16] outline-none"
+                  >
+                    <option value="static">Pin Alert (Always show this alert message only)</option>
+                    <option value="rotate">Rotate with Store Guarantees (Cycles every 4.5s)</option>
+                  </select>
+                  <p className="text-[11px] text-[#2B1A16]/50 mt-1">
+                    Choose whether this alert stays permanently visible or rotates with store perks.
+                  </p>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-[#2B1A16] mb-1.5">
+                    Alert Message Content
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={cms.announcement.message || ''}
+                    onChange={(e) => updateAnnouncement({ message: e.target.value })}
+                    placeholder="e.g. Flagship Planar Headphones in stock. Orders placed today ship with same-day express air logistics."
+                    className="w-full bg-white border border-[#DDD2C0] focus:border-[#9A8029] rounded-xl px-3.5 py-2 text-xs text-[#2B1A16] outline-none resize-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-[#2B1A16] mb-1.5">
+                    Action Link Text (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={cms.announcement.linkText || ''}
+                    onChange={(e) => updateAnnouncement({ linkText: e.target.value })}
+                    placeholder="e.g. Explore Now or Read Notice"
+                    className="w-full bg-white border border-[#DDD2C0] focus:border-[#9A8029] rounded-xl px-3.5 py-2 text-xs text-[#2B1A16] outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-[#2B1A16] mb-1.5">
+                    Action Link Destination URL (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={cms.announcement.linkUrl || ''}
+                    onChange={(e) => updateAnnouncement({ linkUrl: e.target.value })}
+                    placeholder="e.g. /shop or /support or https://..."
+                    className="w-full bg-white border border-[#DDD2C0] focus:border-[#9A8029] rounded-xl px-3.5 py-2 text-xs text-[#2B1A16] outline-none font-mono"
+                  />
+                </div>
+              </div>
+
+              {/* Options */}
+              <div className="flex items-center gap-6 pt-2">
+                <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#2B1A16]">
+                  <input
+                    type="checkbox"
+                    checked={cms.announcement.dismissible ?? true}
+                    onChange={(e) => updateAnnouncement({ dismissible: e.target.checked })}
+                    className="accent-[#9A8029] w-4 h-4 rounded"
+                  />
+                  <span>Allow visitors to dismiss (Close button on banner)</span>
+                </label>
+              </div>
+
+              {/* Live Preview Card */}
+              <div className="pt-3 border-t border-[#E5E0D8]">
+                <span className="text-[11px] uppercase tracking-wider font-semibold text-[#2B1A16]/60 block mb-2">
+                  Live Banner Preview
+                </span>
+                <div
+                  className={`p-3 rounded-xl border flex items-center justify-between text-xs font-sans transition-all ${
+                    cms.announcement.alertType === 'urgent'
+                      ? 'bg-[#881337] text-rose-50 border-rose-500/50'
+                      : cms.announcement.alertType === 'sale'
+                      ? 'bg-[#451A03] text-amber-50 border-amber-500/50'
+                      : cms.announcement.alertType === 'info'
+                      ? 'bg-[#0F172A] text-sky-50 border-sky-500/50'
+                      : 'bg-[#2B1A16] text-[#EFE8DD] border-[#DDD2C0]/30'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 truncate">
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${
+                        cms.announcement.alertType === 'urgent'
+                          ? 'bg-rose-500 text-white'
+                          : cms.announcement.alertType === 'sale'
+                          ? 'bg-[#D97706] text-white'
+                          : cms.announcement.alertType === 'info'
+                          ? 'bg-sky-600 text-white'
+                          : 'bg-[#9A8029]/20 text-[#9A8029] border border-[#9A8029]/40'
+                      }`}
+                    >
+                      {cms.announcement.badge || 'BADGE'}
+                    </span>
+                    <span className="font-medium truncate">
+                      {cms.announcement.message || 'Announcement message preview'}
+                    </span>
+                    {cms.announcement.linkText && (
+                      <span className="underline ml-1 font-semibold opacity-90 shrink-0">
+                        {cms.announcement.linkText} →
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-[10px] opacity-60 font-mono shrink-0 ml-3">
+                    {cms.announcement.enabled ? '● Active' : '○ Disabled'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* ================= SECTION 1: BENTO (CURATED TECH ECOSYSTEM) ================= */}
         <div className="bg-white border border-[#E5E0D8] rounded-2xl overflow-hidden shadow-xs transition-all">
           <div
@@ -1676,6 +1963,81 @@ export default function AdminStorefrontTab() {
                     placeholder="+91 80 4920 1800"
                     className="w-full bg-white border border-[#DDD2C0] rounded-xl px-3 py-2 outline-none font-mono"
                   />
+                </div>
+              </div>
+
+              {/* Live Preview of Channels */}
+              <div className="pt-3 border-t border-[#E5E0D8]">
+                <span className="text-[11px] uppercase tracking-wider font-semibold text-[#2B1A16]/60 block mb-2">
+                  Active Channels Preview (Updates on Storefront & Footer Instantly)
+                </span>
+                <div className="flex flex-wrap items-center gap-2">
+                  {cms.socials?.instagram && (
+                    <a
+                      href={cms.socials.instagram}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-3 py-1.5 rounded-lg bg-pink-50 border border-pink-200 text-pink-700 font-medium text-[11px] flex items-center gap-1.5 hover:bg-pink-100 transition-colors"
+                    >
+                      <span>Instagram</span>
+                      <ExternalLink className="w-3 h-3 opacity-60" />
+                    </a>
+                  )}
+                  {cms.socials?.youtube && (
+                    <a
+                      href={cms.socials.youtube}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-3 py-1.5 rounded-lg bg-red-50 border border-red-200 text-red-700 font-medium text-[11px] flex items-center gap-1.5 hover:bg-red-100 transition-colors"
+                    >
+                      <span>YouTube</span>
+                      <ExternalLink className="w-3 h-3 opacity-60" />
+                    </a>
+                  )}
+                  {cms.socials?.twitter && (
+                    <a
+                      href={cms.socials.twitter}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-3 py-1.5 rounded-lg bg-zinc-100 border border-zinc-300 text-zinc-900 font-medium text-[11px] flex items-center gap-1.5 hover:bg-zinc-200 transition-colors"
+                    >
+                      <span>𝕏 (Twitter)</span>
+                      <ExternalLink className="w-3 h-3 opacity-60" />
+                    </a>
+                  )}
+                  {cms.socials?.discord && (
+                    <a
+                      href={cms.socials.discord}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-3 py-1.5 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 font-medium text-[11px] flex items-center gap-1.5 hover:bg-indigo-100 transition-colors"
+                    >
+                      <span>Discord</span>
+                      <ExternalLink className="w-3 h-3 opacity-60" />
+                    </a>
+                  )}
+                  {cms.socials?.facebook && (
+                    <a
+                      href={cms.socials.facebook}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 font-medium text-[11px] flex items-center gap-1.5 hover:bg-blue-100 transition-colors"
+                    >
+                      <span>Facebook</span>
+                      <ExternalLink className="w-3 h-3 opacity-60" />
+                    </a>
+                  )}
+                  {cms.socials?.linkedin && (
+                    <a
+                      href={cms.socials.linkedin}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-3 py-1.5 rounded-lg bg-sky-50 border border-sky-200 text-sky-700 font-medium text-[11px] flex items-center gap-1.5 hover:bg-sky-100 transition-colors"
+                    >
+                      <span>LinkedIn</span>
+                      <ExternalLink className="w-3 h-3 opacity-60" />
+                    </a>
+                  )}
                 </div>
               </div>
             </div>

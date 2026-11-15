@@ -3,10 +3,15 @@
 import React, { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { MessageCircle, X } from 'lucide-react';
+import { useCMSStore, DEFAULT_CMS_DATA } from '@/store/cmsStore';
+import { useIsMounted } from '@/hooks/useIsMounted';
 
 export default function FloatingWhatsApp() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  const isMounted = useIsMounted();
+  const cmsSocials = useCMSStore((state) => state.cms.socials);
+  const socials = isMounted && cmsSocials ? cmsSocials : DEFAULT_CMS_DATA.socials;
 
   if (
     pathname === '/checkout' ||
@@ -19,7 +24,9 @@ export default function FloatingWhatsApp() {
   const isPDP = pathname.startsWith('/product/');
 
   const handleOpenWhatsApp = () => {
-    const phoneNumber = '918000123456';
+    const rawPhone = socials?.supportPhone || '';
+    const digitsOnly = rawPhone.replace(/\D/g, '');
+    const phoneNumber = digitsOnly.length >= 10 ? digitsOnly : '918049201800';
     const message = encodeURIComponent(
       'Hello Mewak Tech Support, I would like assistance with your electronics and audio gear.'
     );

@@ -4,8 +4,14 @@ import React, { useState } from 'react';
 import { Mail, Phone, Send, CheckCircle2, Clock } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
 import { useInquiryStore } from '@/store/inquiryStore';
+import { useCMSStore, DEFAULT_CMS_DATA } from '@/store/cmsStore';
+import { useIsMounted } from '@/hooks/useIsMounted';
 
 export default function ContactPage() {
+  const isMounted = useIsMounted();
+  const cmsSocials = useCMSStore((state) => state.cms.socials);
+  const socials = isMounted && cmsSocials ? cmsSocials : DEFAULT_CMS_DATA.socials;
+
   const addToast = useUIStore((state) => state.addToast);
   const addInquiry = useInquiryStore((state) => state.addInquiry);
   const [formData, setFormData] = useState({
@@ -121,7 +127,7 @@ export default function ContactPage() {
                       type="tel"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      placeholder="+91 98765 43210"
+                      placeholder="e.g. +91 91234 56789"
                       className="w-full bg-white border border-[#DDD2C0] rounded-[3px] p-2.5 text-xs text-[#2B1A16] outline-none"
                     />
                   </div>
@@ -177,11 +183,21 @@ export default function ContactPage() {
               <div className="space-y-3 text-xs text-[#2B1A16]/80">
                 <div className="flex items-center gap-3">
                   <Phone className="w-4 h-4 text-[#9A8029]" />
-                  <span>VIP Line: +91 98765 43210 (10 AM - 8 PM IST)</span>
+                  <a
+                    href={`tel:${socials?.supportPhone || '+91 80 4920 1800'}`}
+                    className="hover:text-[#9A8029] transition-colors"
+                  >
+                    VIP Line: {socials?.supportPhone || '+91 80 4920 1800'} (10 AM - 8 PM IST)
+                  </a>
                 </div>
                 <div className="flex items-center gap-3">
                   <Mail className="w-4 h-4 text-[#9A8029]" />
-                  <span>support@mewak.tech</span>
+                  <a
+                    href={`mailto:${socials?.supportEmail || 'concierge@mewak.com'}`}
+                    className="hover:text-[#9A8029] transition-colors"
+                  >
+                    {socials?.supportEmail || 'concierge@mewak.com'}
+                  </a>
                 </div>
                 <div className="flex items-center gap-3">
                   <Clock className="w-4 h-4 text-[#9A8029]" />

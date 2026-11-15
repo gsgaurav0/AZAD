@@ -20,6 +20,9 @@ export const DEFAULT_CMS_DATA: StorefrontCMS = {
     message: 'Flagship Planar Headphones & 3nm Silicon Devices in stock with 2-Year Official Brand Warranty.',
     linkText: 'Explore Now',
     linkUrl: '/shop',
+    alertType: 'default',
+    displayMode: 'rotate',
+    dismissible: true,
   },
   hero: {
     enabled: true,
