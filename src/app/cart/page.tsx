@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   Trash2,
   Heart,
@@ -18,8 +19,10 @@ import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
 import { useUIStore } from '@/store/uiStore';
 import { useCouponStore } from '@/store/couponStore';
+import { useAuthStore } from '@/store/authStore';
 
 export default function CartPage() {
+  const router = useRouter();
   const [couponInput, setCouponInput] = useState('');
   const [couponError, setCouponError] = useState('');
 
@@ -41,6 +44,7 @@ export default function CartPage() {
 
   const toggleWishlist = useWishlistStore((state) => state.toggleWishlist);
   const addToast = useUIStore((state) => state.addToast);
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const availableCoupons = useCouponStore((state) => state.coupons).filter((c) => c.isActive);
 
   const subtotal = getSubtotal();
@@ -67,6 +71,15 @@ export default function CartPage() {
     toggleWishlist(item.product);
     removeItem(item.product.id, item.selectedColor, item.selectedSize);
     addToast(`Moved "${item.product.name}" to wishlist`, 'info');
+  };
+
+  const handleProceedCheckout = () => {
+    if (!isLoggedIn) {
+      addToast('Please sign in or create an account to proceed to checkout', 'info');
+      router.push('/login?redirect=/checkout');
+    } else {
+      router.push('/checkout');
+    }
   };
 
   return (
@@ -395,13 +408,14 @@ export default function CartPage() {
                 </div>
 
                 {/* Checkout CTA */}
-                <Link
-                  href="/checkout"
-                  className="w-full bg-[#9A8029] hover:bg-[#7F6A1F] text-white py-3.5 px-4 rounded-[4px] text-xs font-semibold uppercase tracking-[0.2em] transition-colors flex items-center justify-center gap-2 shadow-sm"
+                <button
+                  type="button"
+                  onClick={handleProceedCheckout}
+                  className="w-full bg-[#9A8029] hover:bg-[#7F6A1F] text-white py-3.5 px-4 rounded-[4px] text-xs font-semibold uppercase tracking-[0.2em] transition-colors flex items-center justify-center gap-2 shadow-sm cursor-pointer"
                 >
                   <span>Proceed to Checkout</span>
                   <ArrowRight className="w-4 h-4" />
-                </Link>
+                </button>
 
                 <div className="flex items-center justify-center gap-1.5 text-[10px] text-[#2B1A16]/60 text-center pt-2">
                   <ShieldCheck className="w-3.5 h-3.5 text-[#4C7A34]" />

@@ -20,6 +20,7 @@ import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
 import { useUIStore } from '@/store/uiStore';
 import { useCouponStore } from '@/store/couponStore';
+import { useAuthStore } from '@/store/authStore';
 
 export default function CartDrawer() {
   const router = useRouter();
@@ -45,6 +46,7 @@ export default function CartDrawer() {
 
   const toggleWishlist = useWishlistStore((state) => state.toggleWishlist);
   const addToast = useUIStore((state) => state.addToast);
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const availableCoupons = useCouponStore((state) => state.coupons).filter((c) => c.isActive);
 
   if (!isCartOpen) return null;
@@ -77,7 +79,12 @@ export default function CartDrawer() {
 
   const handleCheckoutClick = () => {
     closeCart();
-    router.push('/checkout');
+    if (!isLoggedIn) {
+      addToast('Please sign in or create an account to proceed to checkout', 'info');
+      router.push('/login?redirect=/checkout');
+    } else {
+      router.push('/checkout');
+    }
   };
 
   return (

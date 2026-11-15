@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
   Phone,
@@ -19,8 +19,11 @@ import Logo from '@/components/common/Logo';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
 
-export default function LoginPage() {
+function LoginFormContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTarget = searchParams?.get('redirect') || '/account';
+
   const { isLoggedIn, login, signup, loginWithOtp } = useAuthStore();
   const addToast = useUIStore((state) => state.addToast);
 
@@ -55,9 +58,9 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (isLoggedIn) {
-      router.push('/account');
+      router.push(redirectTarget);
     }
-  }, [isLoggedIn, router]);
+  }, [isLoggedIn, router, redirectTarget]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -86,7 +89,7 @@ export default function LoginPage() {
       setLoading(false);
       if (res.success) {
         addToast(`Welcome back, ${res.user?.name || 'Patron'}!`, 'success');
-        router.push('/account');
+        router.push(redirectTarget);
       } else {
         setError(res.error || 'Authentication failed. Please verify your credentials.');
       }
@@ -127,7 +130,7 @@ export default function LoginPage() {
       setLoading(false);
       if (res.success) {
         addToast(`Welcome to Mewak, ${res.user?.name || 'Patron'}!`, 'success');
-        router.push('/account');
+        router.push(redirectTarget);
       } else {
         setError(res.error || 'Could not verify OTP.');
       }
@@ -180,7 +183,7 @@ export default function LoginPage() {
       setLoading(false);
       if (res.success) {
         addToast(`Account created successfully! Welcome, ${res.user?.name}.`, 'success');
-        router.push('/account');
+        router.push(redirectTarget);
       } else {
         setError(res.error || 'Registration failed. Try again.');
       }
@@ -580,9 +583,23 @@ export default function LoginPage() {
 
         <div className="mt-8 pt-4 border-t border-[#DDD2C0] flex items-center justify-center gap-2 text-xs text-[#2B1A16]/60">
           <ShieldCheck className="w-4 h-4 text-[#4C7A34]" />
-          <span>256-Bit TLS Bank-Grade Encryption • Zero Fake Data</span>
+          <span>256-Bit TLS Bank-Grade Encryption • Official Warranty</span>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#EFE8DD] flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-[#9A8029] border-t-transparent rounded-full animate-spin" />
+        </div>
+      }
+    >
+      <LoginFormContent />
+    </Suspense>
   );
 }

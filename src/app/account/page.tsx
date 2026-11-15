@@ -825,34 +825,42 @@ export default function AccountPage() {
         {/* ============================================================ */}
         {/* TAB 2: MY ORDERS WITH STEP-BY-STEP LIVE LOCATION TRACKING */}
         {/* ============================================================ */}
-        {activeTab === 'orders' && (
-          <div className="space-y-6">
-            {orders.length === 0 ? (
-              <div className="bg-[#FBF7F0] border border-[#DDD2C0] p-12 text-center rounded-[4px]">
-                <Package className="w-12 h-12 text-[#9A8029]/50 mx-auto mb-3" />
-                <h3 className="font-serif text-xl font-medium text-[#2B1A16] mb-1">
-                  No orders placed yet
-                </h3>
-                <p className="text-xs text-[#2B1A16]/60 mb-6 max-w-sm mx-auto">
-                  Experience acoustic purity and titanium flagships. Place your first order to watch live step-by-step dispatch tracking.
-                </p>
-                <Link
-                  href="/shop"
-                  className="inline-block bg-[#2B1A16] text-[#EFE8DD] text-xs font-semibold uppercase px-6 py-3 rounded-[3px] hover:bg-[#9A8029] transition-colors"
-                >
-                  Explore Hardware Collection
-                </Link>
-              </div>
-            ) : (
-              orders.map((order) => {
-                const currentMilestoneIdx = getMilestoneIndex(order.status);
-                const isExpanded = !!expandedOrderIds[order.id];
+        {activeTab === 'orders' && (() => {
+          const userOrders = orders.filter(
+            (o) =>
+              !o.userId ||
+              o.userId === user?.id ||
+              (user?.phone && o.address?.phone?.replace(/\D/g, '').includes(user.phone.replace(/\D/g, '').slice(-10)))
+          );
 
-                return (
-                  <div
-                    key={order.id}
-                    className="bg-[#FBF7F0] border border-[#DDD2C0] rounded-[4px] p-6 space-y-6 shadow-xs"
+          return (
+            <div className="space-y-6">
+              {userOrders.length === 0 ? (
+                <div className="bg-[#FBF7F0] border border-[#DDD2C0] p-12 text-center rounded-[4px]">
+                  <Package className="w-12 h-12 text-[#9A8029]/50 mx-auto mb-3" />
+                  <h3 className="font-serif text-xl font-medium text-[#2B1A16] mb-1">
+                    No orders placed yet
+                  </h3>
+                  <p className="text-xs text-[#2B1A16]/60 mb-6 max-w-sm mx-auto">
+                    Experience acoustic purity and titanium flagships. Place your first order to watch live step-by-step dispatch tracking.
+                  </p>
+                  <Link
+                    href="/shop"
+                    className="inline-block bg-[#2B1A16] text-[#EFE8DD] text-xs font-semibold uppercase px-6 py-3 rounded-[3px] hover:bg-[#9A8029] transition-colors"
                   >
+                    Explore Hardware Collection
+                  </Link>
+                </div>
+              ) : (
+                userOrders.map((order) => {
+                  const currentMilestoneIdx = getMilestoneIndex(order.status);
+                  const isExpanded = !!expandedOrderIds[order.id];
+
+                  return (
+                    <div
+                      key={order.id}
+                      className="bg-[#FBF7F0] border border-[#DDD2C0] rounded-[4px] p-6 space-y-6 shadow-xs"
+                    >
                     {/* Order Top Bar */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#DDD2C0]">
                       <div>
@@ -1108,8 +1116,9 @@ export default function AccountPage() {
                 );
               })
             )}
-          </div>
-        )}
+            </div>
+          );
+        })()}
 
         {/* ============================================================ */}
         {/* TAB 3: SAVED ADDRESSES (DESTINATIONS CRUD) */}

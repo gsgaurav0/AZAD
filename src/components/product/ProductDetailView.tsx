@@ -22,6 +22,7 @@ import { Product, Review } from '@/types';
 import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
 import { useUIStore } from '@/store/uiStore';
+import { useAuthStore } from '@/store/authStore';
 import { useRecentlyViewedStore } from '@/store/recentlyViewedStore';
 import ProductCard from '@/components/product/ProductCard';
 import { PRODUCTS } from '@/data/products';
@@ -32,6 +33,7 @@ interface ProductDetailViewProps {
 
 export default function ProductDetailView({ product }: ProductDetailViewProps) {
   const router = useRouter();
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
 
   // State
   const defaultImage =
@@ -126,6 +128,11 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
       return;
     }
     addItem(product, selectedColor, selectedSize, quantity);
+    if (!isLoggedIn) {
+      addToast('Please sign in or register to complete your purchase', 'info');
+      router.push('/login?redirect=/checkout');
+      return;
+    }
     router.push('/checkout');
   };
 
