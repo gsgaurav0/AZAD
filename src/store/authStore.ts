@@ -319,9 +319,15 @@ export const useAuthStore = create<AuthState>()(
           });
 
           if (authError) {
-            // If already registered or offline, check local
-            if (authError.message.includes('already registered')) {
-              return { success: false, error: 'An account with this email already exists. Please log in.' };
+            console.error('Supabase auth signup error:', authError);
+            if (authError.message.includes('already registered') || authError.message.includes('User already registered')) {
+              return { success: false, error: 'An account with this email already exists. Please sign in.' };
+            }
+            if (authError.message.toLowerCase().includes('api key') || (authError as any).status === 401) {
+              return {
+                success: false,
+                error: 'Supabase API key is invalid or placeholder. Please update NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local with your real anon key from Supabase Dashboard > Settings > API.',
+              };
             }
           }
 
@@ -339,6 +345,22 @@ export const useAuthStore = create<AuthState>()(
             joinedDate,
             isEmailVerified: authData.user?.email_confirmed_at ? true : false,
           };
+
+          // Guarantee profile row in public.profiles table
+          if (authData.user) {
+            await supabase.from('profiles').upsert({
+              id: authData.user.id,
+              name: data.name.trim(),
+              email: cleanEmail,
+              phone: `+91 ${cleanPhone}`,
+              date_of_birth: data.dateOfBirth || '',
+              gender: data.gender || 'Prefer not to say',
+              member_tier: 'Gold Patron Member',
+              role: 'customer',
+              is_email_verified: !!authData.user.email_confirmed_at,
+              updated_at: new Date().toISOString(),
+            }, { onConflict: 'id' }).catch(() => {});
+          }
 
           // Save address to Supabase if provided
           if (data.address && data.address.street && data.address.city && data.address.pincode) {
@@ -403,6 +425,13 @@ export const useAuthStore = create<AuthState>()(
             if (!error && authData.user) {
               await get().syncUserData(authData.user.id);
               return { success: true, user: get().user || undefined };
+            } else if (error) {
+              if (error.message.toLowerCase().includes('api key') || (error as any).status === 401 && error.message.toLowerCase().includes('unauthorized')) {
+                return {
+                  success: false,
+                  error: 'Supabase API key is invalid or placeholder. Please update NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local with your real anon key from Supabase Dashboard > Settings > API.',
+                };
+              }
             }
           }
         } catch (err) {

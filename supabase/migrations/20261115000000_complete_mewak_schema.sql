@@ -654,3 +654,32 @@ create policy "User upload return evidence" on storage.objects for insert
 
 create policy "User view return evidence" on storage.objects for select
   using (bucket_id = 'returns' and ((select auth.uid()) is not null or public.is_admin()));
+
+-- ==============================================================================
+-- 6. PUBLIC USERS VIEW (for Supabase Table Editor convenience)
+-- ==============================================================================
+create or replace view public.users as
+select
+  p.id,
+  p.name,
+  p.email,
+  p.phone,
+  p.alternate_phone,
+  p.date_of_birth,
+  p.gender,
+  p.member_tier,
+  p.role,
+  p.avatar_url,
+  p.headline,
+  p.company,
+  p.industry,
+  p.bio,
+  p.gst_number,
+  p.preferred_delivery_time,
+  p.is_email_verified,
+  p.is_phone_verified,
+  p.created_at,
+  p.updated_at
+from public.profiles p;
+
+grant select on public.users to anon, authenticated, service_role;

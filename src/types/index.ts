@@ -132,6 +132,7 @@ export interface UserProfile {
   preferredDeliveryTime?: 'Anytime' | 'Morning (9 AM - 1 PM)' | 'Afternoon (1 PM - 6 PM)' | 'Evening (6 PM - 9 PM)' | 'Weekends Only';
   isEmailVerified?: boolean;
   isPhoneVerified?: boolean;
+  role?: 'customer' | 'admin' | 'superadmin';
   communicationEmail?: boolean;
   communicationSms?: boolean;
 }

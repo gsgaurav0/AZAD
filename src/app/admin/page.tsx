@@ -22,6 +22,7 @@ import {
   CreditCard,
   DollarSign,
   LayoutDashboard,
+  Users,
 } from 'lucide-react';
 import Logo from '@/components/common/Logo';
 import { useProductStore } from '@/store/productStore';
@@ -35,6 +36,7 @@ import { Product, Order, OrderStatus } from '@/types';
 import AdminAuthGate from '@/components/admin/AdminAuthGate';
 import AdminProductsTab from '@/components/admin/AdminProductsTab';
 import AdminOrdersTab from '@/components/admin/AdminOrdersTab';
+import AdminUsersTab from '@/components/admin/AdminUsersTab';
 import AdminAnalyticsTab from '@/components/admin/AdminAnalyticsTab';
 import AdminStorefrontTab from '@/components/admin/AdminStorefrontTab';
 import AdminInquiriesTab from '@/components/admin/AdminInquiriesTab';
@@ -73,7 +75,7 @@ export default function AdminPage() {
   };
 
   // Active Tab & Mobile Drawer
-  type AdminTab = 'products' | 'orders' | 'coupons' | 'inquiries' | 'reviews' | 'sections' | 'analytics';
+  type AdminTab = 'products' | 'orders' | 'users' | 'coupons' | 'inquiries' | 'reviews' | 'sections' | 'analytics';
   const [activeTab, setActiveTab] = useState<AdminTab>('products');
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
@@ -90,6 +92,7 @@ export default function AdminPage() {
 
   const {
     orders,
+    registeredUsers,
     updateOrderStatus,
     updateOrder,
     deleteOrder,
@@ -239,6 +242,15 @@ export default function AdminPage() {
       description: 'Customer fulfillment & dispatch status',
       badge: `${orders.length}`,
       badgeColor: pendingOrdersCount > 0 ? 'bg-amber-100 text-amber-800' : 'bg-[#9A8029]/15 text-[#9A8029]',
+    },
+    {
+      id: 'users' as const,
+      label: 'Patrons & Users',
+      shortLabel: 'Users',
+      icon: Users,
+      description: 'Registered customer profiles & account records',
+      badge: `${registeredUsers.length}`,
+      badgeColor: 'bg-blue-100 text-blue-800',
     },
     {
       id: 'coupons' as const,
@@ -638,6 +650,9 @@ export default function AdminPage() {
             />
           )}
 
+          {/* Tab: Registered Patrons & Users */}
+          {activeTab === 'users' && <AdminUsersTab />}
+
           {/* Tab 3: Discounts & Promo Codes Management */}
           {activeTab === 'coupons' && <AdminCouponsTab />}
 
@@ -677,6 +692,17 @@ export default function AdminPage() {
         >
           <ShoppingBag className="w-5 h-5" />
           <span className="text-[10px] tracking-tight">Orders</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('users')}
+          className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl transition-all ${
+            activeTab === 'users' ? 'text-[#9A8029] font-bold' : 'text-[#2B1A16]/60'
+          }`}
+        >
+          <Users className="w-5 h-5" />
+          <span className="text-[10px] tracking-tight">Users</span>
         </button>
 
         <button
