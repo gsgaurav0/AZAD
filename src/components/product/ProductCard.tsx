@@ -18,7 +18,7 @@ const DEFAULT_IMAGE =
   'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1000&q=80';
 
 export default function ProductCard({ product, priority = false }: ProductCardProps) {
-  const [selectedColorIndex, setSelectedColorIndex] = useState(0);
+  const [selectedColorIndex, setSelectedColorIndex] = useState<number | null>(null);
   const [isHovered, setIsHovered] = useState(false);
 
   const toggleWishlist = useWishlistStore((state) => state.toggleWishlist);
@@ -30,11 +30,27 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
   const addToast = useUIStore((state) => state.addToast);
 
   const colors = product.colors && product.colors.length > 0 ? product.colors : [];
-  const activeColor = colors[selectedColorIndex] || colors[0];
+  const activeColor = selectedColorIndex !== null ? colors[selectedColorIndex] : colors[0];
+
+  // Prioritize product.images[0] as the primary cover unless a specific color was clicked
   const primaryImage =
-    activeColor?.image || (product.images && product.images[0]) || DEFAULT_IMAGE;
+    (selectedColorIndex !== null && colors[selectedColorIndex]?.image)
+      ? colors[selectedColorIndex].image
+      : (product.images && product.images[0]) || activeColor?.image || DEFAULT_IMAGE;
+
   const secondaryImage =
     (product.images && product.images[1]) || primaryImage;
+
+  const [imgSrc, setImgSrc] = useState(primaryImage);
+  const [secondaryImgSrc, setSecondaryImgSrc] = useState(secondaryImage);
+
+  React.useEffect(() => {
+    setImgSrc(primaryImage);
+  }, [primaryImage]);
+
+  React.useEffect(() => {
+    setSecondaryImgSrc(secondaryImage);
+  }, [secondaryImage]);
 
   const handleWishlistClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -78,12 +94,13 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
         <Link href={`/product/${product.slug}`} className="relative block w-full h-full">
           {/* Main Image */}
           <Image
-            src={primaryImage}
+            src={imgSrc}
             alt={product.name || 'Hardware Edition'}
             fill
             unoptimized
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             priority={priority}
+            onError={() => setImgSrc(DEFAULT_IMAGE)}
             className={`object-cover transition-all duration-700 ease-out ${
               isHovered && secondaryImage !== primaryImage
                 ? 'opacity-0 scale-105'
@@ -92,13 +109,14 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
           />
 
           {/* Secondary Hover Image */}
-          {secondaryImage && secondaryImage !== primaryImage && (
+          {secondaryImgSrc && secondaryImgSrc !== imgSrc && (
             <Image
-              src={secondaryImage}
+              src={secondaryImgSrc}
               alt={`${product.name} alternate view`}
               fill
               unoptimized
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              onError={() => setSecondaryImgSrc(imgSrc)}
               className={`object-cover transition-all duration-700 ease-out absolute inset-0 ${
                 isHovered ? 'opacity-100 scale-105' : 'opacity-0 scale-100'
               }`}

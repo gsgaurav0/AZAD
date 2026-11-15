@@ -899,12 +899,12 @@ export const PRODUCTS: Product[] = [
       {
         name: 'Matte Space Black',
         hex: '#18181B',
-        image: 'https://images.unsplash.com/photo-1586816879360-004f5b0c51e3?auto=format&fit=crop&w=1000&q=80',
+        image: 'https://images.unsplash.com/photo-1622445262464-84b14e30454e?auto=format&fit=crop&w=1000&q=80',
       },
       {
         name: 'Anodized Silver',
         hex: '#94A3B8',
-        image: 'https://images.unsplash.com/photo-1625772299848-391b6a87d7b3?auto=format&fit=crop&w=1000&q=80',
+        image: 'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?auto=format&fit=crop&w=1000&q=80',
       },
     ],
     sizes: [
@@ -912,8 +912,8 @@ export const PRODUCTS: Product[] = [
       { size: 'Desktop Stand + 65W GaN Adapter', inStock: true, stockCount: 18 },
     ],
     images: [
-      'https://images.unsplash.com/photo-1586816879360-004f5b0c51e3?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1625772299848-391b6a87d7b3?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1622445262464-84b14e30454e?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?auto=format&fit=crop&w=1000&q=80',
       'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=1000&q=80',
     ],
     fabric: 'CNC Machined Aircraft-Grade Aluminum & Soft-Touch Silicone',
@@ -967,12 +967,12 @@ export const PRODUCTS: Product[] = [
       {
         name: 'Matte Space Gray',
         hex: '#09090B',
-        image: 'https://images.unsplash.com/photo-1625772299848-391b6a87d7b3?auto=format&fit=crop&w=1000&q=80',
+        image: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=1000&q=80',
       },
       {
         name: 'Arctic White',
         hex: '#F8FAFC',
-        image: 'https://images.unsplash.com/photo-1586816879360-004f5b0c51e3?auto=format&fit=crop&w=1000&q=80',
+        image: 'https://images.unsplash.com/photo-1609592426505-d14214240751?auto=format&fit=crop&w=1000&q=80',
       },
     ],
     sizes: [
@@ -980,9 +980,9 @@ export const PRODUCTS: Product[] = [
       { size: 'Charger + 240W 2m Braided Cable', inStock: true, stockCount: 14 },
     ],
     images: [
-      'https://images.unsplash.com/photo-1625772299848-391b6a87d7b3?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1586816879360-004f5b0c51e3?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=1000&q=80',
       'https://images.unsplash.com/photo-1609592426505-d14214240751?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=1000&q=80',
     ],
     fabric: 'Flame-Retardant V0 Polycarbonate & GaNFast Semiconductor Core',
     fit: 'Ultra-Compact Foldable Prongs • 240g (40% smaller than Apple 140W)',
@@ -1040,14 +1040,14 @@ export const PRODUCTS: Product[] = [
       {
         name: 'Titanium Slate',
         hex: '#71717A',
-        image: 'https://images.unsplash.com/photo-1586816879360-004f5b0c51e3?auto=format&fit=crop&w=1000&q=80',
+        image: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=1000&q=80',
       },
     ],
     sizes: [{ size: '10,000mAh Ultra-Slim (15mm)', inStock: true, stockCount: 26 }],
     images: [
       'https://images.unsplash.com/photo-1609592426505-d14214240751?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1586816879360-004f5b0c51e3?auto=format&fit=crop&w=1000&q=80',
       'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=1000&q=80',
     ],
     fabric: 'Anodized Aluminum Backplate with Soft Rubberized Magnetic Contact',
     fit: '15mm Ultra-Slim Profile • 185g • Strong N52 Neodymium Magnetic Lock',
@@ -1187,7 +1187,7 @@ export const CATEGORIES_CONFIG = [
     name: 'Tech Accessories',
     slug: 'accessories',
     description: 'GaN fast charging, magnetic Qi2 docks, carbon fiber cases & cables.',
-    image: 'https://images.unsplash.com/photo-1586816879360-004f5b0c51e3?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=800&q=80',
     subcategories: ['Magnetic Docks', 'GaN Chargers', 'Power Banks', 'Carbon Cases', 'Audio Cables'],
     featuredTitle: 'Power & Ecosystem',
     featuredImage: 'https://images.unsplash.com/photo-1625772299848-391b6a87d7b3?auto=format&fit=crop&w=600&q=80',

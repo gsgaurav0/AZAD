@@ -347,10 +347,10 @@ export default function AdminProductModal({
     if (image2.trim()) imageList.push(image2.trim());
     if (image3.trim()) imageList.push(image3.trim());
 
-    // Ensure colors has at least 1 color with image
+    // Ensure colors has at least 1 color with image, and the primary color matches the cover image
     const finalColors = colors.map((c, i) => ({
       ...c,
-      image: c.image || imageList[i] || imageList[0],
+      image: (i === 0 && coverImage.trim()) ? coverImage.trim() : (c.image || imageList[i] || imageList[0]),
     }));
 
     const detailsArray = detailsText

@@ -28,7 +28,7 @@ const INSTA_POSTS = [
   },
   {
     id: 4,
-    image: 'https://images.unsplash.com/photo-1586816879360-004f5b0c51e3?auto=format&fit=crop&w=600&q=80',
+    image: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=600&q=80',
     likes: '1.2k',
     caption: 'Zero cable clutter with MagDock 3-in-1 aluminum desktop stand.',
   },
