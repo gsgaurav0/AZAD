@@ -164,14 +164,18 @@ export default function AdminPage() {
   };
 
   const handleSaveProduct = async (productData: Partial<Product>) => {
-    if (productToEdit) {
-      await updateProduct(productToEdit.id, productData);
-      addToast(`Updated specifications for "${productData.name}"`, 'success');
-    } else {
-      const created = await addProduct(productData as Omit<Product, 'id' | 'reviews'>);
-      addToast(`Added new product "${created.name}" to catalog`, 'success');
+    try {
+      if (productToEdit) {
+        await updateProduct(productToEdit.id, productData);
+        addToast(`Updated specifications for "${productData.name}"`, 'success');
+      } else {
+        const created = await addProduct(productData as Omit<Product, 'id' | 'reviews'>);
+        addToast(`Added new product "${created.name}" to catalog`, 'success');
+      }
+      setIsProductModalOpen(false);
+    } catch (err: any) {
+      addToast(err.message || 'Error saving product to database', 'error');
     }
-    setIsProductModalOpen(false);
   };
 
   const handleDeleteProduct = (id: string) => {

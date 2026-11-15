@@ -48,12 +48,61 @@ export async function POST(request: Request) {
 
     // 1. Fetch real products from Supabase to prevent price tampering
     const productIds = body.items.map((i) => i.productId);
-    const { data: dbProducts, error: prodErr } = await adminSupabase
+    let { data: dbProducts, error: prodErr } = await adminSupabase
       .from('products')
       .select('*')
       .in('id', productIds);
 
-    if (prodErr || !dbProducts || dbProducts.length === 0) {
+    // Auto-heal missing products from static fallback if newly initialized database
+    const missingIds = productIds.filter((id) => !dbProducts?.some((p) => p.id === id));
+    if (missingIds.length > 0) {
+      const { PRODUCTS } = await import('@/data/products');
+      const fallbackItems = PRODUCTS.filter((p) => missingIds.includes(p.id));
+      if (fallbackItems.length > 0) {
+        await adminSupabase.from('categories').upsert([
+          { id: 'headphones', name: 'Headphones & Audio' },
+          { id: 'phones', name: 'Smartphones' },
+          { id: 'smartwatches', name: 'Smartwatches' },
+          { id: 'accessories', name: 'Accessories & Power' },
+        ], { onConflict: 'id' });
+
+        const seedRows = fallbackItems.map((p) => ({
+          id: p.id,
+          slug: p.slug,
+          name: p.name,
+          subtitle: p.subtitle || '',
+          category: p.category,
+          subcategory: p.subcategory || 'Hardware',
+          price: Number(p.price) || 9999,
+          original_price: Number(p.originalPrice) || Number(p.price) || 9999,
+          discount_percent: Math.min(100, Math.max(0, Math.round(Number(p.discountPercent) || 0))),
+          is_new: Boolean(p.isNew),
+          is_trending: Boolean(p.isTrending),
+          is_featured: Boolean(p.isFeatured),
+          occasion: p.occasion || 'Work',
+          rating: Math.min(5, Math.max(0, Number(p.rating) || 5.0)),
+          review_count: Number(p.reviewCount) || 0,
+          colors: p.colors || [],
+          sizes: p.sizes || [],
+          images: p.images || [],
+          fabric: p.fabric || 'Aero-grade Aluminum & Ceramic',
+          fit: p.fit || 'Ergonomic Acoustic Seal',
+          care: p.care || ['2-Year Official Brand Replacement Warranty'],
+          description: p.description || '',
+          details: p.details || ['Precision CNC Machined Chassis'],
+          returns: p.returns || '15-day risk-free home trial with complimentary doorstep replacement',
+          in_stock: true,
+        }));
+        await adminSupabase.from('products').upsert(seedRows, { onConflict: 'id' });
+
+        const { data: refetched } = await adminSupabase.from('products').select('*').in('id', productIds);
+        if (refetched && refetched.length > 0) {
+          dbProducts = refetched;
+        }
+      }
+    }
+
+    if (!dbProducts || dbProducts.length === 0) {
       return NextResponse.json({ success: false, error: 'Could not retrieve catalog products for verification.' }, { status: 500 });
     }
 

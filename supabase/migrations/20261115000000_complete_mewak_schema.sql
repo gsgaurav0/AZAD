@@ -19,6 +19,15 @@ create table if not exists public.categories (
   created_at timestamptz default now()
 );
 
+-- Seed core categories
+insert into public.categories (id, name, description, image)
+values
+  ('headphones', 'Headphones & Audio', 'Studio planar open-backs, true wireless ANC earbuds & spatial gaming headsets', 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1200&q=80'),
+  ('phones', 'Smartphones', 'Snapdragon 8 Gen 3 flagships, dual-screen foldables & periscope cameras', 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1000&q=80'),
+  ('smartwatches', 'Smartwatches', 'Aerospace Grade 5 titanium, sapphire glass & precision biometric sensors', 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1000&q=80'),
+  ('accessories', 'Accessories & Power', '140W GaN desktop power hubs, magnetic wireless chargers & cables', 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=1000&q=80')
+on conflict (id) do nothing;
+
 -- 2.2 Products
 create table if not exists public.products (
   id text primary key,

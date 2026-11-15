@@ -213,22 +213,37 @@ export const useProductStore = create<ProductState>()(
         };
 
         // Write directly to Supabase via server API
+        let finalProduct = createdProduct;
         try {
-          await fetch('/api/admin/products', {
+          const res = await fetch('/api/admin/products', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(createdProduct),
           });
+
+          if (res.ok) {
+            const data = await res.json();
+            if (data.product) {
+              finalProduct = {
+                ...createdProduct,
+                id: data.product.id || createdProduct.id,
+                slug: data.product.slug || createdProduct.slug,
+              };
+            }
+          } else {
+            const errData = await res.json().catch(() => ({}));
+            console.error('Failed to create product in database:', errData);
+          }
         } catch (err) {
           console.warn('API product POST notice:', err);
         }
 
         set((state) => ({
-          products: [createdProduct, ...state.products],
+          products: [finalProduct, ...state.products.filter((p) => p.id !== finalProduct.id)],
         }));
 
         notifyCatalogChange();
-        return createdProduct;
+        return finalProduct;
       },
 
       updateProduct: async (id, updates) => {
@@ -417,3 +432,30 @@ export const useProductStore = create<ProductState>()(
     }
   )
 );
+
+// Cross-tab and window synchronization
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    if (e.key === STORAGE_KEY) {
+      useProductStore.persist.rehydrate();
+    }
+  });
+
+  window.addEventListener(SYNC_EVENT, () => {
+    useProductStore.persist.rehydrate();
+  });
+
+  if ('BroadcastChannel' in window) {
+    try {
+      const channel = new BroadcastChannel('mewak_catalog_channel');
+      channel.onmessage = (event) => {
+        if (event.data?.type === 'CATALOG_UPDATED') {
+          useProductStore.persist.rehydrate();
+          useProductStore.getState().fetchProducts();
+        }
+      };
+    } catch {
+      // Ignore
+    }
+  }
+}

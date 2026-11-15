@@ -15,20 +15,51 @@ interface ProductClientWrapperProps {
 export default function ProductClientWrapper({ slug, initialProduct }: ProductClientWrapperProps) {
   const isMounted = useIsMounted();
   const getProduct = useProductStore((state) => state.getProductBySlugOrId);
+  const fetchProducts = useProductStore((state) => state.fetchProducts);
+  const [dynamicProduct, setDynamicProduct] = React.useState<Product | null>(initialProduct || null);
+  const [isSearching, setIsSearching] = React.useState(!initialProduct);
 
-  // When client mounts, prefer the live dynamic store product (which includes newly created and edited items)
-  const storeProduct = isMounted ? getProduct(slug) : null;
-  const product = storeProduct || initialProduct;
+  React.useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
-  if (!product) {
-    if (!isMounted) {
-      return (
-        <div className="min-h-screen bg-[#EFE8DD] flex items-center justify-center py-20 px-4">
-          <div className="w-8 h-8 border-2 border-[#2B1A16] border-t-transparent rounded-full animate-spin" />
-        </div>
-      );
+  React.useEffect(() => {
+    if (initialProduct) {
+      setDynamicProduct(initialProduct);
+      setIsSearching(false);
+      return;
     }
 
+    const found = getProduct(slug);
+    if (found) {
+      setDynamicProduct(found);
+      setIsSearching(false);
+      return;
+    }
+
+    // Direct fetch from API
+    fetch(`/api/products?slug=${encodeURIComponent(slug)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.products && data.products.length > 0) {
+          setDynamicProduct(data.products[0]);
+        }
+        setIsSearching(false);
+      })
+      .catch(() => setIsSearching(false));
+  }, [slug, initialProduct, getProduct]);
+
+  const product = dynamicProduct || (isMounted ? getProduct(slug) : null) || initialProduct;
+
+  if (isSearching || !isMounted) {
+    return (
+      <div className="min-h-screen bg-[#EFE8DD] flex items-center justify-center py-20 px-4">
+        <div className="w-8 h-8 border-2 border-[#2B1A16] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!product) {
     return (
       <div className="min-h-screen bg-[#EFE8DD] flex flex-col items-center justify-center py-24 px-4 text-center">
         <h1 className="font-serif text-3xl font-semibold text-[#2B1A16] mb-3">Hardware Edition Not Found</h1>
