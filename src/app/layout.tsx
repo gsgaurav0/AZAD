@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import { Playfair_Display, DM_Sans } from 'next/font/google';
 import './globals.css';
 import AnnouncementBar from '@/components/layout/AnnouncementBar';
@@ -81,6 +82,12 @@ export default function RootLayout({
         <ToastContainer />
         <FloatingWhatsApp />
         <AppInitializer />
+
+        {/* Razorpay Standard Web Checkout SDK */}
+        <Script
+          src="https://checkout.razorpay.com/v1/checkout.js"
+          strategy="lazyOnload"
+        />
       </body>
     </html>
   );

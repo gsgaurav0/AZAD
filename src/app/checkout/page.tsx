@@ -27,6 +27,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
 import { useCouponStore } from '@/store/couponStore';
 import { useIsMounted } from '@/hooks/useIsMounted';
+import { loadRazorpayScript } from '@/lib/loadRazorpay';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -354,39 +355,51 @@ export default function CheckoutPage() {
       });
 
       const rzpData = await rzpRes.json();
+      if (!rzpRes.ok || !rzpData.success) {
+        throw new Error(rzpData.error || 'Failed to initiate payment gateway order.');
+      }
 
-      // Check if Razorpay script can be loaded or if simulation mode
-      if (typeof window !== 'undefined' && (window as any).Razorpay && rzpData.keyId && !rzpData.isSandbox) {
-        const options = {
-          key: rzpData.keyId,
-          amount: rzpData.amount,
-          currency: rzpData.currency || 'INR',
-          name: 'Mewak Luxury Tech',
-          description: `Order #${createdOrderId}`,
-          order_id: rzpData.razorpayOrderId,
-          prefill: {
-            name: selectedAddress.name,
-            email: user?.email || '',
-            contact: selectedAddress.phone,
-          },
-          theme: {
-            color: '#2B1A16',
-          },
-          handler: async function (response: any) {
-            // Verify signature server-side
-            const verifyRes = await fetch('/api/payments/razorpay/verify', {
+      // Ensure Razorpay SDK script is loaded
+      const scriptReady = await loadRazorpayScript();
+      if (!scriptReady || typeof window === 'undefined' || !(window as any).Razorpay) {
+        throw new Error('Razorpay payment gateway script could not be loaded. Please check your internet connection.');
+      }
+
+      const options = {
+        key: rzpData.keyId || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: rzpData.amount,
+        currency: rzpData.currency || 'INR',
+        name: 'Mewak Luxury Tech',
+        description: `Order #${createdOrderId}`,
+        order_id: rzpData.razorpayOrderId,
+        prefill: {
+          name: selectedAddress.name,
+          email: user?.email || '',
+          contact: selectedAddress.phone,
+        },
+        theme: {
+          color: '#2B1A16',
+        },
+        handler: async function (response: {
+          razorpay_order_id: string;
+          razorpay_payment_id: string;
+          razorpay_signature: string;
+        }) {
+          try {
+            // Verify HMAC-SHA256 signature server-side
+            const verifyRes = await fetch('/api/verify-payment', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 orderId: createdOrderId,
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
+                order_id: response.razorpay_order_id,
+                payment_id: response.razorpay_payment_id,
+                signature: response.razorpay_signature,
               }),
             });
 
             const verifyData = await verifyRes.json();
-            if (verifyData.success) {
+            if (verifyRes.ok && verifyData.success) {
               if (appliedCoupon) {
                 useCouponStore.getState().incrementUsage(appliedCoupon);
               }
@@ -394,43 +407,35 @@ export default function CheckoutPage() {
               addToast(`Payment of ₹${total.toLocaleString('en-IN')} verified successfully!`, 'success');
               router.push(`/order-success/${createdOrderId}`);
             } else {
-              addToast(verifyData.error || 'Payment verification failed.', 'error');
-            }
-          },
-          modal: {
-            ondismiss: function () {
+              addToast(verifyData.error || 'Payment signature verification failed.', 'error');
               setIsPlacingOrder(false);
-              addToast('Payment cancelled. Your order remains pending.', 'info');
-            },
+            }
+          } catch (vErr: any) {
+            console.error('Payment verification request failed:', vErr);
+            addToast(vErr.message || 'Error communicating with verification service.', 'error');
+            setIsPlacingOrder(false);
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            setIsPlacingOrder(false);
+            addToast('Payment dismissed. Your order remains pending.', 'info');
           },
-        };
+        },
+      };
 
-        const razorpayInstance = new (window as any).Razorpay(options);
-        razorpayInstance.open();
+      const razorpayInstance = new (window as any).Razorpay(options);
+
+      // Handle payment failure event
+      razorpayInstance.on('payment.failed', function (failureData: any) {
+        console.error('Razorpay payment.failed event:', failureData?.error);
+        const description = failureData?.error?.description || 'Payment was declined or failed. Please try again.';
+        addToast(description, 'error');
         setIsPlacingOrder(false);
-        return;
-      }
-
-      // If in sandbox mode or test mode without external Razorpay popup
-      const verifyRes = await fetch('/api/payments/razorpay/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          orderId: createdOrderId,
-          razorpay_order_id: rzpData.razorpayOrderId || `rzp_sim_${Date.now()}`,
-          razorpay_payment_id: `pay_sim_${Date.now()}`,
-          razorpay_signature: 'verified_simulation',
-        }),
       });
 
-      if (appliedCoupon) {
-        useCouponStore.getState().incrementUsage(appliedCoupon);
-      }
-
-      clearCart();
+      razorpayInstance.open();
       setIsPlacingOrder(false);
-      addToast(`Order #${createdOrderId} confirmed and payment inscribed!`, 'success');
-      router.push(`/order-success/${createdOrderId}`);
     } catch (err: any) {
       console.error('Final place order exception:', err);
       addToast(err.message || 'Error communicating with checkout gateway.', 'error');
