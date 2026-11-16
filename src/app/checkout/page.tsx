@@ -151,7 +151,8 @@ export default function CheckoutPage() {
     setGeneratedOtp(code);
     setOtpSent(true);
     setAuthError('');
-    addToast(`Security Verification Code: ${code}`, 'info');
+    useAuthStore.getState().sendOtp(clean).catch(() => {});
+    addToast(`Verification code dispatched to ${clean}.`, 'info');
   };
 
   const handleInlineLogin = async (e: React.FormEvent) => {
@@ -168,8 +169,8 @@ export default function CheckoutPage() {
         handleSendOtp();
         return;
       }
-      if (authOtp.trim() !== generatedOtp && authOtp.trim() !== '8528') {
-        setAuthError('Invalid OTP code. Please enter the 4-digit code shown in the notice.');
+      if (authOtp.trim() !== generatedOtp) {
+        setAuthError('Invalid verification code. Please check and enter the valid code.');
         return;
       }
     } else {
@@ -667,7 +668,7 @@ export default function CheckoutPage() {
                           <div className="p-2.5 bg-[#9A8029]/10 rounded-[3px] text-[11px] text-[#9A8029] flex items-center gap-2">
                             <Sparkles className="w-3.5 h-3.5 shrink-0" />
                             <span>
-                              Test dispatch code sent: <strong>{generatedOtp || '8528'}</strong>
+                              Verification code dispatched to <strong>{authIdentifier}</strong>
                             </span>
                           </div>
                         )}

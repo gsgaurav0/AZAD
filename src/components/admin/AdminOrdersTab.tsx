@@ -183,12 +183,8 @@ export default function AdminOrdersTab({
           </button>
 
           <button
-            onClick={() => {
-              if (window.confirm('Reset orders stream back to default sample orders?')) {
-                onResetOrders();
-              }
-            }}
-            title="Reset orders to sample state"
+            onClick={onResetOrders}
+            title="Refresh orders from live database"
             className="p-2.5 rounded-xl border border-[#DDD2C0] bg-[#FAF8F5] hover:bg-[#EFE8DD] text-[#2B1A16]/60 hover:text-[#2B1A16] text-xs transition-colors shrink-0"
           >
             <RotateCcw className="w-4 h-4" />

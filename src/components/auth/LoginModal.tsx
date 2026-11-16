@@ -10,7 +10,7 @@ export default function LoginModal() {
   const isLoginModalOpen = useUIStore((state) => state.isLoginModalOpen);
   const closeLoginModal = useUIStore((state) => state.closeLoginModal);
   const addToast = useUIStore((state) => state.addToast);
-  const { login, signup, loginWithOtp, resetPasswordForEmail } = useAuthStore();
+  const { login, signup, loginWithOtp, resetPasswordForEmail, sendOtp } = useAuthStore();
 
   const [mode, setMode] = useState<'signin' | 'signup' | 'forgot'>('signin');
   const [authMethod, setAuthMethod] = useState<'password' | 'otp'>('password');
@@ -108,6 +108,7 @@ export default function LoginModal() {
     setGeneratedOtp(randomCode);
     setOtpSent(true);
     setTimer(30);
+    sendOtp(clean).catch(() => {});
     setTimeout(() => otpInputRefs.current[0]?.focus(), 150);
   };
 
@@ -121,7 +122,7 @@ export default function LoginModal() {
     }
 
     if (entered !== generatedOtp) {
-      setError('Invalid OTP code. Please enter the generated authentication code.');
+      setError('Invalid OTP code. Please enter the valid authentication code.');
       return;
     }
 
@@ -470,19 +471,9 @@ export default function LoginModal() {
                       <span className="text-[11px] text-[#2B1A16]/80 block">
                         Authentication code sent to <strong>+91 {otpPhone}</strong>
                       </span>
-                      <div className="mt-1 flex items-center justify-center gap-2">
-                        <span className="text-xs text-[#9A8029] font-bold">Code: {generatedOtp}</span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setOtpDigits(generatedOtp.split(''));
-                            setError('');
-                          }}
-                          className="text-[10px] bg-[#2B1A16] text-[#EFE8DD] px-2 py-0.5 rounded-[2px] font-bold uppercase tracking-wider hover:bg-[#9A8029]"
-                        >
-                          Auto-fill
-                        </button>
-                      </div>
+                      <span className="text-[10px] text-[#2B1A16]/60 mt-0.5 block">
+                        Please enter the 6-digit security token received via SMS
+                      </span>
                     </div>
 
                     <div className="flex justify-between gap-1.5 my-3">

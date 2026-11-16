@@ -729,7 +729,7 @@ export default function AdminPage() {
               onOpenOrderDetailModal={handleOpenOrderDetail}
               onUpdateStatus={handleUpdateOrderStatus}
               onDeleteOrder={handleDeleteOrder}
-              onResetOrders={resetOrdersToDefault}
+              onResetOrders={fetchAdminOrders}
             />
           )}
 

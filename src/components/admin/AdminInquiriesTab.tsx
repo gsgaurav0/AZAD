@@ -25,7 +25,7 @@ import { useUIStore } from '@/store/uiStore';
 import { SupportInquiry, InquiryStatus, InquiryType } from '@/types/inquiry';
 
 export default function AdminInquiriesTab() {
-  const { inquiries, updateInquiryStatus, sendReply, deleteInquiry, addInquiry, resetToDefaults } =
+  const { inquiries, updateInquiryStatus, sendReply, deleteInquiry, fetchInquiries } =
     useInquiryStore();
   const addToast = useUIStore((state) => state.addToast);
 
@@ -35,7 +35,7 @@ export default function AdminInquiriesTab() {
   const [selectedInquiry, setSelectedInquiry] = useState<SupportInquiry | null>(null);
   const [replyText, setReplyText] = useState('');
   const [inquiryToDelete, setInquiryToDelete] = useState<SupportInquiry | null>(null);
-  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Filtered inquiries
   const filtered = useMemo(() => {
@@ -70,19 +70,11 @@ export default function AdminInquiriesTab() {
     setReplyText('');
   };
 
-  const handleSimulateTestEmail = async () => {
-    const test = await addInquiry({
-      name: 'Rohan Varma',
-      email: 'rohan.varma@studio.audio',
-      phone: '+91 98331 99012',
-      subject: 'Warranty Assistance: Apex Pro planar driver calibration',
-      deviceModel: 'Mewak Apex Pro Studio ANC Headphones',
-      serialNumber: `MWK-APX-${Math.floor(1000 + Math.random() * 9000)}`,
-      type: 'warranty',
-      priority: 'urgent',
-      message: 'Hello, I submitted an evaluation request through the tech support portal. Please let me know when a technician can visit our studio for transducer testing.',
-    });
-    addToast(`Generated simulated incoming customer email #${test.id}`, 'info');
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchInquiries();
+    setIsRefreshing(false);
+    addToast('Support inbox refreshed from database.', 'success');
   };
 
   const getPriorityBadge = (p: string) => {
@@ -133,20 +125,12 @@ export default function AdminInquiriesTab() {
         <div className="flex items-center gap-2 flex-wrap">
           <button
             type="button"
-            onClick={handleSimulateTestEmail}
-            className="px-3.5 py-2 rounded-xl bg-[#FAF8F5] hover:bg-[#EFE8DD] border border-[#DDD2C0] text-[#2B1A16] font-semibold text-xs flex items-center gap-1.5 transition-colors"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="px-3.5 py-2 rounded-xl bg-white hover:bg-[#FAF8F5] border border-[#DDD2C0] text-[#2B1A16] font-semibold text-xs flex items-center gap-1.5 transition-colors disabled:opacity-50"
           >
-            <Sparkles className="w-3.5 h-3.5 text-[#9A8029]" />
-            <span>Simulate Incoming Email</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setShowResetConfirm(true)}
-            className="px-3.5 py-2 rounded-xl bg-white hover:bg-rose-50 border border-[#DDD2C0] text-rose-700 font-semibold text-xs flex items-center gap-1.5 transition-colors"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset Inbox</span>
+            <RotateCcw className={`w-3.5 h-3.5 text-[#9A8029] ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span>{isRefreshing ? 'Refreshing...' : 'Refresh Inbox'}</span>
           </button>
         </div>
       </div>
@@ -557,44 +541,7 @@ export default function AdminInquiriesTab() {
         </div>
       )}
 
-      {/* Reset Inquiries Confirmation Modal */}
-      {showResetConfirm && (
-        <div className="fixed inset-0 z-50 bg-[#2B1A16]/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white border border-[#E5E0D8] max-w-md w-full rounded-2xl p-6 shadow-2xl">
-            <div className="flex items-center gap-3 text-[#9A8029] mb-3">
-              <div className="w-10 h-10 rounded-xl bg-[#9A8029]/10 flex items-center justify-center">
-                <RotateCcw className="w-5 h-5" />
-              </div>
-              <h4 className="font-serif text-lg font-bold text-[#2B1A16]">
-                Reset Support Inbox?
-              </h4>
-            </div>
-            <p className="text-xs text-[#2B1A16]/80 leading-relaxed mb-4">
-              This will restore the support inbox to the initial seed customer inquiries and warranty tickets.
-            </p>
-            <div className="flex justify-end gap-2.5">
-              <button
-                type="button"
-                onClick={() => setShowResetConfirm(false)}
-                className="px-4 py-2 rounded-xl border border-[#DDD2C0] hover:bg-[#FAF8F5] text-xs font-semibold text-[#2B1A16]"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  resetToDefaults();
-                  addToast('Support inbox records reset successfully', 'info');
-                  setShowResetConfirm(false);
-                }}
-                className="px-4 py-2 rounded-xl bg-[#2B1A16] hover:bg-[#9A8029] text-white text-xs font-semibold uppercase tracking-wider"
-              >
-                Confirm Reset
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Reset Inquiries Confirmation Modal (Removed for production) */}
     </div>
   );
 }

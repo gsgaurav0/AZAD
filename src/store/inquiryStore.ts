@@ -3,35 +3,7 @@ import { persist } from 'zustand/middleware';
 import { SupportInquiry, InquiryStatus, InquiryType, InquiryPriority } from '@/types/inquiry';
 import { getBrowserClient } from '@/lib/supabase/client';
 
-export const DEFAULT_INQUIRIES: SupportInquiry[] = [
-  {
-    id: 'INQ-9482',
-    type: 'warranty',
-    name: 'Vikramaditya Sen',
-    email: 'v.sen@acoustics.org',
-    phone: '+91 98201 44892',
-    subject: 'Apex Pro Studio: Left driver planar transducer low volume',
-    deviceModel: 'Mewak Apex Pro Studio ANC (Obsidian Black)',
-    serialNumber: 'MWK-APX-2025-9941',
-    message: 'Hello Mewak Engineering team. I have been using the Apex Pro Studio daily in our mastering studio. Recently, after about 14 months of daily use, the left planar channel output dropped noticeably below calibration. I have verified with multiple DACs and 3.5mm cables. Requesting warranty replacement under the 2-Year Total Care Guarantee.',
-    status: 'new',
-    priority: 'urgent',
-    createdAt: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
-  },
-  {
-    id: 'INQ-9477',
-    type: 'consultation',
-    name: 'Ananya Deshpande',
-    email: 'ananya@vanguard-design.io',
-    phone: '+91 98450 11200',
-    subject: 'Enterprise Studio Order: 24 Monolithic Desk Hubs & Headsets',
-    deviceModel: 'MagDock 3-in-1 GaN Hub & Apex Studio',
-    message: 'We are outfitting our new hardware research laboratory in Bengaluru. We would like to acquire 24 units of the MagDock 140W GaN stations along with customized corporate serial allocations. Can you provide enterprise billing and expedited delivery timelines?',
-    status: 'new',
-    priority: 'high',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(),
-  },
-];
+export const DEFAULT_INQUIRIES: SupportInquiry[] = [];
 
 interface InquiryState {
   inquiries: SupportInquiry[];
@@ -50,7 +22,7 @@ interface InquiryState {
 export const useInquiryStore = create<InquiryState>()(
   persist(
     (set, get) => ({
-      inquiries: DEFAULT_INQUIRIES,
+      inquiries: [],
       isLoading: false,
 
       fetchInquiries: async () => {

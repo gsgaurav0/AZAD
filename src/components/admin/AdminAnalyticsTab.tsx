@@ -26,8 +26,8 @@ interface AdminAnalyticsTabProps {
 
 export default function AdminAnalyticsTab({ products, orders }: AdminAnalyticsTabProps) {
   const addToast = useUIStore((state) => state.addToast);
-  const resetCatalog = useProductStore((state) => state.resetToDefaults);
-  const resetOrders = useAuthStore((state) => state.resetOrdersToDefault);
+  const fetchProducts = useProductStore((state) => state.fetchProducts);
+  const fetchOrders = useAuthStore((state) => state.fetchAdminOrders);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Financial Analytics
@@ -424,20 +424,17 @@ export default function AdminAnalyticsTab({ products, orders }: AdminAnalyticsTa
         </div>
 
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-[#2B1A16]/70">
-          <span>Need to restore default hardware collection?</span>
+          <span>Live Cloud Database Synchronization</span>
           <button
             type="button"
-            onClick={() => {
-              if (window.confirm('Reset both products catalog and orders to default factory setup?')) {
-                resetCatalog();
-                resetOrders();
-                addToast('Restored catalog and sample orders to factory defaults', 'info');
-              }
+            onClick={async () => {
+              await Promise.all([fetchProducts(), fetchOrders()]);
+              addToast('Synchronized catalog and order stream with live database', 'success');
             }}
             className="text-[#9A8029] hover:underline font-semibold flex items-center gap-1.5"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset All to Factory Defaults</span>
+            <span>Sync Catalog & Orders</span>
           </button>
         </div>
       </div>
