@@ -438,7 +438,7 @@ export default function AccountPage() {
   };
 
   return (
-    <div className="bg-[#EFE8DD] min-h-screen py-10 md:py-16 border-b border-[#DDD2C0] font-sans">
+    <div className="bg-[#EFE8DD] min-h-screen pt-8 pb-28 md:py-16 border-b border-[#DDD2C0] font-sans">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Executive Profile Top Banner */}
         <div className="bg-[#FBF7F0] border border-[#DDD2C0] rounded-[6px] p-6 sm:p-8 mb-8 shadow-xs relative overflow-hidden">
@@ -502,18 +502,18 @@ export default function AccountPage() {
 
             {/* Actions & Completion Meter */}
             <div className="flex flex-col sm:items-end justify-between gap-4">
-              <div className="flex items-center gap-2.5">
+              <div className="grid grid-cols-2 sm:flex items-center gap-2.5 w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={handleOpenEditProfile}
-                  className="inline-flex items-center gap-1.5 text-xs bg-[#2B1A16] hover:bg-[#9A8029] text-[#EFE8DD] font-semibold px-4 py-2.5 rounded-[3px] transition-colors shadow-xs"
+                  className="inline-flex items-center justify-center gap-1.5 text-xs bg-[#2B1A16] hover:bg-[#9A8029] text-[#EFE8DD] font-semibold px-4 py-2.5 rounded-[3px] transition-colors shadow-xs cursor-pointer"
                 >
                   <Edit2 className="w-3.5 h-3.5" /> Edit Profile
                 </button>
                 <button
                   type="button"
                   onClick={logout}
-                  className="inline-flex items-center gap-1.5 text-xs border border-[#DDD2C0] bg-white hover:bg-[#EFE8DD] text-[#B3402F] font-semibold px-4 py-2.5 rounded-[3px] transition-colors"
+                  className="inline-flex items-center justify-center gap-1.5 text-xs border border-[#DDD2C0] bg-white hover:bg-[#EFE8DD] text-[#B3402F] font-semibold px-4 py-2.5 rounded-[3px] transition-colors cursor-pointer"
                 >
                   <LogOut className="w-3.5 h-3.5" /> Sign Out
                 </button>
@@ -1035,7 +1035,52 @@ export default function AccountPage() {
 
                       {/* Visual 5-Step Stepper */}
                       <div className="pt-2">
-                        <div className="grid grid-cols-5 gap-1 text-center relative py-2">
+                        {/* Mobile Phone Stepper (< sm) */}
+                        <div className="sm:hidden space-y-2.5 py-1">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="font-semibold text-[#2B1A16]">
+                              Milestone {currentMilestoneIdx + 1} of 5: <strong className="text-[#9A8029]">{order.status}</strong>
+                            </span>
+                            <span className="font-mono text-[11px] text-[#2B1A16]/60">
+                              {Math.round(((currentMilestoneIdx + 1) / 5) * 100)}%
+                            </span>
+                          </div>
+                          <div className="w-full bg-[#DDD2C0]/70 h-1.5 rounded-full overflow-hidden">
+                            <div
+                              className="bg-[#9A8029] h-full transition-all duration-500 rounded-full"
+                              style={{ width: `${((currentMilestoneIdx + 1) / 5) * 100}%` }}
+                            />
+                          </div>
+                          <div className="flex items-center justify-between text-[10px] text-[#2B1A16]/70 pt-0.5">
+                            {statusMilestones.map((step, idx) => {
+                              const isCompleted = idx <= currentMilestoneIdx;
+                              const isCurrent = idx === currentMilestoneIdx;
+                              return (
+                                <div key={step} className="flex flex-col items-center">
+                                  <div
+                                    className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                                      isCompleted
+                                        ? 'bg-[#2B1A16] text-[#EFE8DD]'
+                                        : 'bg-[#DDD2C0] text-[#2B1A16]/50'
+                                    } ${isCurrent ? 'ring-2 ring-[#9A8029]' : ''}`}
+                                  >
+                                    {isCompleted ? '✓' : idx + 1}
+                                  </div>
+                                  <span
+                                    className={`text-[9px] mt-1 text-center truncate max-w-[58px] ${
+                                      isCurrent ? 'font-bold text-[#2B1A16]' : 'text-[#2B1A16]/60'
+                                    }`}
+                                  >
+                                    {step === 'Out for Delivery' ? 'Out for Del.' : step}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Tablet & Desktop Stepper (>= sm) */}
+                        <div className="hidden sm:grid grid-cols-5 gap-1 text-center relative py-2">
                           {statusMilestones.map((step, idx) => {
                             const isCompleted = idx <= currentMilestoneIdx;
                             const isCurrent = idx === currentMilestoneIdx;
@@ -1680,7 +1725,7 @@ export default function AccountPage() {
       {/* ============================================================ */}
       {showEmailVerifyModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2B1A16]/70 backdrop-blur-xs">
-          <div className="relative w-full max-w-md bg-[#FBF7F0] border border-[#DDD2C0] shadow-2xl rounded-[4px] p-6 sm:p-8">
+          <div className="relative w-full max-w-md bg-[#FBF7F0] border border-[#DDD2C0] shadow-2xl rounded-[4px] p-6 sm:p-8 max-h-[92vh] overflow-y-auto">
             <button
               type="button"
               onClick={() => setShowEmailVerifyModal(false)}
@@ -1781,7 +1826,7 @@ export default function AccountPage() {
       {/* ============================================================ */}
       {showPhoneVerifyModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2B1A16]/70 backdrop-blur-xs">
-          <div className="relative w-full max-w-md bg-[#FBF7F0] border border-[#DDD2C0] shadow-2xl rounded-[4px] p-6 sm:p-8">
+          <div className="relative w-full max-w-md bg-[#FBF7F0] border border-[#DDD2C0] shadow-2xl rounded-[4px] p-6 sm:p-8 max-h-[92vh] overflow-y-auto">
             <button
               type="button"
               onClick={() => setShowPhoneVerifyModal(false)}
@@ -1888,7 +1933,7 @@ export default function AccountPage() {
       {/* ============================================================ */}
       {showPasswordChangeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2B1A16]/70 backdrop-blur-xs">
-          <div className="relative w-full max-w-md bg-[#FBF7F0] border border-[#DDD2C0] shadow-2xl rounded-[4px] p-6 sm:p-8">
+          <div className="relative w-full max-w-md bg-[#FBF7F0] border border-[#DDD2C0] shadow-2xl rounded-[4px] p-6 sm:p-8 max-h-[92vh] overflow-y-auto">
             <button
               type="button"
               onClick={() => setShowPasswordChangeModal(false)}
@@ -1982,7 +2027,7 @@ export default function AccountPage() {
       {/* ============================================================ */}
       {showAvatarModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2B1A16]/70 backdrop-blur-xs">
-          <div className="relative w-full max-w-md bg-[#FBF7F0] border border-[#DDD2C0] shadow-2xl rounded-[4px] p-6 sm:p-8">
+          <div className="relative w-full max-w-md bg-[#FBF7F0] border border-[#DDD2C0] shadow-2xl rounded-[4px] p-6 sm:p-8 max-h-[92vh] overflow-y-auto">
             <button
               type="button"
               onClick={() => setShowAvatarModal(false)}
@@ -2242,7 +2287,7 @@ export default function AccountPage() {
       {/* ============================================================ */}
       {showDeleteAccountModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2B1A16]/75 backdrop-blur-xs">
-          <div className="relative w-full max-w-md bg-[#FBF7F0] border border-[#B3402F]/40 shadow-2xl rounded-[4px] p-6 text-center space-y-4">
+          <div className="relative w-full max-w-md bg-[#FBF7F0] border border-[#B3402F]/40 shadow-2xl rounded-[4px] p-6 text-center space-y-4 max-h-[92vh] overflow-y-auto">
             <div className="w-12 h-12 rounded-full bg-[#B3402F]/15 flex items-center justify-center text-[#B3402F] mx-auto">
               <AlertTriangle className="w-6 h-6" />
             </div>
@@ -2283,8 +2328,8 @@ export default function AccountPage() {
       {/* MODAL 8: LUXURY CANCEL ORDER CONFIRMATION MODAL */}
       {/* ============================================================ */}
       {orderToCancel && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2B1A16]/80 backdrop-blur-xs">
-          <div className="relative w-full max-w-lg bg-[#FAF8F5] border border-[#DDD2C0] shadow-2xl rounded-2xl p-6 sm:p-7 space-y-5 animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#2B1A16]/80 backdrop-blur-xs">
+          <div className="relative w-full max-w-lg bg-[#FAF8F5] border border-[#DDD2C0] shadow-2xl rounded-2xl p-5 sm:p-7 space-y-4 sm:space-y-5 animate-in fade-in zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto">
             {/* Close Button */}
             <button
               type="button"

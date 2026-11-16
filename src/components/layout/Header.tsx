@@ -44,6 +44,13 @@ export default function Header() {
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const openLoginModal = useUIStore((state) => state.openLoginModal);
 
+  // Check if MobileBottomNav is rendered on the current route
+  const isBottomNavVisible =
+    !pathname.startsWith('/product/') &&
+    pathname !== '/checkout' &&
+    !pathname.startsWith('/admin') &&
+    !pathname.startsWith('/superadmin');
+
   // Smooth hover intent handlers to prevent menu from vanishing
   const handleMouseEnterNav = (id: string) => {
     if (menuTimerRef.current) {
@@ -200,10 +207,12 @@ export default function Header() {
                 <Search className="w-5 h-5" />
               </button>
 
-              {/* Wishlist - hidden on mobile as it is docked in bottom bar */}
+              {/* Wishlist - hidden on mobile when docked in bottom bar */}
               <Link
                 href="/wishlist"
-                className="hidden sm:flex p-1.5 text-[#2B1A16] hover:text-[#9A8029] transition-colors relative"
+                className={`${
+                  isBottomNavVisible ? 'hidden md:flex' : 'hidden sm:flex'
+                } p-1.5 text-[#2B1A16] hover:text-[#9A8029] transition-colors relative`}
                 aria-label="View wishlist"
               >
                 <Heart className="w-5 h-5" />
@@ -214,11 +223,13 @@ export default function Header() {
                 )}
               </Link>
 
-              {/* Account / Login - hidden on mobile as it is docked in bottom bar */}
+              {/* Account / Login - hidden on mobile when docked in bottom bar */}
               {mounted && isLoggedIn ? (
                 <Link
                   href="/account"
-                  className="hidden sm:flex p-1.5 text-[#2B1A16] hover:text-[#9A8029] transition-colors relative"
+                  className={`${
+                    isBottomNavVisible ? 'hidden md:flex' : 'hidden sm:flex'
+                  } p-1.5 text-[#2B1A16] hover:text-[#9A8029] transition-colors relative`}
                   aria-label="My Account"
                 >
                   <User className="w-5 h-5" />
@@ -227,18 +238,22 @@ export default function Header() {
                 <button
                   type="button"
                   onClick={openLoginModal}
-                  className="hidden sm:flex p-1.5 text-[#2B1A16] hover:text-[#9A8029] transition-colors"
+                  className={`${
+                    isBottomNavVisible ? 'hidden md:flex' : 'hidden sm:flex'
+                  } p-1.5 text-[#2B1A16] hover:text-[#9A8029] transition-colors`}
                   aria-label="Login or sign up"
                 >
                   <User className="w-5 h-5" />
                 </button>
               )}
 
-              {/* Cart Drawer Trigger */}
+              {/* Cart Drawer Trigger - hidden on mobile when docked in bottom navigation bar */}
               <button
                 type="button"
                 onClick={openCart}
-                className="p-1.5 text-[#2B1A16] hover:text-[#9A8029] transition-colors relative flex items-center gap-1 group"
+                className={`${
+                  isBottomNavVisible ? 'hidden md:flex' : 'flex'
+                } p-1.5 text-[#2B1A16] hover:text-[#9A8029] transition-colors relative items-center gap-1 group`}
                 aria-label="Shopping bag"
               >
                 <ShoppingBag className="w-5 h-5 transition-transform group-hover:scale-105" />

@@ -1006,7 +1006,7 @@ export default function CheckoutPage() {
             </div>
 
             {/* Checkout Stepper Bar */}
-            <div className="max-w-2xl mx-auto mb-10">
+            <div className="max-w-2xl mx-auto mb-8 sm:mb-10 px-2 sm:px-0">
               <div className="flex items-center justify-between relative">
                 <div className="absolute top-1/2 left-0 right-0 -translate-y-1/2 h-[2px] bg-[#DDD2C0] -z-0" />
                 <div
@@ -1021,7 +1021,7 @@ export default function CheckoutPage() {
                   className="flex flex-col items-center gap-1.5 relative z-10"
                 >
                   <div
-                    className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs transition-colors ${
+                    className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center font-bold text-xs transition-colors ${
                       currentStep >= 1
                         ? 'bg-[#2B1A16] text-[#EFE8DD] ring-4 ring-[#EFE8DD]'
                         : 'bg-[#DDD2C0] text-[#2B1A16]'
@@ -1029,7 +1029,7 @@ export default function CheckoutPage() {
                   >
                     {currentStep > 1 ? <Check className="w-4 h-4 text-[#9A8029]" /> : '1'}
                   </div>
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-[#2B1A16]">
+                  <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-[#2B1A16]">
                     Address
                   </span>
                 </button>
@@ -1041,7 +1041,7 @@ export default function CheckoutPage() {
                   className="flex flex-col items-center gap-1.5 relative z-10"
                 >
                   <div
-                    className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs transition-colors ${
+                    className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center font-bold text-xs transition-colors ${
                       currentStep >= 2
                         ? 'bg-[#2B1A16] text-[#EFE8DD] ring-4 ring-[#EFE8DD]'
                         : 'bg-[#DDD2C0] text-[#2B1A16]'
@@ -1049,7 +1049,7 @@ export default function CheckoutPage() {
                   >
                     {currentStep > 2 ? <Check className="w-4 h-4 text-[#9A8029]" /> : '2'}
                   </div>
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-[#2B1A16]">
+                  <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-[#2B1A16]">
                     Payment
                   </span>
                 </button>
@@ -1061,7 +1061,7 @@ export default function CheckoutPage() {
                   className="flex flex-col items-center gap-1.5 relative z-10"
                 >
                   <div
-                    className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs transition-colors ${
+                    className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center font-bold text-xs transition-colors ${
                       currentStep === 3
                         ? 'bg-[#2B1A16] text-[#EFE8DD] ring-4 ring-[#EFE8DD]'
                         : 'bg-[#DDD2C0] text-[#2B1A16]'
@@ -1069,7 +1069,7 @@ export default function CheckoutPage() {
                   >
                     3
                   </div>
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-[#2B1A16]">
+                  <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-[#2B1A16]">
                     Review
                   </span>
                 </button>
@@ -1077,9 +1077,9 @@ export default function CheckoutPage() {
             </div>
 
             {/* 2-Column Checkout Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
               {/* Main Stepper Form Column */}
-              <div className="lg:col-span-8 bg-[#FBF7F0] border border-[#DDD2C0] rounded-[4px] p-6 sm:p-8 shadow-sm">
+              <div className="lg:col-span-8 bg-[#FBF7F0] border border-[#DDD2C0] rounded-[4px] p-4 sm:p-6 md:p-8 shadow-sm">
                 {/* STEP 1: ADDRESS */}
                 {currentStep === 1 && (
                   <div className="space-y-6">
@@ -1302,7 +1302,7 @@ export default function CheckoutPage() {
                         <button
                           type="button"
                           onClick={handleStep1Continue}
-                          className="bg-[#9A8029] hover:bg-[#7F6A1F] text-white text-xs font-semibold uppercase tracking-[0.2em] px-8 py-3.5 rounded-[4px] transition-colors flex items-center gap-2 shadow-sm cursor-pointer"
+                          className="w-full sm:w-auto bg-[#9A8029] hover:bg-[#7F6A1F] text-white text-xs font-semibold uppercase tracking-[0.2em] px-8 py-3.5 rounded-[4px] transition-colors flex items-center justify-center gap-2 shadow-sm cursor-pointer"
                         >
                           <span>Proceed to Payment</span>
                           <ArrowRight className="w-4 h-4" />
@@ -1417,18 +1417,18 @@ export default function CheckoutPage() {
                       </label>
                     </div>
 
-                    <div className="pt-4 border-t border-[#DDD2C0] flex justify-between items-center">
+                    <div className="pt-4 border-t border-[#DDD2C0] flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-3">
                       <button
                         type="button"
                         onClick={() => setCurrentStep(1)}
-                        className="text-xs text-[#2B1A16]/70 hover:text-[#2B1A16] uppercase font-semibold cursor-pointer"
+                        className="text-xs text-[#2B1A16]/70 hover:text-[#2B1A16] uppercase font-semibold cursor-pointer py-2 text-center sm:text-left"
                       >
                         ← Back to Destination
                       </button>
                       <button
                         type="button"
                         onClick={handleStep2Continue}
-                        className="bg-[#9A8029] hover:bg-[#7F6A1F] text-white text-xs font-semibold uppercase tracking-[0.2em] px-8 py-3.5 rounded-[4px] transition-colors flex items-center gap-2 shadow-sm cursor-pointer"
+                        className="w-full sm:w-auto bg-[#9A8029] hover:bg-[#7F6A1F] text-white text-xs font-semibold uppercase tracking-[0.2em] px-8 py-3.5 rounded-[4px] transition-colors flex items-center justify-center gap-2 shadow-sm cursor-pointer"
                       >
                         <span>Review Order</span>
                         <ArrowRight className="w-4 h-4" />
@@ -1530,11 +1530,11 @@ export default function CheckoutPage() {
                     </div>
 
                     {/* Final Place Order Button */}
-                    <div className="pt-4 border-t border-[#DDD2C0] flex items-center justify-between">
+                    <div className="pt-4 border-t border-[#DDD2C0] flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-3">
                       <button
                         type="button"
                         onClick={() => setCurrentStep(2)}
-                        className="text-xs text-[#2B1A16]/70 hover:text-[#2B1A16] uppercase font-semibold cursor-pointer"
+                        className="text-xs text-[#2B1A16]/70 hover:text-[#2B1A16] uppercase font-semibold cursor-pointer py-2 text-center sm:text-left"
                       >
                         ← Back to Payment
                       </button>
@@ -1542,7 +1542,7 @@ export default function CheckoutPage() {
                         type="button"
                         disabled={isPlacingOrder}
                         onClick={handleFinalPlaceOrder}
-                        className="bg-[#2B1A16] hover:bg-[#9A8029] text-[#EFE8DD] text-xs font-semibold uppercase tracking-[0.2em] px-10 py-4 rounded-[4px] transition-colors flex items-center gap-2 shadow-lg disabled:opacity-50 cursor-pointer"
+                        className="w-full sm:w-auto bg-[#2B1A16] hover:bg-[#9A8029] text-[#EFE8DD] text-xs font-semibold uppercase tracking-[0.2em] px-8 sm:px-10 py-4 rounded-[4px] transition-colors flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 cursor-pointer"
                       >
                         <Lock className="w-4 h-4 text-[#9A8029]" />
                         <span>
@@ -1557,7 +1557,7 @@ export default function CheckoutPage() {
               </div>
 
               {/* Right Summary Column */}
-              <div className="lg:col-span-4 bg-[#FBF7F0] border border-[#DDD2C0] rounded-[4px] p-6 space-y-4 sticky top-24 shadow-sm">
+              <div className="lg:col-span-4 bg-[#FBF7F0] border border-[#DDD2C0] rounded-[4px] p-5 sm:p-6 space-y-4 lg:sticky lg:top-24 shadow-sm">
                 <h3 className="font-serif text-lg font-semibold text-[#2B1A16] pb-3 border-b border-[#DDD2C0]">
                   Order Summary
                 </h3>
