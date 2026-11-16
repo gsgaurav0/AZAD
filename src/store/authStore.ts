@@ -882,22 +882,33 @@ export const useAuthStore = create<AuthState>()(
         const order = get().orders.find((o) => o.id === orderId);
         if (!order || order.status === 'Delivered') return false;
 
-        const supabase = getBrowserClient();
-        try {
-          await supabase.from('orders').update({
-            status: 'Cancelled',
-            updated_at: new Date().toISOString(),
-          }).eq('id', orderId);
-        } catch {}
+        const cancellationNote = reason?.trim() || 'Order cancelled by customer. Refund process initiated.';
+        const cancellationLocation = 'Customer Care & Logistics Resolution Desk';
 
-        const now = formatDateTime();
-        const cancellationStep: OrderStatusStep = {
-          status: 'Cancelled',
-          timestamp: now,
-          location: order.currentLocation || 'Distribution Hub',
-          note: reason || 'Order cancelled by customer. Refund process initiated.',
-          completed: true,
-        };
+        try {
+          const res = await fetch('/api/orders/cancel', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              orderId,
+              reason: cancellationNote,
+            }),
+          });
+          const data = await res.json();
+          if (!res.ok || !data.success) {
+            console.warn('Server cancellation notice:', data.error);
+          }
+        } catch (err) {
+          console.warn('Network error cancelling order:', err);
+        }
+
+        const updatedHistory = buildCleanMilestoneHistory(
+          'Cancelled',
+          order.address,
+          cancellationNote,
+          cancellationLocation,
+          order.statusHistory
+        );
 
         set((state) => ({
           orders: state.orders.map((o) => {
@@ -905,7 +916,8 @@ export const useAuthStore = create<AuthState>()(
             return {
               ...o,
               status: 'Cancelled',
-              statusHistory: [...o.statusHistory, cancellationStep],
+              currentLocation: cancellationLocation,
+              statusHistory: updatedHistory,
             };
           }),
         }));

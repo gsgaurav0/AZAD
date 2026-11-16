@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   Package,
@@ -14,6 +14,7 @@ import {
   Tag,
   Menu,
   X,
+  ChevronLeft,
   ChevronRight,
   Sparkles,
   CheckCircle2,
@@ -111,6 +112,34 @@ export default function AdminPage() {
   const fetchCoupons = useCouponStore((state) => state.fetchCoupons);
   const activeCouponsCount = coupons.filter((c) => c.isActive).length;
   const fetchCMS = useCMSStore((state) => state.fetchCMS);
+
+  // Horizontal Tabs Scroll Navigation State
+  const tabsScrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkTabScroll = () => {
+    if (tabsScrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = tabsScrollRef.current;
+      setCanScrollLeft(scrollLeft > 10);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
+
+  useEffect(() => {
+    checkTabScroll();
+    const handleResize = () => checkTabScroll();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [products.length, orders.length, inquiries.length]);
+
+  const handleScrollTabs = (direction: 'left' | 'right') => {
+    if (tabsScrollRef.current) {
+      const offset = direction === 'left' ? -260 : 260;
+      tabsScrollRef.current.scrollBy({ left: offset, behavior: 'smooth' });
+      setTimeout(checkTabScroll, 320);
+    }
+  };
 
   // Sync all store collections with Supabase database on mount & auth
   useEffect(() => {
@@ -615,32 +644,65 @@ export default function AdminPage() {
 
         {/* ================= RESPONSIVE HORIZONTAL NAVIGATION TABS ================= */}
         <div className="border-b border-[#E5E0D8] pb-3">
-          <div className="flex items-center gap-1.5 bg-white border border-[#E5E0D8] p-1.5 rounded-2xl shadow-xs overflow-x-auto scrollbar-none -mx-3 px-3 sm:mx-0 sm:px-1.5">
-            {NAV_ITEMS.map((item) => {
-              const Icon = item.icon;
-              const isActive = activeTab === item.id;
-              return (
-                <button
-                  key={`tab-${item.id}`}
-                  onClick={() => setActiveTab(item.id)}
-                  className={`flex items-center gap-2 px-3 sm:px-3.5 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all whitespace-nowrap shrink-0 active:scale-[0.98] ${
-                    isActive
-                      ? 'bg-[#2B1A16] text-[#EFE8DD] shadow-sm'
-                      : 'text-[#2B1A16]/65 hover:text-[#2B1A16] hover:bg-[#FAF8F5]'
-                  }`}
-                >
-                  <Icon className="w-3.5 h-3.5 text-[#9A8029]" />
-                  <span>{item.label}</span>
-                  <span
-                    className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold ${
-                      isActive ? 'bg-white/20 text-white' : item.badgeColor
+          <div className="relative flex items-center bg-white border border-[#E5E0D8] p-1.5 rounded-2xl shadow-xs group">
+            {/* Scroll Left Button */}
+            {canScrollLeft && (
+              <button
+                type="button"
+                onClick={() => handleScrollTabs('left')}
+                className="absolute left-2 z-20 p-2 bg-white/95 hover:bg-[#FAF8F5] text-[#2B1A16] rounded-xl border border-[#DDD2C0] shadow-md transition-all shrink-0 cursor-pointer"
+                title="Scroll Tabs Left"
+              >
+                <ChevronLeft className="w-4 h-4 text-[#9A8029]" />
+              </button>
+            )}
+
+            {/* Scroll Container */}
+            <div
+              ref={tabsScrollRef}
+              onScroll={checkTabScroll}
+              className="flex items-center gap-1.5 overflow-x-auto scroll-smooth no-scrollbar w-full px-1"
+            >
+              {NAV_ITEMS.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={`tab-${item.id}`}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`flex items-center gap-2 px-3 sm:px-3.5 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all whitespace-nowrap shrink-0 active:scale-[0.98] cursor-pointer ${
+                      isActive
+                        ? 'bg-[#2B1A16] text-[#EFE8DD] shadow-sm'
+                        : 'text-[#2B1A16]/65 hover:text-[#2B1A16] hover:bg-[#FAF8F5]'
                     }`}
                   >
-                    {item.badge}
-                  </span>
-                </button>
-              );
-            })}
+                    <Icon className="w-3.5 h-3.5 text-[#9A8029]" />
+                    <span>{item.label}</span>
+                    <span
+                      className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold ${
+                        isActive ? 'bg-white/20 text-white' : item.badgeColor
+                      }`}
+                    >
+                      {item.badge}
+                    </span>
+                  </button>
+                );
+              })}
+              {/* Spacer so the rightmost tab is never clipped against the border */}
+              <div className="w-8 shrink-0 h-1" />
+            </div>
+
+            {/* Scroll Right Button */}
+            {canScrollRight && (
+              <button
+                type="button"
+                onClick={() => handleScrollTabs('right')}
+                className="absolute right-2 z-20 p-2 bg-white/95 hover:bg-[#FAF8F5] text-[#2B1A16] rounded-xl border border-[#DDD2C0] shadow-md transition-all shrink-0 cursor-pointer"
+                title="Scroll Tabs Right"
+              >
+                <ChevronRight className="w-4 h-4 text-[#9A8029]" />
+              </button>
+            )}
           </div>
         </div>
 

@@ -154,6 +154,30 @@ export default function AccountPage() {
   const [returnImages, setReturnImages] = useState<string[]>([]);
   const [isUploadingReturnImage, setIsUploadingReturnImage] = useState(false);
 
+  // Cancel Order Modal State
+  const [orderToCancel, setOrderToCancel] = useState<Order | null>(null);
+  const [cancelReasonOption, setCancelReasonOption] = useState('Delivery schedule adjustment / Need to reschedule');
+  const [cancelCustomReason, setCancelCustomReason] = useState('');
+  const [isCancelling, setIsCancelling] = useState(false);
+
+  const handleConfirmCancelOrder = async () => {
+    if (!orderToCancel) return;
+    setIsCancelling(true);
+    const finalReason = cancelReasonOption === 'Other logistical reason'
+      ? (cancelCustomReason.trim() || 'Other logistical reason')
+      : (cancelCustomReason.trim() ? `${cancelReasonOption} - ${cancelCustomReason.trim()}` : cancelReasonOption);
+
+    const success = await cancelOrder(orderToCancel.id, finalReason);
+    setIsCancelling(false);
+    if (success) {
+      addToast(`Order #${orderToCancel.id} has been cancelled.`, 'info');
+      setOrderToCancel(null);
+      setCancelCustomReason('');
+    } else {
+      addToast(`Could not cancel order #${orderToCancel.id}. Please contact concierge support.`, 'error');
+    }
+  };
+
   if (!isLoggedIn || !user) {
     return (
       <div className="bg-[#EFE8DD] min-h-screen py-24 text-center px-4 font-sans">
@@ -1106,13 +1130,11 @@ export default function AccountPage() {
                           <button
                             type="button"
                             onClick={() => {
-                              const reason = prompt('Please enter cancellation reason:', 'Delivery schedule adjustment');
-                              if (reason) {
-                                cancelOrder(order.id, reason);
-                                addToast(`Order #${order.id} cancelled.`, 'info');
-                              }
+                              setOrderToCancel(order);
+                              setCancelReasonOption('Delivery schedule adjustment / Need to reschedule');
+                              setCancelCustomReason('');
                             }}
-                            className="text-[#B3402F] hover:underline font-semibold"
+                            className="text-[#B3402F] hover:underline font-semibold cursor-pointer text-xs"
                           >
                             Cancel Order
                           </button>
@@ -2214,6 +2236,158 @@ export default function AccountPage() {
                 className="flex-1 border border-[#DDD2C0] text-[#2B1A16] text-xs font-semibold uppercase py-2.5 rounded-[3px]"
               >
                 Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* MODAL 8: LUXURY CANCEL ORDER CONFIRMATION MODAL */}
+      {/* ============================================================ */}
+      {orderToCancel && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2B1A16]/80 backdrop-blur-xs">
+          <div className="relative w-full max-w-lg bg-[#FAF8F5] border border-[#DDD2C0] shadow-2xl rounded-2xl p-6 sm:p-7 space-y-5 animate-in fade-in zoom-in-95 duration-200">
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => setOrderToCancel(null)}
+              className="absolute top-4 right-4 p-1.5 rounded-full text-[#2B1A16]/50 hover:text-[#2B1A16] hover:bg-[#DDD2C0]/30 transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {/* Header */}
+            <div className="flex items-start gap-3.5">
+              <div className="w-11 h-11 rounded-xl bg-[#B3402F]/10 border border-[#B3402F]/20 flex items-center justify-center text-[#B3402F] shrink-0 mt-0.5">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-[#B3402F] font-bold block mb-0.5">
+                  Order Cancellation Request
+                </span>
+                <h3 className="font-serif text-xl font-bold text-[#2B1A16]">
+                  Cancel Order #{orderToCancel.id}?
+                </h3>
+                <p className="text-xs text-[#2B1A16]/70 mt-1">
+                  Placed on {orderToCancel.date} • Total: ₹{orderToCancel.total.toLocaleString('en-IN')}
+                </p>
+              </div>
+            </div>
+
+            {/* Product Snapshot */}
+            {orderToCancel.items && orderToCancel.items.length > 0 && (
+              <div className="p-3 bg-white rounded-xl border border-[#DDD2C0]/70 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-10 h-10 rounded-lg bg-[#DDD2C0]/30 overflow-hidden relative shrink-0">
+                    {orderToCancel.items[0]?.product?.images?.[0] ? (
+                      <Image
+                        src={orderToCancel.items[0].product.images[0]}
+                        alt={orderToCancel.items[0].product.name}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <Package className="w-5 h-5 text-[#9A8029] m-auto mt-2.5" />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <strong className="block truncate text-[#2B1A16] text-xs">
+                      {orderToCancel.items[0]?.product?.name || 'Mewak Hardware Item'}
+                    </strong>
+                    <span className="text-[11px] text-[#2B1A16]/60">
+                      {orderToCancel.items.length > 1
+                        ? `+ ${orderToCancel.items.length - 1} other item(s)`
+                        : `${orderToCancel.items[0]?.selectedColor || 'Standard'} • ${orderToCancel.items[0]?.selectedSize || 'Edition'}`}
+                    </span>
+                  </div>
+                </div>
+                <span className="font-serif font-bold text-[#2B1A16] text-sm shrink-0 pl-2">
+                  ₹{orderToCancel.total.toLocaleString('en-IN')}
+                </span>
+              </div>
+            )}
+
+            {/* Reason Selector */}
+            <div className="space-y-2">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[#2B1A16]/80">
+                Reason for Cancellation
+              </label>
+              <div className="space-y-1.5">
+                {[
+                  'Delivery schedule adjustment / Need to reschedule',
+                  'Placed order by mistake / Duplicate order',
+                  'Incorrect delivery address or contact details',
+                  'Found alternative item or changed preference',
+                  'Other logistical reason',
+                ].map((reason) => (
+                  <label
+                    key={reason}
+                    className={`flex items-center gap-2.5 p-2.5 rounded-xl border text-xs cursor-pointer transition-all ${
+                      cancelReasonOption === reason
+                        ? 'bg-[#2B1A16] text-[#EFE8DD] border-[#2B1A16] font-medium shadow-xs'
+                        : 'bg-white border-[#DDD2C0]/80 text-[#2B1A16]/80 hover:border-[#9A8029]'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="cancelReason"
+                      checked={cancelReasonOption === reason}
+                      onChange={() => setCancelReasonOption(reason)}
+                      className="accent-[#9A8029]"
+                    />
+                    <span>{reason}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Optional Additional Note */}
+            <div>
+              <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#2B1A16]/70 mb-1">
+                Additional Notes (Optional)
+              </label>
+              <textarea
+                value={cancelCustomReason}
+                onChange={(e) => setCancelCustomReason(e.target.value)}
+                placeholder="Provide any specific context for our concierge team..."
+                rows={2}
+                className="w-full bg-white border border-[#DDD2C0] focus:border-[#9A8029] rounded-xl p-2.5 text-xs text-[#2B1A16] outline-none resize-none"
+              />
+            </div>
+
+            {/* Policy Note */}
+            <div className="p-3 bg-amber-50/70 border border-amber-200/80 rounded-xl text-[11px] text-[#2B1A16]/75 flex items-start gap-2">
+              <ShieldCheck className="w-4 h-4 text-[#9A8029] shrink-0 mt-0.5" />
+              <span>
+                100% Guaranteed Refund: For prepaid orders, your full payment will be credited back to your original source account within 2-4 banking business days.
+              </span>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-3 pt-2 border-t border-[#DDD2C0]/60">
+              <button
+                type="button"
+                onClick={() => setOrderToCancel(null)}
+                disabled={isCancelling}
+                className="flex-1 py-3 px-4 rounded-xl border border-[#DDD2C0] bg-white hover:bg-[#FAF8F5] text-[#2B1A16] text-xs font-semibold uppercase tracking-wider transition-colors disabled:opacity-50 cursor-pointer"
+              >
+                Keep Order
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmCancelOrder}
+                disabled={isCancelling}
+                className="flex-1 py-3 px-4 rounded-xl bg-[#B3402F] hover:bg-[#923325] text-white text-xs font-semibold uppercase tracking-wider transition-colors disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+              >
+                {isCancelling ? (
+                  <>
+                    <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Cancelling...</span>
+                  </>
+                ) : (
+                  <span>Confirm Cancellation</span>
+                )}
               </button>
             </div>
           </div>
