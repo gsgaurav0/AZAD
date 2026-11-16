@@ -287,13 +287,14 @@ export const useProductStore = create<ProductState>()(
         if (!product) return;
 
         const allInStock = (product.sizes || []).every((s) => s.inStock);
+        const newStockStatus = !allInStock;
         const updatedSizes = (product.sizes || []).map((s) => ({
           ...s,
-          inStock: !allInStock,
-          stockCount: !allInStock ? 15 : 0,
+          inStock: newStockStatus,
+          stockCount: newStockStatus ? 15 : 0,
         }));
 
-        await get().updateProduct(id, { sizes: updatedSizes });
+        await get().updateProduct(id, { sizes: updatedSizes, inStock: newStockStatus });
       },
 
       duplicateProduct: async (id) => {

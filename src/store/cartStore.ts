@@ -131,16 +131,20 @@ export const useCartStore = create<CartState>()(
         // Sync with Supabase asynchronously
         if (typeof window !== 'undefined') {
           const supabase = getBrowserClient();
-          supabase.auth.getSession().then(({ data }: { data: any }) => {
-            if (data.session?.user) {
-              supabase.from('cart_items').upsert({
-                user_id: data.session.user.id,
-                product_id: product.id,
-                selected_color: selectedColor,
-                selected_size: selectedSize,
-                quantity,
-                updated_at: new Date().toISOString(),
-              }, { onConflict: 'user_id,product_id,selected_color,selected_size' }).catch(() => {});
+          supabase.auth.getSession().then(async ({ data }: { data: any }) => {
+            if (data?.session?.user) {
+              try {
+                await supabase.from('cart_items').upsert({
+                  user_id: data.session.user.id,
+                  product_id: product.id,
+                  selected_color: selectedColor,
+                  selected_size: selectedSize,
+                  quantity,
+                  updated_at: new Date().toISOString(),
+                }, { onConflict: 'user_id,product_id,selected_color,selected_size' });
+              } catch (err) {
+                console.warn('Cart Supabase upsert notice:', err);
+              }
             }
           });
         }
@@ -160,15 +164,18 @@ export const useCartStore = create<CartState>()(
 
         if (typeof window !== 'undefined') {
           const supabase = getBrowserClient();
-          supabase.auth.getSession().then(({ data }: { data: any }) => {
-            if (data.session?.user) {
-              supabase.from('cart_items')
-                .delete()
-                .eq('user_id', data.session.user.id)
-                .eq('product_id', productId)
-                .eq('selected_color', selectedColor)
-                .eq('selected_size', selectedSize)
-                .catch(() => {});
+          supabase.auth.getSession().then(async ({ data }: { data: any }) => {
+            if (data?.session?.user) {
+              try {
+                await supabase.from('cart_items')
+                  .delete()
+                  .eq('user_id', data.session.user.id)
+                  .eq('product_id', productId)
+                  .eq('selected_color', selectedColor)
+                  .eq('selected_size', selectedSize);
+              } catch (err) {
+                console.warn('Cart Supabase delete notice:', err);
+              }
             }
           });
         }
@@ -192,15 +199,18 @@ export const useCartStore = create<CartState>()(
 
         if (typeof window !== 'undefined') {
           const supabase = getBrowserClient();
-          supabase.auth.getSession().then(({ data }: { data: any }) => {
-            if (data.session?.user) {
-              supabase.from('cart_items')
-                .update({ quantity, updated_at: new Date().toISOString() })
-                .eq('user_id', data.session.user.id)
-                .eq('product_id', productId)
-                .eq('selected_color', selectedColor)
-                .eq('selected_size', selectedSize)
-                .catch(() => {});
+          supabase.auth.getSession().then(async ({ data }: { data: any }) => {
+            if (data?.session?.user) {
+              try {
+                await supabase.from('cart_items')
+                  .update({ quantity, updated_at: new Date().toISOString() })
+                  .eq('user_id', data.session.user.id)
+                  .eq('product_id', productId)
+                  .eq('selected_color', selectedColor)
+                  .eq('selected_size', selectedSize);
+              } catch (err) {
+                console.warn('Cart Supabase update notice:', err);
+              }
             }
           });
         }
@@ -264,9 +274,13 @@ export const useCartStore = create<CartState>()(
 
         if (typeof window !== 'undefined') {
           const supabase = getBrowserClient();
-          supabase.auth.getSession().then(({ data }: { data: any }) => {
-            if (data.session?.user) {
-              supabase.from('cart_items').delete().eq('user_id', data.session.user.id).catch(() => {});
+          supabase.auth.getSession().then(async ({ data }: { data: any }) => {
+            if (data?.session?.user) {
+              try {
+                await supabase.from('cart_items').delete().eq('user_id', data.session.user.id);
+              } catch (err) {
+                console.warn('Cart Supabase clear notice:', err);
+              }
             }
           });
         }

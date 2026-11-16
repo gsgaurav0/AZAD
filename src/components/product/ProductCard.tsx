@@ -68,10 +68,16 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
     openQuickView(product);
   };
 
+  const sizes = product.sizes && product.sizes.length > 0 ? product.sizes : [];
+  const isOutOfStock = product.inStock === false || (sizes.length > 0 && sizes.every((s) => !s.inStock));
+
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const sizes = product.sizes && product.sizes.length > 0 ? product.sizes : [];
+    if (isOutOfStock) {
+      addToast(`"${product.name}" is currently sold out`, 'info');
+      return;
+    }
     const availableSize =
       sizes.find((s) => s.inStock)?.size || sizes[0]?.size || 'Standard';
     const colorName = activeColor?.name || 'Standard';
@@ -124,12 +130,18 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
           )}
         </Link>
 
-        {/* Badges: NEW / SALE % */}
+        {/* Badges: SOLD OUT / NEW / SALE % */}
         <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5 z-10 pointer-events-none">
-          {product.isNew && (
-            <span className="bg-[#9A8029] text-white text-[10px] font-sans font-semibold tracking-widest uppercase px-2 py-0.5 rounded-[2px] shadow-xs">
-              NEW
+          {isOutOfStock ? (
+            <span className="bg-[#2B1A16]/90 backdrop-blur-xs text-[#EFE8DD] text-[10px] font-sans font-semibold tracking-widest uppercase px-2 py-0.5 rounded-[2px] shadow-xs border border-white/10">
+              SOLD OUT
             </span>
+          ) : (
+            product.isNew && (
+              <span className="bg-[#9A8029] text-white text-[10px] font-sans font-semibold tracking-widest uppercase px-2 py-0.5 rounded-[2px] shadow-xs">
+                NEW
+              </span>
+            )
           )}
           {discountPercent > 0 && (
             <span className="bg-[#B3402F] text-white text-[10px] font-sans font-semibold tracking-widest uppercase px-2 py-0.5 rounded-[2px] shadow-xs">
@@ -165,8 +177,13 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
           <button
             type="button"
             onClick={handleQuickAdd}
-            className="bg-[#2B1A16] hover:bg-[#9A8029] text-[#EFE8DD] p-2 rounded-[2px] shadow-sm flex items-center justify-center transition-colors cursor-pointer"
-            title="Instant Add to Bag"
+            disabled={isOutOfStock}
+            className={`${
+              isOutOfStock
+                ? 'bg-neutral-600/80 text-[#EFE8DD]/70 cursor-not-allowed'
+                : 'bg-[#2B1A16] hover:bg-[#9A8029] text-[#EFE8DD] cursor-pointer'
+            } p-2 rounded-[2px] shadow-sm flex items-center justify-center transition-colors`}
+            title={isOutOfStock ? 'Sold Out' : 'Instant Add to Bag'}
           >
             <ShoppingBag className="w-4 h-4" />
           </button>

@@ -40,6 +40,7 @@ export interface Product {
   occasion: Occasion;
   rating: number;
   reviewCount: number;
+  inStock?: boolean;
   colors: ProductColor[];
   sizes: ProductSize[];
   images: string[];

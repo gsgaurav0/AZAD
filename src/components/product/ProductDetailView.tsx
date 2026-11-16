@@ -92,6 +92,10 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
   }, [product, addProductToRecentlyViewed]);
 
   const selectedSizeObj = product.sizes.find((s) => s.size === selectedSize);
+  const isOutOfStock =
+    product.inStock === false ||
+    (product.sizes && product.sizes.length > 0 && product.sizes.every((s) => !s.inStock));
+  const isSelectedSizeOutOfStock = Boolean(selectedSizeObj && !selectedSizeObj.inStock) || isOutOfStock;
 
   // Zoom handlers
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -115,6 +119,10 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
   };
 
   const handleAddToCart = () => {
+    if (isSelectedSizeOutOfStock) {
+      addToast('This edition is currently out of stock', 'error');
+      return;
+    }
     if (!selectedSize) {
       addToast('Please select an available size', 'error');
       return;
@@ -124,6 +132,10 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
   };
 
   const handleBuyNow = () => {
+    if (isSelectedSizeOutOfStock) {
+      addToast('This edition is currently out of stock', 'error');
+      return;
+    }
     if (!selectedSize) {
       addToast('Please select an available size', 'error');
       return;
@@ -435,17 +447,27 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                 <button
                   type="button"
                   onClick={handleAddToCart}
-                  className="w-full py-3.5 px-4 bg-[#2B1A16] hover:bg-[#9A8029] text-[#EFE8DD] text-xs font-semibold uppercase tracking-[0.2em] rounded-[4px] transition-colors flex items-center justify-center gap-2 shadow-sm"
+                  disabled={isSelectedSizeOutOfStock}
+                  className={`w-full py-3.5 px-4 text-xs font-semibold uppercase tracking-[0.2em] rounded-[4px] transition-colors flex items-center justify-center gap-2 shadow-sm ${
+                    isSelectedSizeOutOfStock
+                      ? 'bg-neutral-400 text-white cursor-not-allowed'
+                      : 'bg-[#2B1A16] hover:bg-[#9A8029] text-[#EFE8DD] cursor-pointer'
+                  }`}
                 >
                   <ShoppingBag className="w-4 h-4" />
-                  Add to Cart
+                  {isSelectedSizeOutOfStock ? 'Sold Out' : 'Add to Cart'}
                 </button>
                 <button
                   type="button"
                   onClick={handleBuyNow}
-                  className="w-full py-3.5 px-4 bg-[#9A8029] hover:bg-[#7F6A1F] text-white text-xs font-semibold uppercase tracking-[0.2em] rounded-[4px] transition-colors shadow-sm text-center"
+                  disabled={isSelectedSizeOutOfStock}
+                  className={`w-full py-3.5 px-4 text-xs font-semibold uppercase tracking-[0.2em] rounded-[4px] transition-colors shadow-sm text-center ${
+                    isSelectedSizeOutOfStock
+                      ? 'bg-neutral-300 text-neutral-500 cursor-not-allowed'
+                      : 'bg-[#9A8029] hover:bg-[#7F6A1F] text-white cursor-pointer'
+                  }`}
                 >
-                  Buy Now
+                  {isSelectedSizeOutOfStock ? 'Unavailable' : 'Buy Now'}
                 </button>
               </div>
 

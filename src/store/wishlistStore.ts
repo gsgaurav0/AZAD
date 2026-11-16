@@ -64,13 +64,16 @@ export const useWishlistStore = create<WishlistState>()(
 
           if (typeof window !== 'undefined') {
             const supabase = getBrowserClient();
-            supabase.auth.getSession().then(({ data }: { data: any }) => {
-              if (data.session?.user) {
-                supabase.from('wishlist_items')
-                  .delete()
-                  .eq('user_id', data.session.user.id)
-                  .eq('product_id', product.id)
-                  .catch(() => {});
+            supabase.auth.getSession().then(async ({ data }: { data: any }) => {
+              if (data?.session?.user) {
+                try {
+                  await supabase.from('wishlist_items')
+                    .delete()
+                    .eq('user_id', data.session.user.id)
+                    .eq('product_id', product.id);
+                } catch (err) {
+                  console.warn('Wishlist Supabase delete notice:', err);
+                }
               }
             });
           }
@@ -81,14 +84,17 @@ export const useWishlistStore = create<WishlistState>()(
 
           if (typeof window !== 'undefined') {
             const supabase = getBrowserClient();
-            supabase.auth.getSession().then(({ data }: { data: any }) => {
-              if (data.session?.user) {
-                supabase.from('wishlist_items')
-                  .upsert({
-                    user_id: data.session.user.id,
-                    product_id: product.id,
-                  }, { onConflict: 'user_id,product_id' })
-                  .catch(() => {});
+            supabase.auth.getSession().then(async ({ data }: { data: any }) => {
+              if (data?.session?.user) {
+                try {
+                  await supabase.from('wishlist_items')
+                    .upsert({
+                      user_id: data.session.user.id,
+                      product_id: product.id,
+                    }, { onConflict: 'user_id,product_id' });
+                } catch (err) {
+                  console.warn('Wishlist Supabase upsert notice:', err);
+                }
               }
             });
           }
@@ -108,13 +114,16 @@ export const useWishlistStore = create<WishlistState>()(
 
         if (typeof window !== 'undefined') {
           const supabase = getBrowserClient();
-          supabase.auth.getSession().then(({ data }: { data: any }) => {
-            if (data.session?.user) {
-              supabase.from('wishlist_items')
-                .delete()
-                .eq('user_id', data.session.user.id)
-                .eq('product_id', productId)
-                .catch(() => {});
+          supabase.auth.getSession().then(async ({ data }: { data: any }) => {
+            if (data?.session?.user) {
+              try {
+                await supabase.from('wishlist_items')
+                  .delete()
+                  .eq('user_id', data.session.user.id)
+                  .eq('product_id', productId);
+              } catch (err) {
+                console.warn('Wishlist Supabase delete notice:', err);
+              }
             }
           });
         }
@@ -124,9 +133,13 @@ export const useWishlistStore = create<WishlistState>()(
         set({ items: [] });
         if (typeof window !== 'undefined') {
           const supabase = getBrowserClient();
-          supabase.auth.getSession().then(({ data }: { data: any }) => {
-            if (data.session?.user) {
-              supabase.from('wishlist_items').delete().eq('user_id', data.session.user.id).catch(() => {});
+          supabase.auth.getSession().then(async ({ data }: { data: any }) => {
+            if (data?.session?.user) {
+              try {
+                await supabase.from('wishlist_items').delete().eq('user_id', data.session.user.id);
+              } catch (err) {
+                console.warn('Wishlist Supabase clear notice:', err);
+              }
             }
           });
         }

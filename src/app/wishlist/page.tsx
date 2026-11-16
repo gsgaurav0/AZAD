@@ -16,6 +16,13 @@ export default function WishlistPage() {
   const addToast = useUIStore((state) => state.addToast);
 
   const handleMoveToCart = (product: (typeof items)[0]) => {
+    const isOutOfStock =
+      product.inStock === false ||
+      (product.sizes && product.sizes.length > 0 && product.sizes.every((s) => !s.inStock));
+    if (isOutOfStock) {
+      addToast(`"${product.name}" is currently sold out`, 'info');
+      return;
+    }
     const availableSize =
       product.sizes.find((s) => s.inStock)?.size || product.sizes[0]?.size || 'Standard';
     const color = product.colors[0]?.name || 'Standard';
@@ -125,14 +132,26 @@ export default function WishlistPage() {
                     </div>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => handleMoveToCart(product)}
-                    className="w-full bg-[#2B1A16] hover:bg-[#9A8029] text-[#EFE8DD] text-xs font-semibold uppercase tracking-wider py-2.5 rounded-[3px] transition-colors flex items-center justify-center gap-1.5 font-sans"
-                  >
-                    <ShoppingBag className="w-3.5 h-3.5" />
-                    Move to Bag
-                  </button>
+                  {(() => {
+                    const isOutOfStock =
+                      product.inStock === false ||
+                      (product.sizes && product.sizes.length > 0 && product.sizes.every((s) => !s.inStock));
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => handleMoveToCart(product)}
+                        disabled={isOutOfStock}
+                        className={`w-full text-xs font-semibold uppercase tracking-wider py-2.5 rounded-[3px] transition-colors flex items-center justify-center gap-1.5 font-sans ${
+                          isOutOfStock
+                            ? 'bg-neutral-400 text-white cursor-not-allowed'
+                            : 'bg-[#2B1A16] hover:bg-[#9A8029] text-[#EFE8DD] cursor-pointer'
+                        }`}
+                      >
+                        <ShoppingBag className="w-3.5 h-3.5" />
+                        {isOutOfStock ? 'Sold Out' : 'Move to Bag'}
+                      </button>
+                    );
+                  })()}
                 </div>
               </div>
             ))}

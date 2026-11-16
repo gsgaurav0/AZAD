@@ -78,6 +78,17 @@ export default function CartDrawer() {
   };
 
   const handleCheckoutClick = () => {
+    const hasOutOfStockItems = items.some((item) => {
+      if (item.product.inStock === false) return true;
+      const sizeObj = item.product.sizes?.find((s) => s.size === item.selectedSize);
+      return sizeObj && sizeObj.inStock === false;
+    });
+
+    if (hasOutOfStockItems) {
+      addToast('Please remove or change sold-out items before proceeding to checkout', 'error');
+      return;
+    }
+
     closeCart();
     if (!isLoggedIn) {
       addToast('Please sign in or create an account to proceed to checkout', 'info');
@@ -236,6 +247,12 @@ export default function CartDrawer() {
                           {item.product.originalPrice > item.product.price && (
                             <span className="line-through text-xs text-[#2B1A16]/40">
                               ₹{(item.product.originalPrice * item.quantity).toLocaleString('en-IN')}
+                            </span>
+                          )}
+                          {((item.product.inStock === false) ||
+                            (item.product.sizes?.find((s) => s.size === item.selectedSize)?.inStock === false)) && (
+                            <span className="text-[10px] text-[#B3402F] font-semibold bg-[#B3402F]/10 px-1.5 py-0.5 rounded font-sans">
+                              Sold Out
                             </span>
                           )}
                         </div>

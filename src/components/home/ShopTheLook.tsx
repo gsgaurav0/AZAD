@@ -32,6 +32,13 @@ export default function ShopTheLook() {
   const handleQuickAddPinProduct = (productId: string) => {
     const prod = getProduct(productId) || PRODUCTS.find((p) => p.id === productId);
     if (!prod) return;
+    const isOutOfStock =
+      prod.inStock === false ||
+      (prod.sizes && prod.sizes.length > 0 && prod.sizes.every((s) => !s.inStock));
+    if (isOutOfStock) {
+      addToast(`"${prod.name}" is currently sold out`, 'info');
+      return;
+    }
     const defaultColor = prod.colors?.[0]?.name || 'Standard';
     const defaultSize = prod.sizes?.find((s) => s.inStock)?.size || prod.sizes?.[0]?.size || 'One Size';
     addItem(prod, defaultColor, defaultSize, 1);

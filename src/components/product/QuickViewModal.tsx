@@ -36,7 +36,19 @@ export default function QuickViewModal() {
 
   if (!quickViewProduct) return null;
 
+  const selectedSizeObj = quickViewProduct.sizes?.find((s) => s.size === selectedSize);
+  const isOutOfStock =
+    quickViewProduct.inStock === false ||
+    (quickViewProduct.sizes &&
+      quickViewProduct.sizes.length > 0 &&
+      quickViewProduct.sizes.every((s) => !s.inStock));
+  const isSelectedSizeOutOfStock = Boolean(selectedSizeObj && !selectedSizeObj.inStock) || isOutOfStock;
+
   const handleAddToCart = () => {
+    if (isSelectedSizeOutOfStock) {
+      addToast('This edition is currently out of stock', 'error');
+      return;
+    }
     if (!selectedSize) {
       addToast('Please select a size', 'error');
       return;
@@ -217,10 +229,15 @@ export default function QuickViewModal() {
                 <button
                   type="button"
                   onClick={handleAddToCart}
-                  className="flex-1 bg-[#9A8029] hover:bg-[#7F6A1F] text-white py-3 px-4 rounded-[4px] text-xs font-semibold uppercase tracking-widest transition-colors flex items-center justify-center gap-2 shadow-sm"
+                  disabled={isSelectedSizeOutOfStock}
+                  className={`flex-1 py-3 px-4 rounded-[4px] text-xs font-semibold uppercase tracking-widest transition-colors flex items-center justify-center gap-2 shadow-sm ${
+                    isSelectedSizeOutOfStock
+                      ? 'bg-neutral-400 text-white cursor-not-allowed'
+                      : 'bg-[#9A8029] hover:bg-[#7F6A1F] text-white cursor-pointer'
+                  }`}
                 >
                   <ShoppingBag className="w-4 h-4" />
-                  Add To Bag
+                  {isSelectedSizeOutOfStock ? 'Sold Out' : 'Add To Bag'}
                 </button>
                 <button
                   type="button"
