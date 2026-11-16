@@ -70,3 +70,29 @@ h1, h2, h3, h4, h5, h6, .font-editorial, .font-serif {
 .animate-slideRight {
   animation: slideRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* Razorpay Test Mode Ribbon & Banner Overrides */
+.razorpay-container .ribbon,
+.razorpay-ribbon,
+[class*="razorpay-ribbon"],
+.razorpay-test-mode,
+[data-razorpay-test-mode],
+.razorpay-container iframe + div,
+.razorpay-container > div:not([class*="backdrop"]),
+div[style*="rotate(45deg)"],
+div[style*="transform: rotate(45deg)"],
+div[style*="background: rgb(235, 87, 87)"],
+div[style*="background-color: rgb(235, 87, 87)"],
+div[style*="background: #eb5757"],
+div[style*="background-color: #eb5757"],
+div[style*="background: #e23737"],
+div[style*="background-color: #e23737"],
+div[style*="background: red"],
+div[style*="background-color: red"],
+div[style*="background-color: rgb(220, 38, 38)"],
+div[style*="background: rgb(220, 38, 38)"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}

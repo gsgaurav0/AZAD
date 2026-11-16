@@ -195,6 +195,8 @@ export async function POST(request: Request) {
     // 5. Generate Tracking and Identification
     const orderId = `MWK-${Math.floor(100000 + Math.random() * 900000)}`;
     const trackingNumber = `BLD-${Math.floor(10000000 + Math.random() * 90000000)}`;
+    const isCod = body.paymentMethod === 'Cash on Delivery';
+    const initialStatus = 'Placed';
     const statusHistory = buildCleanMilestoneHistory('Placed', body.address);
     const initialLocation = getLocationForStatus('Placed', body.address);
 
@@ -233,8 +235,8 @@ export async function POST(request: Request) {
       total,
       coupon_code: validatedCouponCode,
       payment_method: body.paymentMethod,
-      payment_status: body.paymentMethod === 'Cash on Delivery' ? 'pending' : 'pending',
-      status: 'Placed',
+      payment_status: isCod ? 'pending' : 'pending',
+      status: initialStatus,
       tracking_number: trackingNumber,
       courier_partner: 'BlueDart Express Air',
       estimated_delivery: 'Within 3-4 Business Days',
@@ -244,7 +246,7 @@ export async function POST(request: Request) {
 
     if (insertErr) {
       console.error('Supabase order insertion error:', insertErr);
-      return NextResponse.json({ success: false, error: 'Failed to record order in database.' }, { status: 500 });
+      return NextResponse.json({ success: false, error: insertErr.message || 'Failed to record order in database.' }, { status: 500 });
     }
 
     // Increment coupon usage if used
@@ -276,15 +278,16 @@ export async function POST(request: Request) {
         discount,
         shipping,
         tax: Math.round(total * 0.18),
-        status: 'Placed',
+        status: initialStatus,
+        paymentStatus: isCod ? 'pending' : 'pending',
         statusHistory,
         trackingNumber,
         courierPartner: 'BlueDart Express Air',
         estimatedDelivery: 'Within 3-4 Business Days',
         currentLocation: initialLocation,
-        items: verifiedOrderItems,
-        address: body.address,
         paymentMethod: body.paymentMethod,
+        address: body.address,
+        items: verifiedOrderItems,
         date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
       },
     });

@@ -73,6 +73,7 @@ export interface Address {
 }
 
 export type OrderStatus =
+  | 'Payment Pending'
   | 'Placed'
   | 'Packed'
   | 'Shipped'
@@ -103,8 +104,9 @@ export interface Order {
   total: number;
   couponCode?: string;
   address: Address;
-  paymentMethod: 'UPI' | 'Credit/Debit Card' | 'Net Banking' | 'Cash on Delivery' | 'Razorpay';
+  paymentMethod: 'UPI' | 'Credit/Debit Card' | 'Net Banking' | 'Cash on Delivery' | 'Razorpay' | 'Online Payment (Razorpay)';
   paymentId?: string;
+  paymentStatus?: 'pending' | 'paid' | 'failed';
   status: OrderStatus;
   statusHistory: OrderStatusStep[];
   trackingNumber: string;

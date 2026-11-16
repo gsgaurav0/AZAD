@@ -95,16 +95,8 @@ export default function CheckoutPage() {
 
   // Payment Options
   const [paymentMethod, setPaymentMethod] = useState<
-    'UPI' | 'Credit/Debit Card' | 'Net Banking' | 'Cash on Delivery'
-  >('UPI');
-  const [upiId, setUpiId] = useState('');
-  const [cardForm, setCardForm] = useState({
-    number: '',
-    name: '',
-    expiry: '',
-    cvv: '',
-  });
-  const [netBank, setNetBank] = useState('HDFC Bank');
+    'Online Payment (Razorpay)' | 'Cash on Delivery' | 'UPI' | 'Credit/Debit Card' | 'Net Banking'
+  >('Online Payment (Razorpay)');
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
   // Sync address form and selected address when user or savedAddresses change
@@ -114,10 +106,6 @@ export default function CheckoutPage() {
         ...prev,
         name: prev.name || user.name || '',
         phone: prev.phone || user.phone?.replace(/\D/g, '').slice(-10) || '',
-      }));
-      setCardForm((prev) => ({
-        ...prev,
-        name: prev.name || user.name.toUpperCase(),
       }));
     }
 
@@ -327,15 +315,16 @@ export default function CheckoutPage() {
 
       const createdOrderId = checkoutData.orderId;
 
-      // Immediately cache created order in patron's local state
-      if (checkoutData.order) {
-        useAuthStore.getState().addOrderToStore(checkoutData.order);
-      }
-
-      // 2. If Cash on Delivery, complete immediately
+      // 2. If Cash on Delivery, complete and inscribe immediately
       if (paymentMethod === 'Cash on Delivery') {
         if (appliedCoupon) {
           useCouponStore.getState().incrementUsage(appliedCoupon);
+        }
+        if (checkoutData.order) {
+          useAuthStore.getState().addOrderToStore({
+            ...checkoutData.order,
+            status: 'Placed',
+          });
         }
 
         clearCart();
@@ -386,6 +375,7 @@ export default function CheckoutPage() {
           razorpay_payment_id: string;
           razorpay_signature: string;
         }) {
+          cleanupRzpMask();
           try {
             // Verify HMAC-SHA256 signature server-side
             const verifyRes = await fetch('/api/verify-payment', {
@@ -404,6 +394,14 @@ export default function CheckoutPage() {
               if (appliedCoupon) {
                 useCouponStore.getState().incrementUsage(appliedCoupon);
               }
+              // Only add order to user's orders once payment is confirmed & verified
+              if (checkoutData.order) {
+                useAuthStore.getState().addOrderToStore({
+                  ...checkoutData.order,
+                  status: 'Placed',
+                  paymentStatus: 'paid',
+                });
+              }
               clearCart();
               addToast(`Payment of ₹${total.toLocaleString('en-IN')} verified successfully!`, 'success');
               router.push(`/order-success/${createdOrderId}`);
@@ -418,24 +416,95 @@ export default function CheckoutPage() {
           }
         },
         modal: {
-          ondismiss: function () {
+          ondismiss: async function () {
+            cleanupRzpMask();
             setIsPlacingOrder(false);
-            addToast('Payment dismissed. Your order remains pending.', 'info');
+            // Cancel unpaid order in backend so it never appears as an active placed shipment
+            try {
+              await fetch('/api/orders/cancel', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  orderId: createdOrderId,
+                  reason: 'Patron closed Razorpay modal before completing payment.',
+                }),
+              });
+            } catch {}
+            addToast('Payment cancelled. No order was placed.', 'info');
           },
         },
       };
 
+      // Mask and suppress Razorpay Test Mode banner
+      const applyRzpMask = () => {
+        let mask = document.getElementById('rzp-test-mode-cover');
+        if (!mask) {
+          mask = document.createElement('div');
+          mask.id = 'rzp-test-mode-cover';
+          mask.style.position = 'fixed';
+          mask.style.top = '0';
+          mask.style.right = '0';
+          mask.style.width = '200px';
+          mask.style.height = '200px';
+          mask.style.background = 'rgba(0, 0, 0, 0.65)';
+          mask.style.clipPath = 'polygon(100% 0, 0 0, 100% 100%)';
+          mask.style.zIndex = '21474836479';
+          mask.style.pointerEvents = 'none';
+          document.body.appendChild(mask);
+        }
+      };
+
+      const cleanupRzpMask = () => {
+        const mask = document.getElementById('rzp-test-mode-cover');
+        if (mask) mask.remove();
+        if (observer) observer.disconnect();
+      };
+
+      let observer: MutationObserver | null = null;
+      if (typeof MutationObserver !== 'undefined') {
+        observer = new MutationObserver(() => {
+          const container = document.querySelector('.razorpay-container');
+          if (container) {
+            applyRzpMask();
+            // Also hide any direct host DOM nodes
+            const directBadges = document.querySelectorAll(
+              '.razorpay-container .ribbon, [class*="ribbon"], div[style*="rotate(45deg)"]'
+            );
+            directBadges.forEach((node) => {
+              (node as HTMLElement).style.setProperty('display', 'none', 'important');
+              (node as HTMLElement).style.setProperty('visibility', 'hidden', 'important');
+            });
+          } else {
+            const mask = document.getElementById('rzp-test-mode-cover');
+            if (mask) mask.remove();
+          }
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+      }
+
       const razorpayInstance = new (window as any).Razorpay(options);
 
       // Handle payment failure event
-      razorpayInstance.on('payment.failed', function (failureData: any) {
+      razorpayInstance.on('payment.failed', async function (failureData: any) {
+        cleanupRzpMask();
         console.error('Razorpay payment.failed event:', failureData?.error);
         const description = failureData?.error?.description || 'Payment was declined or failed. Please try again.';
+        try {
+          await fetch('/api/orders/cancel', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              orderId: createdOrderId,
+              reason: description,
+            }),
+          });
+        } catch {}
         addToast(description, 'error');
         setIsPlacingOrder(false);
       });
 
       razorpayInstance.open();
+      applyRzpMask();
       setIsPlacingOrder(false);
     } catch (err: any) {
       console.error('Final place order exception:', err);
@@ -1212,180 +1281,87 @@ export default function CheckoutPage() {
                     </div>
 
                     {/* Payment Option Tabs */}
-                    <div className="space-y-3 font-sans">
-                      {/* Option 1: UPI */}
+                    <div className="space-y-4 font-sans">
+                      {/* Option 1: Razorpay Online Payment */}
                       <label
-                        className={`block p-4 border rounded-[4px] cursor-pointer transition-all ${
-                          paymentMethod === 'UPI'
-                            ? 'border-[#9A8029] bg-[#EFE8DD]/50 ring-1 ring-[#9A8029]'
-                            : 'border-[#DDD2C0] bg-white'
+                        className={`block p-5 border rounded-[4px] cursor-pointer transition-all ${
+                          paymentMethod !== 'Cash on Delivery'
+                            ? 'border-[#9A8029] bg-[#FBF7F0] ring-1 ring-[#9A8029] shadow-xs'
+                            : 'border-[#DDD2C0] bg-white hover:border-[#9A8029]/50'
                         }`}
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2.5">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-start gap-3">
                             <input
                               type="radio"
                               name="paymentMethod"
-                              checked={paymentMethod === 'UPI'}
-                              onChange={() => setPaymentMethod('UPI')}
-                              className="accent-[#9A8029]"
+                              checked={paymentMethod !== 'Cash on Delivery'}
+                              onChange={() => setPaymentMethod('Online Payment (Razorpay)')}
+                              className="accent-[#9A8029] mt-0.5"
                             />
-                            <span className="font-bold text-xs text-[#2B1A16]">
-                              Instant UPI (GPay, PhonePe, Paytm, QR)
-                            </span>
-                          </div>
-                          <span className="text-[10px] bg-[#4C7A34]/15 text-[#4C7A34] px-2 py-0.5 rounded-[2px] font-bold">
-                            RECOMMENDED
-                          </span>
-                        </div>
-
-                        {paymentMethod === 'UPI' && (
-                          <div className="mt-3 pl-6 pt-2 border-t border-[#DDD2C0]/50 space-y-2">
-                            <label className="block text-[11px] text-[#2B1A16]/70">
-                              Enter your UPI VPA ID
-                            </label>
-                            <input
-                              type="text"
-                              value={upiId}
-                              onChange={(e) => setUpiId(e.target.value)}
-                              placeholder="e.g. mobile@okhdfcbank"
-                              className="w-full max-w-sm bg-white border border-[#DDD2C0] rounded-[3px] p-2 text-xs text-[#2B1A16] outline-none"
-                            />
-                          </div>
-                        )}
-                      </label>
-
-                      {/* Option 2: Cards */}
-                      <label
-                        className={`block p-4 border rounded-[4px] cursor-pointer transition-all ${
-                          paymentMethod === 'Credit/Debit Card'
-                            ? 'border-[#9A8029] bg-[#EFE8DD]/50 ring-1 ring-[#9A8029]'
-                            : 'border-[#DDD2C0] bg-white'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <input
-                            type="radio"
-                            name="paymentMethod"
-                            checked={paymentMethod === 'Credit/Debit Card'}
-                            onChange={() => setPaymentMethod('Credit/Debit Card')}
-                            className="accent-[#9A8029]"
-                          />
-                          <span className="font-bold text-xs text-[#2B1A16]">
-                            Credit / Debit Card (Visa, Mastercard, RuPay, Amex)
-                          </span>
-                        </div>
-
-                        {paymentMethod === 'Credit/Debit Card' && (
-                          <div className="mt-3 pl-6 pt-2 border-t border-[#DDD2C0]/50 space-y-3 max-w-md">
                             <div>
-                              <label className="block text-[11px] text-[#2B1A16]/70 mb-1">
-                                Card Number
-                              </label>
-                              <input
-                                type="text"
-                                maxLength={19}
-                                value={cardForm.number}
-                                onChange={(e) =>
-                                  setCardForm({ ...cardForm, number: e.target.value })
-                                }
-                                placeholder="4111 2222 3333 4444"
-                                className="w-full bg-white border border-[#DDD2C0] rounded-[3px] p-2 text-xs text-[#2B1A16] outline-none font-mono"
-                              />
-                            </div>
-                            <div className="grid grid-cols-2 gap-3">
-                              <div>
-                                <label className="block text-[11px] text-[#2B1A16]/70 mb-1">
-                                  Expiry Date
-                                </label>
-                                <input
-                                  type="text"
-                                  maxLength={5}
-                                  value={cardForm.expiry}
-                                  onChange={(e) =>
-                                    setCardForm({ ...cardForm, expiry: e.target.value })
-                                  }
-                                  placeholder="MM/YY"
-                                  className="w-full bg-white border border-[#DDD2C0] rounded-[3px] p-2 text-xs text-[#2B1A16] outline-none"
-                                />
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-bold text-xs sm:text-sm text-[#2B1A16]">
+                                  Razorpay Secure Online Checkout
+                                </span>
+                                <span className="text-[10px] bg-[#4C7A34]/15 text-[#4C7A34] px-2 py-0.5 rounded-[2px] font-bold">
+                                  FAST &amp; RECOMMENDED
+                                </span>
                               </div>
-                              <div>
-                                <label className="block text-[11px] text-[#2B1A16]/70 mb-1">
-                                  CVV
-                                </label>
-                                <input
-                                  type="password"
-                                  maxLength={4}
-                                  value={cardForm.cvv}
-                                  onChange={(e) =>
-                                    setCardForm({ ...cardForm, cvv: e.target.value })
-                                  }
-                                  placeholder="123"
-                                  className="w-full bg-white border border-[#DDD2C0] rounded-[3px] p-2 text-xs text-[#2B1A16] outline-none"
-                                />
+                              <p className="text-xs text-[#2B1A16]/75 mt-1 leading-relaxed">
+                                Instant UPI (Google Pay, PhonePe, Paytm, QR) • Debit &amp; Credit Cards (Visa, Mastercard, RuPay, Amex) • Net Banking (50+ Banks) • EMI &amp; Wallets
+                              </p>
+
+                              {/* Method Badges */}
+                              <div className="mt-3 flex items-center gap-2 flex-wrap text-[11px] font-medium text-[#2B1A16]/80">
+                                <span className="bg-[#EFE8DD] px-2.5 py-1 rounded-[3px] border border-[#DDD2C0]">
+                                  ⚡ Instant UPI / QR
+                                </span>
+                                <span className="bg-[#EFE8DD] px-2.5 py-1 rounded-[3px] border border-[#DDD2C0]">
+                                  💳 Visa / Mastercard / RuPay
+                                </span>
+                                <span className="bg-[#EFE8DD] px-2.5 py-1 rounded-[3px] border border-[#DDD2C0]">
+                                  🏦 All Indian Banks
+                                </span>
+                              </div>
+
+                              <div className="mt-3.5 pt-3 border-t border-[#DDD2C0]/50 flex items-center gap-2 text-[11px] text-[#4C7A34] font-medium">
+                                <ShieldCheck className="w-3.5 h-3.5" />
+                                <span>256-Bit SSL Encrypted • RBI Authorized • PCI-DSS Certified Gateway</span>
                               </div>
                             </div>
                           </div>
-                        )}
-                      </label>
-
-                      {/* Option 3: Net Banking */}
-                      <label
-                        className={`block p-4 border rounded-[4px] cursor-pointer transition-all ${
-                          paymentMethod === 'Net Banking'
-                            ? 'border-[#9A8029] bg-[#EFE8DD]/50 ring-1 ring-[#9A8029]'
-                            : 'border-[#DDD2C0] bg-white'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <input
-                            type="radio"
-                            name="paymentMethod"
-                            checked={paymentMethod === 'Net Banking'}
-                            onChange={() => setPaymentMethod('Net Banking')}
-                            className="accent-[#9A8029]"
-                          />
-                          <span className="font-bold text-xs text-[#2B1A16]">
-                            Net Banking (All Major Indian Banks)
-                          </span>
                         </div>
-
-                        {paymentMethod === 'Net Banking' && (
-                          <div className="mt-3 pl-6 pt-2 border-t border-[#DDD2C0]/50 max-w-sm">
-                            <select
-                              value={netBank}
-                              onChange={(e) => setNetBank(e.target.value)}
-                              className="w-full bg-white border border-[#DDD2C0] rounded-[3px] p-2 text-xs text-[#2B1A16] outline-none"
-                            >
-                              <option>HDFC Bank</option>
-                              <option>ICICI Bank</option>
-                              <option>State Bank of India (SBI)</option>
-                              <option>Axis Bank</option>
-                              <option>Kotak Mahindra Bank</option>
-                            </select>
-                          </div>
-                        )}
                       </label>
 
-                      {/* Option 4: Cash on Delivery */}
+                      {/* Option 2: Cash on Delivery */}
                       <label
-                        className={`block p-4 border rounded-[4px] cursor-pointer transition-all ${
+                        className={`block p-5 border rounded-[4px] cursor-pointer transition-all ${
                           paymentMethod === 'Cash on Delivery'
-                            ? 'border-[#9A8029] bg-[#EFE8DD]/50 ring-1 ring-[#9A8029]'
-                            : 'border-[#DDD2C0] bg-white'
+                            ? 'border-[#9A8029] bg-[#FBF7F0] ring-1 ring-[#9A8029] shadow-xs'
+                            : 'border-[#DDD2C0] bg-white hover:border-[#9A8029]/50'
                         }`}
                       >
-                        <div className="flex items-center gap-2.5">
-                          <input
-                            type="radio"
-                            name="paymentMethod"
-                            checked={paymentMethod === 'Cash on Delivery'}
-                            onChange={() => setPaymentMethod('Cash on Delivery')}
-                            className="accent-[#9A8029]"
-                          />
-                          <span className="font-bold text-xs text-[#2B1A16]">
-                            Cash on Delivery (Doorstep Verification)
-                          </span>
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-start gap-3">
+                            <input
+                              type="radio"
+                              name="paymentMethod"
+                              checked={paymentMethod === 'Cash on Delivery'}
+                              onChange={() => setPaymentMethod('Cash on Delivery')}
+                              className="accent-[#9A8029] mt-0.5"
+                            />
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-xs sm:text-sm text-[#2B1A16]">
+                                  Cash on Delivery (Doorstep Verification)
+                                </span>
+                              </div>
+                              <p className="text-xs text-[#2B1A16]/75 mt-1 leading-relaxed">
+                                Pay via Cash or UPI at your doorstep upon courier handover. Includes complimentary 18-point hardware unboxing and serial verification.
+                              </p>
+                            </div>
+                          </div>
                         </div>
                       </label>
                     </div>

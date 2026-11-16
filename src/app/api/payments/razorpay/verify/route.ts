@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { verifyRazorpaySignature } from '@/lib/razorpay';
+import { buildCleanMilestoneHistory } from '@/lib/orderMilestones';
 
 export async function POST(request: Request) {
   try {
@@ -21,14 +22,25 @@ export async function POST(request: Request) {
 
     if (!isValid) {
       console.error('Razorpay signature verification failed:', { razorpay_order_id, razorpay_payment_id });
-      await admin.from('orders').update({ payment_status: 'failed' }).eq('id', orderId);
+      await admin.from('orders').update({ payment_status: 'failed', status: 'Cancelled' }).eq('id', orderId);
       return NextResponse.json({ success: false, error: 'Payment signature verification failed.' }, { status: 400 });
     }
 
-    // Update order status in Supabase
+    // Fetch existing order to generate proper active tracking history
+    const { data: existingOrder } = await admin
+      .from('orders')
+      .select('address')
+      .eq('id', orderId)
+      .single();
+
+    const placedHistory = buildCleanMilestoneHistory('Placed', existingOrder?.address || {});
+
+    // Update order status in Supabase to confirmed Placed with active courier tracking
     const { error: updateErr } = await admin.from('orders').update({
       payment_status: 'paid',
-      status: 'Confirmed',
+      status: 'Placed',
+      current_location: 'Mewak Central Fulfillment Hub, New Delhi',
+      status_history: placedHistory,
       payment_id: razorpay_payment_id,
       razorpay_payment_id,
       razorpay_signature,

@@ -270,6 +270,7 @@ export const useAuthStore = create<AuthState>()(
                 address: o.address,
                 paymentMethod: o.payment_method,
                 paymentId: o.payment_id,
+                paymentStatus: o.payment_status,
                 status: o.status,
                 statusHistory: Array.isArray(o.status_history) ? o.status_history : [],
                 trackingNumber: o.tracking_number,

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { verifyRazorpaySignature } from '@/lib/razorpay';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { buildCleanMilestoneHistory } from '@/lib/orderMilestones';
 
 export async function POST(request: Request) {
   try {
@@ -63,9 +64,19 @@ export async function POST(request: Request) {
     if (internalOrderId) {
       try {
         const admin = createAdminClient();
+        const { data: existingOrder } = await admin
+          .from('orders')
+          .select('address')
+          .eq('id', internalOrderId)
+          .single();
+
+        const placedHistory = buildCleanMilestoneHistory('Placed', existingOrder?.address || {});
+
         await admin.from('orders').update({
           payment_status: 'paid',
-          status: 'Confirmed',
+          status: 'Placed',
+          current_location: 'Mewak Central Fulfillment Hub, New Delhi',
+          status_history: placedHistory,
           payment_id: paymentId,
           razorpay_payment_id: paymentId,
           razorpay_signature: signature,

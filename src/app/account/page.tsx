@@ -20,6 +20,7 @@ import {
   ChevronDown,
   ChevronUp,
   AlertTriangle,
+  AlertCircle,
   X,
   Copy,
   Calendar,
@@ -917,7 +918,11 @@ export default function AccountPage() {
                           </span>
                         </div>
                         <span className="text-xs text-[#2B1A16]/60 mt-0.5 block">
-                          Placed on {order.date} • Paid via {order.paymentMethod}
+                          {order.status === 'Cancelled'
+                            ? `Cancelled • ${order.paymentMethod}`
+                            : order.status === 'Payment Pending'
+                            ? `Payment Incomplete • ${order.paymentMethod}`
+                            : `Placed on ${order.date} • Paid via ${order.paymentMethod}`}
                         </span>
                       </div>
 
@@ -930,7 +935,28 @@ export default function AccountPage() {
                     </div>
 
                     {/* Step-by-Step Live Journey Banner */}
-                    <div className="bg-[#EFE8DD]/70 border border-[#DDD2C0] p-4 rounded-[4px] space-y-4">
+                    {order.status === 'Cancelled' ? (
+                      <div className="bg-[#FAF8F5] border border-rose-200 p-4 rounded-[4px] space-y-1.5 font-sans">
+                        <div className="flex items-center gap-2 text-rose-800 font-semibold text-xs">
+                          <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                          <span>Order Voided &amp; Cancelled</span>
+                        </div>
+                        <p className="text-[11px] text-[#2B1A16]/75 leading-relaxed">
+                          This order has been cancelled and will not be dispatched. If payment was charged, your refund will reflect in your source account within 3–5 business days.
+                        </p>
+                      </div>
+                    ) : order.status === 'Payment Pending' ? (
+                      <div className="bg-amber-50/80 border border-amber-200 p-4 rounded-[4px] space-y-1.5 font-sans">
+                        <div className="flex items-center gap-2 text-amber-800 font-semibold text-xs">
+                          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                          <span>Payment Incomplete / Awaiting Authorization</span>
+                        </div>
+                        <p className="text-[11px] text-amber-900/80 leading-relaxed">
+                          Payment was not authorized for this order. Live shipment dispatch tracking will activate once payment is verified.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="bg-[#EFE8DD]/70 border border-[#DDD2C0] p-4 rounded-[4px] space-y-4">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
                         <div className="flex items-center gap-2 text-[#2B1A16]">
                           <Truck className="w-4 h-4 text-[#9A8029]" />
@@ -976,7 +1002,7 @@ export default function AccountPage() {
 
                         {/* Admin-only Advance Step Simulation Button or Patron Live Status Badge */}
                         {user?.role === 'admin' ? (
-                          order.status !== 'Delivered' && order.status !== 'Cancelled' && (
+                          order.status !== 'Delivered' && (order.status as string) !== 'Cancelled' && (
                             <button
                               type="button"
                               onClick={async () => {
@@ -1001,8 +1027,8 @@ export default function AccountPage() {
                       <div className="pt-2">
                         <div className="grid grid-cols-5 gap-1 text-center relative py-2">
                           {statusMilestones.map((step, idx) => {
-                            const isCompleted = idx <= currentMilestoneIdx && order.status !== 'Cancelled';
-                            const isCurrent = idx === currentMilestoneIdx && order.status !== 'Cancelled';
+                            const isCompleted = idx <= currentMilestoneIdx;
+                            const isCurrent = idx === currentMilestoneIdx;
 
                             return (
                               <div key={step} className="flex flex-col items-center relative">
@@ -1084,6 +1110,7 @@ export default function AccountPage() {
                         )}
                       </div>
                     </div>
+                    )}
 
                     {/* Ordered Items List */}
                     <div className="divide-y divide-[#DDD2C0]/40">
