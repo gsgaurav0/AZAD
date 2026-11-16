@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -77,6 +77,21 @@ export default function AccountPage() {
 
   const openLoginModal = useUIStore((state) => state.openLoginModal);
   const addToast = useUIStore((state) => state.addToast);
+
+  // Strictly filter only confirmed orders (COD or confirmed paid online orders)
+  const activeUserOrders = useMemo(() => {
+    return orders.filter((o) => {
+      const isCod = o.paymentMethod === 'Cash on Delivery';
+      const isPaid = o.paymentStatus === 'paid' || (o as any).payment_status === 'paid';
+      if (!isCod && !isPaid) return false;
+
+      return (
+        o.userId === user?.id ||
+        (user?.email && (o as any).customerEmail && (o as any).customerEmail.toLowerCase() === user.email.toLowerCase()) ||
+        (user?.phone && o.address?.phone && o.address.phone.replace(/\D/g, '').includes(user.phone.replace(/\D/g, '').slice(-10)))
+      );
+    });
+  }, [orders, user]);
 
   const [activeTab, setActiveTab] = useState<'profile' | 'orders' | 'addresses' | 'returns'>('profile');
 
@@ -545,7 +560,7 @@ export default function AccountPage() {
             }`}
           >
             <Package className="w-3.5 h-3.5" />
-            <span>Orders & Live Tracking ({orders.length})</span>
+            <span>Orders & Live Tracking ({activeUserOrders.length})</span>
           </button>
           <button
             type="button"
@@ -829,7 +844,7 @@ export default function AccountPage() {
                   </div>
                   <div className="flex justify-between py-1 border-b border-[#DDD2C0]/50">
                     <span className="text-[#2B1A16]/60">Total Orders</span>
-                    <strong className="text-[#2B1A16]">{orders.length}</strong>
+                    <strong className="text-[#2B1A16]">{activeUserOrders.length}</strong>
                   </div>
                   <div className="flex justify-between py-1">
                     <span className="text-[#2B1A16]/60">Saved Destinations</span>
@@ -863,12 +878,7 @@ export default function AccountPage() {
         {/* TAB 2: MY ORDERS WITH STEP-BY-STEP LIVE LOCATION TRACKING */}
         {/* ============================================================ */}
         {activeTab === 'orders' && (() => {
-          const userOrders = orders.filter(
-            (o) =>
-              o.userId === user?.id ||
-              (user?.email && (o as any).customerEmail && (o as any).customerEmail.toLowerCase() === user.email.toLowerCase()) ||
-              (user?.phone && o.address?.phone && o.address.phone.replace(/\D/g, '').includes(user.phone.replace(/\D/g, '').slice(-10)))
-          );
+          const userOrders = activeUserOrders;
 
           return (
             <div className="space-y-6">
@@ -945,7 +955,7 @@ export default function AccountPage() {
                           This order has been cancelled and will not be dispatched. If payment was charged, your refund will reflect in your source account within 3–5 business days.
                         </p>
                       </div>
-                    ) : order.status === 'Payment Pending' ? (
+                    ) : (order.status as string) === 'Payment Pending' || (order.paymentMethod !== 'Cash on Delivery' && order.paymentStatus !== 'paid') ? (
                       <div className="bg-amber-50/80 border border-amber-200 p-4 rounded-[4px] space-y-1.5 font-sans">
                         <div className="flex items-center gap-2 text-amber-800 font-semibold text-xs">
                           <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
@@ -1319,7 +1329,7 @@ export default function AccountPage() {
               Every authentic Mewak hardware product includes doorstep pickup and diagnostic exchange privilege. Verified refunds are credited within 48 hours of inspection.
             </p>
 
-            {orders.length === 0 ? (
+            {activeUserOrders.length === 0 ? (
               <div className="p-4 bg-[#EFE8DD]/50 rounded-[3px] text-xs text-[#2B1A16]/70 text-center">
                 You have no active orders eligible for return requests.
               </div>
@@ -1368,7 +1378,7 @@ export default function AccountPage() {
                     className="w-full bg-white border border-[#DDD2C0] rounded-[3px] p-2.5 text-xs text-[#2B1A16] outline-none"
                   >
                     <option value="">-- Choose Order to Return --</option>
-                    {orders.map((o) => (
+                    {activeUserOrders.map((o) => (
                       <option key={o.id} value={o.id}>
                         Order #{o.id} ({o.date}) - ₹{o.total.toLocaleString('en-IN')} [{o.status}]
                       </option>

@@ -24,6 +24,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: 'Order not found in database' }, { status: 404 });
     }
 
+    // If an online checkout order was never paid, completely purge it from database
+    if (order.payment_method !== 'Cash on Delivery' && order.payment_status !== 'paid') {
+      const { error: delErr } = await admin.from('orders').delete().eq('id', orderId.trim());
+      if (delErr) {
+        console.error('Error purging unpaid draft order:', delErr);
+      }
+      return NextResponse.json({ success: true, message: 'Unpaid draft order purged from database.' });
+    }
+
     if (order.status === 'Delivered') {
       return NextResponse.json(
         { success: false, error: 'Delivered orders cannot be cancelled. You may request a doorstep return or exchange instead.' },

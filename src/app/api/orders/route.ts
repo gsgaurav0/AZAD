@@ -23,6 +23,11 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: 'Order not found' }, { status: 404 });
       }
 
+      // Guard: Do not display unpaid online checkout records
+      if (order.payment_method !== 'Cash on Delivery' && order.payment_status !== 'paid') {
+        return NextResponse.json({ error: 'Order payment is pending or incomplete.' }, { status: 404 });
+      }
+
       return NextResponse.json({
         order: {
           id: order.id,
@@ -65,6 +70,11 @@ export async function GET(request: Request) {
 
       if (error || !order) {
         return NextResponse.json({ error: 'Tracking record not found' }, { status: 404 });
+      }
+
+      // Guard: Do not display tracking for unpaid online checkout records
+      if (order.payment_method !== 'Cash on Delivery' && order.payment_status !== 'paid') {
+        return NextResponse.json({ error: 'Tracking unavailable for unconfirmed payment.' }, { status: 404 });
       }
 
       return NextResponse.json({
@@ -116,7 +126,14 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    const mapped = (orders || []).map((o: any) => ({
+    // Filter out unpaid online checkout attempts: only return COD or confirmed paid orders
+    const confirmedOrders = (orders || []).filter((o: any) => {
+      const isCod = o.payment_method === 'Cash on Delivery';
+      const isPaid = o.payment_status === 'paid';
+      return isCod || isPaid;
+    });
+
+    const mapped = confirmedOrders.map((o: any) => ({
       id: o.id,
       userId: o.user_id,
       date: new Date(o.created_at).toLocaleDateString('en-GB', {

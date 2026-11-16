@@ -47,9 +47,12 @@ export async function POST(request: Request) {
         notes: notes || { receipt: receiptId },
       });
     } catch (apiErr: any) {
-      console.error('Razorpay API error creating order:', apiErr);
+      console.error('Razorpay API error creating order:', apiErr?.error?.description || apiErr?.message || apiErr);
       const statusCode = apiErr.statusCode || 500;
-      const errorMsg = apiErr.error?.description || apiErr.message || 'Razorpay order creation failed.';
+      let errorMsg = apiErr.error?.description || apiErr.message || 'Razorpay order creation failed.';
+      if (statusCode === 401 || errorMsg === 'Authentication failed') {
+        errorMsg = 'Razorpay Authentication failed (401). Your RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET in .env is invalid, expired, or was regenerated.';
+      }
       return NextResponse.json({ success: false, error: errorMsg }, { status: statusCode });
     }
 

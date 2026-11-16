@@ -50,9 +50,10 @@ export default function OrderSuccessPage({ params }: OrderSuccessProps) {
     }
   }, [storeOrder, orderId]);
 
-  const order = liveOrder || storeOrder || orders[0];
+  const order = liveOrder || storeOrder;
 
   useEffect(() => {
+    if (!order) return;
     // Fire festive celebration confetti!
     const duration = 2.5 * 1000;
     const end = Date.now() + duration;
@@ -93,6 +94,28 @@ export default function OrderSuccessPage({ params }: OrderSuccessProps) {
     return (
       <div className="bg-[#EFE8DD] min-h-screen py-24 flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-[#9A8029] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!order) {
+    return (
+      <div className="bg-[#EFE8DD] min-h-screen py-24 flex items-center justify-center">
+        <div className="text-center p-8 bg-[#FBF7F0] border border-[#DDD2C0] rounded-[4px] max-w-md mx-auto space-y-4 shadow-sm">
+          <Clock className="w-10 h-10 text-[#9A8029] mx-auto animate-pulse" />
+          <h2 className="font-serif text-2xl text-[#2B1A16]">Verifying Order Record...</h2>
+          <p className="text-xs text-[#2B1A16]/70 leading-relaxed">
+            If payment was completed, your order will appear shortly in your Patron Account. Unpaid checkout attempts are not inscribed.
+          </p>
+          <div className="pt-2">
+            <Link
+              href="/account"
+              className="inline-block bg-[#2B1A16] text-[#EFE8DD] text-xs font-semibold uppercase px-6 py-2.5 rounded-[3px] hover:bg-[#9A8029] transition-colors"
+            >
+              Go to My Account
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }

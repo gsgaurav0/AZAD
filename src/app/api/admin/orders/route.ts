@@ -16,7 +16,14 @@ export async function GET() {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    const mapped = (data || []).map((o: any) => ({
+    // Filter out abandoned / unpaid online checkout drafts
+    const validOrders = (data || []).filter((o: any) => {
+      const isCod = o.payment_method === 'Cash on Delivery';
+      const isPaid = o.payment_status === 'paid';
+      return isCod || isPaid;
+    });
+
+    const mapped = validOrders.map((o: any) => ({
       id: o.id,
       userId: o.user_id,
       date: o.created_at,

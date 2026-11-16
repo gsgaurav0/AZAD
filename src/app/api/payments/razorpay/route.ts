@@ -45,10 +45,14 @@ export async function POST(request: Request) {
       keyId,
     });
   } catch (err: any) {
-    console.error('Razorpay order creation error:', err);
+    console.error('Razorpay order creation error:', err?.error?.description || err?.message || err);
+    let errorMsg = err.error?.description || err.message || 'Error creating Razorpay order.';
+    if (err.statusCode === 401 || errorMsg === 'Authentication failed') {
+      errorMsg = 'Razorpay Authentication failed (401). Your RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET in .env is invalid, expired, or was regenerated.';
+    }
     return NextResponse.json(
-      { success: false, error: err.error?.description || err.message || 'Error creating Razorpay order.' },
-      { status: 500 }
+      { success: false, error: errorMsg },
+      { status: err.statusCode || 500 }
     );
   }
 }

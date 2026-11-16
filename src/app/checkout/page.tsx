@@ -281,6 +281,7 @@ export default function CheckoutPage() {
     }
 
     setIsPlacingOrder(true);
+    let createdOrderId = '';
 
     try {
       // 1. Call server-side /api/checkout to validate catalog prices and create order
@@ -313,7 +314,7 @@ export default function CheckoutPage() {
         return;
       }
 
-      const createdOrderId = checkoutData.orderId;
+      createdOrderId = checkoutData.orderId;
 
       // 2. If Cash on Delivery, complete and inscribe immediately
       if (paymentMethod === 'Cash on Delivery') {
@@ -346,13 +347,48 @@ export default function CheckoutPage() {
 
       const rzpData = await rzpRes.json();
       if (!rzpRes.ok || !rzpData.success) {
-        throw new Error(rzpData.error || 'Failed to initiate payment gateway order.');
+        setIsPlacingOrder(false);
+        // Clean up the draft order from database so it never dangles as an active order
+        try {
+          await fetch('/api/orders/cancel', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              orderId: createdOrderId,
+              reason: 'Payment initiation failed: ' + (rzpData.error || 'Gateway error'),
+            }),
+          });
+        } catch {}
+        useAuthStore.getState().deleteOrder(createdOrderId);
+
+        const errorMsg =
+          rzpData.error ||
+          'Failed to initiate payment gateway order. Please check payment credentials.';
+        addToast(errorMsg, 'error');
+        return;
       }
 
       // Ensure Razorpay SDK script is loaded
       const scriptReady = await loadRazorpayScript();
       if (!scriptReady || typeof window === 'undefined' || !(window as any).Razorpay) {
-        throw new Error('Razorpay payment gateway script could not be loaded. Please check your internet connection.');
+        setIsPlacingOrder(false);
+        try {
+          await fetch('/api/orders/cancel', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              orderId: createdOrderId,
+              reason: 'Razorpay script failed to load',
+            }),
+          });
+        } catch {}
+        useAuthStore.getState().deleteOrder(createdOrderId);
+
+        addToast(
+          'Razorpay payment gateway script could not be loaded. Please check your internet connection.',
+          'error'
+        );
+        return;
       }
 
       const options = {
@@ -430,6 +466,7 @@ export default function CheckoutPage() {
                 }),
               });
             } catch {}
+            useAuthStore.getState().deleteOrder(createdOrderId);
             addToast('Payment cancelled. No order was placed.', 'info');
           },
         },
@@ -499,6 +536,7 @@ export default function CheckoutPage() {
             }),
           });
         } catch {}
+        useAuthStore.getState().deleteOrder(createdOrderId);
         addToast(description, 'error');
         setIsPlacingOrder(false);
       });
@@ -507,8 +545,21 @@ export default function CheckoutPage() {
       applyRzpMask();
       setIsPlacingOrder(false);
     } catch (err: any) {
-      console.error('Final place order exception:', err);
-      addToast(err.message || 'Error communicating with checkout gateway.', 'error');
+      console.warn('Place order notice:', err?.message || err);
+      if (createdOrderId) {
+        try {
+          await fetch('/api/orders/cancel', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              orderId: createdOrderId,
+              reason: 'Checkout error: ' + (err?.message || err),
+            }),
+          });
+        } catch {}
+        useAuthStore.getState().deleteOrder(createdOrderId);
+      }
+      addToast(err?.message || 'Error communicating with checkout gateway.', 'error');
       setIsPlacingOrder(false);
     }
   };
