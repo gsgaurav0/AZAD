@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { createEmailToken, PendingUserData } from '@/lib/email/tokens';
+import { sendEmail, renderVerificationEmailTemplate } from '@/lib/email/resend';
 
 export async function POST(request: Request) {
   try {
@@ -39,98 +41,96 @@ export async function POST(request: Request) {
 
     const admin = createAdminClient();
 
-    // 2. Create user in Supabase Auth (with email auto-confirmed for seamless luxury experience)
-    const { data: authData, error: authError } = await admin.auth.admin.createUser({
-      email: cleanEmail,
-      password: password,
-      email_confirm: true,
-      user_metadata: {
-        name: name.trim(),
-        phone: `+91 ${cleanPhone}`,
-        date_of_birth: dateOfBirth || '',
-        gender: gender || 'Prefer not to say',
-        member_tier: 'Gold Patron Member',
-      },
-    });
+    // 2. Pre-check: Ensure account does not already exist in Supabase profiles or auth
+    try {
+      const { data: existingProfile } = await admin
+        .from('profiles')
+        .select('id, email')
+        .eq('email', cleanEmail)
+        .maybeSingle();
 
-    if (authError) {
-      console.error('Supabase admin createUser error:', authError);
-      if (authError.message.toLowerCase().includes('already registered') || authError.message.toLowerCase().includes('already been registered')) {
+      if (existingProfile) {
         return NextResponse.json({
           success: false,
           error: 'An account with this email address already exists. Please sign in.',
         }, { status: 400 });
       }
-      return NextResponse.json({
-        success: false,
-        error: authError.message || 'Failed to create customer account.',
-      }, { status: 400 });
+
+      const { data: authUsers } = await admin.auth.admin.listUsers();
+      const existingAuth = authUsers?.users?.find(
+        (u) => u.email?.toLowerCase() === cleanEmail
+      );
+      if (existingAuth) {
+        return NextResponse.json({
+          success: false,
+          error: 'An account with this email address already exists. Please sign in.',
+        }, { status: 400 });
+      }
+    } catch (checkErr) {
+      console.warn('Pre-signup existence check notice:', checkErr);
     }
 
-    const user = authData.user;
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Could not provision user record.' }, { status: 500 });
-    }
-
-    // 3. Save profile directly into public.profiles
-    const profilePayload = {
-      id: user.id,
+    // 3. Prepare pending registration data (Do NOT create user or profile until email is verified!)
+    const pendingUserData: PendingUserData = {
       name: name.trim(),
       email: cleanEmail,
       phone: `+91 ${cleanPhone}`,
-      date_of_birth: dateOfBirth || null,
+      password: password,
+      dateOfBirth: dateOfBirth || '',
       gender: gender || 'Prefer not to say',
-      member_tier: 'Gold Patron Member',
-      role: 'customer',
-      is_email_verified: true,
-      is_phone_verified: false,
-      updated_at: new Date().toISOString(),
+      address: address || null,
     };
 
-    const { error: profileError } = await admin
-      .from('profiles')
-      .upsert(profilePayload, { onConflict: 'id' });
-
-    if (profileError) {
-      console.error('Profile upsert error:', profileError);
+    // 4. Generate email verification token & 6-digit OTP code (enforces 30s resend cooldown)
+    const tokenResult = createEmailToken(cleanEmail, 'verify_email', pendingUserData);
+    if (!tokenResult.success || !tokenResult.code || !tokenResult.token) {
+      return NextResponse.json({
+        success: false,
+        error: tokenResult.error || 'A verification code was recently dispatched. Please wait before requesting another.',
+        waitSeconds: tokenResult.waitSeconds || 30,
+      }, { status: tokenResult.waitSeconds ? 429 : 500 });
     }
 
-    // 4. If address provided, save to public.addresses
-    if (address && address.street && address.city && address.pincode) {
-      await admin.from('addresses').insert({
-        user_id: user.id,
-        name: name.trim(),
-        phone: cleanPhone,
-        street: address.street.trim(),
-        locality: address.locality?.trim() || '',
-        city: address.city.trim(),
-        state: address.state?.trim() || 'Delhi',
-        pincode: address.pincode.trim(),
-        type: address.type || 'Home',
-        is_default: true,
-      });
+    const origin =
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      request.headers.get('origin') ||
+      'http://localhost:3000';
+
+    const verifyUrl = `${origin}/auth/verify-email?email=${encodeURIComponent(
+      cleanEmail
+    )}&token=${encodeURIComponent(tokenResult.token)}`;
+
+    const html = renderVerificationEmailTemplate({
+      name: name.trim(),
+      code: tokenResult.code,
+      verifyUrl,
+    });
+
+    // 5. Dispatch verification email via Resend
+    const sendResult = await sendEmail({
+      to: cleanEmail,
+      subject: `Verify Your Email: ${tokenResult.code} • Mewak Luxury`,
+      html,
+      text: `Welcome to Mewak! Your 6-digit verification code is ${tokenResult.code}. Visit ${verifyUrl} or enter the code to confirm your email and create your patron profile.`,
+    });
+
+    if (!sendResult.success) {
+      console.warn('Resend email dispatch notice:', sendResult.error);
     }
 
     return NextResponse.json({
       success: true,
-      user: {
-        id: user.id,
-        name: name.trim(),
-        email: cleanEmail,
-        phone: `+91 ${cleanPhone}`,
-        dateOfBirth: dateOfBirth || '',
-        gender: gender || 'Prefer not to say',
-        memberTier: 'Gold Patron Member',
-        joinedDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-        isEmailVerified: true,
-        role: 'customer',
-      },
+      pendingVerification: true,
+      email: cleanEmail,
+      name: name.trim(),
+      waitSeconds: 30,
+      message: `Verification code dispatched to ${cleanEmail}. Please enter the 6-digit code to complete profile creation.`,
     });
   } catch (err: any) {
     console.error('Signup endpoint error:', err);
     return NextResponse.json({
       success: false,
-      error: err.message || 'Internal error creating patron account.',
+      error: err.message || 'Internal error processing account registration.',
     }, { status: 500 });
   }
 }

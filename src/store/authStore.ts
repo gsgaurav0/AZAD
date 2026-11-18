@@ -51,7 +51,19 @@ interface AuthState {
     dateOfBirth?: string;
     gender?: 'Male' | 'Female' | 'Non-Binary' | 'Prefer not to say';
     address?: Omit<Address, 'id'>;
-  }) => Promise<{ success: boolean; error?: string; user?: UserProfile }>;
+  }) => Promise<{
+    success: boolean;
+    error?: string;
+    user?: UserProfile;
+    pendingVerification?: boolean;
+    email?: string;
+    name?: string;
+    waitSeconds?: number;
+  }>;
+  verifyAndCompleteSignup: (
+    email: string,
+    code: string
+  ) => Promise<{ success: boolean; error?: string; user?: UserProfile }>;
 
   login: (identifier: string, passwordOrOtp?: string) => Promise<{ success: boolean; error?: string; user?: UserProfile }>;
   loginWithOtp: (phone: string, otp: string, name?: string) => Promise<{ success: boolean; error?: string; user?: UserProfile }>;
@@ -316,7 +328,8 @@ export const useAuthStore = create<AuthState>()(
         const cleanPhone = data.phone.replace(/\D/g, '');
 
         try {
-          // Create user via secure server API (writes directly to Supabase auth.users & public.profiles)
+          // Pre-registration: validates inputs, stores pending data with OTP token & dispatches verification code
+          // CRITICAL: Does NOT create user in DB or log in until email is verified!
           const res = await fetch('/api/auth/signup', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -333,33 +346,69 @@ export const useAuthStore = create<AuthState>()(
 
           const result = await res.json();
           if (!result.success) {
-            return { success: false, error: result.error || 'Failed to create patron account.' };
+            return { success: false, error: result.error || 'Failed to initiate patron registration.' };
           }
 
-          const createdUser: UserProfile = result.user;
-
-          // Establish client browser session with Supabase
-          const supabase = getBrowserClient();
-          if (data.password) {
-            await supabase.auth.signInWithPassword({
-              email: cleanEmail,
-              password: data.password,
-            }).catch(() => {});
-          }
-
-          set((state) => ({
-            isLoggedIn: true,
-            user: createdUser,
-            registeredUsers: [
-              ...state.registeredUsers.filter((u) => u.email.toLowerCase() !== cleanEmail),
-              { ...createdUser, password: data.password },
-            ],
-          }));
-
-          return { success: true, user: createdUser };
+          return {
+            success: true,
+            pendingVerification: true,
+            email: cleanEmail,
+            name: data.name.trim(),
+            waitSeconds: result.waitSeconds || 30,
+          };
         } catch (err: any) {
           console.error('Signup error:', err);
           return { success: false, error: err.message || 'Network error during account registration.' };
+        }
+      },
+
+      verifyAndCompleteSignup: async (email: string, code: string) => {
+        const cleanEmail = email.trim().toLowerCase();
+        const cleanCode = code.trim();
+
+        try {
+          const res = await fetch('/api/email/verify/confirm', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: cleanEmail, code: cleanCode }),
+          });
+
+          const result = await res.json();
+          if (!result.success) {
+            return { success: false, error: result.error || 'Failed to verify authentication code.' };
+          }
+
+          const createdUser: UserProfile = result.user;
+          const password = result.password;
+
+          // Establish client browser session with Supabase
+          const supabase = getBrowserClient();
+          if (password) {
+            await supabase.auth.signInWithPassword({
+              email: cleanEmail,
+              password,
+            }).catch(() => {});
+          }
+
+          if (createdUser) {
+            set((state) => ({
+              isLoggedIn: true,
+              user: createdUser,
+              registeredUsers: [
+                ...state.registeredUsers.filter((u) => u.email.toLowerCase() !== cleanEmail),
+                { ...createdUser, password },
+              ],
+            }));
+
+            if (createdUser.id) {
+              await get().syncUserData(createdUser.id);
+            }
+          }
+
+          return { success: true, user: createdUser };
+        } catch (err: any) {
+          console.error('Verify and complete signup error:', err);
+          return { success: false, error: err.message || 'Network error confirming verification code.' };
         }
       },
 

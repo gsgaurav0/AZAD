@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { buildCleanMilestoneHistory, getLocationForStatus } from '@/lib/orderMilestones';
+import { sendEmail, renderOrderConfirmationEmailTemplate } from '@/lib/email/resend';
 
 interface CheckoutRequestBody {
   userId?: string;
@@ -265,6 +266,33 @@ export async function POST(request: Request) {
     // Clear server cart if user logged in
     if (user?.id) {
       await adminSupabase.from('cart_items').delete().eq('user_id', user.id);
+    }
+
+    // Dispatch asynchronous order confirmation email via Resend
+    if (customerEmail && customerEmail.includes('@')) {
+      const origin = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+      const trackingUrl = `${origin}/account?tab=orders&order=${orderId}`;
+      sendEmail({
+        to: customerEmail,
+        subject: `Order Confirmed: #${orderId} • Mewak Luxury`,
+        html: renderOrderConfirmationEmailTemplate({
+          name: customerName || 'Patron',
+          orderId,
+          items: verifiedOrderItems.map((i) => ({
+            name: i.product?.name || 'Hardware Edition',
+            quantity: i.quantity,
+            price: i.unitPrice,
+            color: i.selectedColor,
+            size: i.selectedSize,
+          })),
+          total,
+          paymentMethod: body.paymentMethod,
+          address: body.address,
+          trackingUrl,
+        }),
+      }).catch((emailErr) => {
+        console.warn('Order confirmation email notice:', emailErr);
+      });
     }
 
     return NextResponse.json({

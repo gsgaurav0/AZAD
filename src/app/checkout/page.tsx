@@ -53,6 +53,7 @@ export default function CheckoutPage() {
     login,
     loginWithOtp,
     signup,
+    verifyAndCompleteSignup,
   } = useAuthStore();
 
   const addToast = useUIStore((state) => state.addToast);
@@ -77,6 +78,10 @@ export default function CheckoutPage() {
     phone: '',
     password: '',
   });
+  const [checkoutSignupStep, setCheckoutSignupStep] = useState<'form' | 'verify'>('form');
+  const [checkoutVerifyEmail, setCheckoutVerifyEmail] = useState('');
+  const [checkoutVerifyCode, setCheckoutVerifyCode] = useState('');
+  const [isVerifyingCheckout, setIsVerifyingCheckout] = useState(false);
 
   // Selected Address & New Address Form
   const [selectedAddressId, setSelectedAddressId] = useState<string>('');
@@ -216,11 +221,44 @@ export default function CheckoutPage() {
     });
 
     if (!res.success) {
-      setAuthError(res.error || 'Unable to create account.');
+      setAuthError(res.error || 'Unable to initiate account registration.');
+      return;
+    }
+
+    if (res.pendingVerification) {
+      setCheckoutVerifyEmail(signupForm.email.trim().toLowerCase());
+      setCheckoutSignupStep('verify');
+      addToast(`Verification code sent to ${signupForm.email}. Enter code below to confirm account.`, 'success');
       return;
     }
 
     addToast(`Account created successfully! Welcome, ${res.user?.name}.`, 'success');
+  };
+
+  const handleVerifyCheckoutSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError('');
+    const code = checkoutVerifyCode.trim();
+    if (code.length !== 6) {
+      setAuthError('Please enter the complete 6-digit verification code.');
+      return;
+    }
+
+    setIsVerifyingCheckout(true);
+    try {
+      const res = await verifyAndCompleteSignup(checkoutVerifyEmail, code);
+      setIsVerifyingCheckout(false);
+
+      if (!res.success) {
+        setAuthError(res.error || 'Invalid or expired verification code.');
+        return;
+      }
+
+      addToast(`Email verified & account created! Welcome, ${res.user?.name}.`, 'success');
+    } catch {
+      setIsVerifyingCheckout(false);
+      setAuthError('Network error confirming verification code.');
+    }
   };
 
   // Address Handlers
@@ -816,79 +854,140 @@ export default function CheckoutPage() {
 
                 {/* SIGN UP TAB */}
                 {authTab === 'signup' && (
-                  <form onSubmit={handleInlineSignup} className="space-y-3 font-sans">
-                    <div>
-                      <label className="block text-xs font-semibold text-[#2B1A16]/80 mb-1">
-                        Full Name *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={signupForm.name}
-                        onChange={(e) => setSignupForm({ ...signupForm, name: e.target.value })}
-                        placeholder="e.g. Gaurav Sharma"
-                        className="w-full bg-white border border-[#DDD2C0] rounded-[3px] p-2.5 text-xs text-[#2B1A16] outline-none focus:border-[#9A8029]"
-                      />
-                    </div>
+                  checkoutSignupStep === 'verify' ? (
+                    <form onSubmit={handleVerifyCheckoutSignup} className="space-y-4 font-sans">
+                      <div className="p-3 bg-[#9A8029]/10 border border-[#9A8029]/30 rounded-[4px] text-center space-y-1">
+                        <CheckCircle2 className="w-5 h-5 text-[#9A8029] mx-auto" />
+                        <h4 className="font-serif text-sm font-semibold text-[#2B1A16]">
+                          Verification Code Dispatched
+                        </h4>
+                        <p className="text-[11px] text-[#2B1A16]/80 leading-relaxed">
+                          We sent a 6-digit confirmation code to <strong>{checkoutVerifyEmail}</strong>. Enter code below to activate profile and unlock checkout.
+                        </p>
+                      </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="block text-xs font-semibold text-[#2B1A16]/80 mb-1">
-                          Email Address *
+                          6-Digit Verification Code *
                         </label>
                         <input
-                          type="email"
+                          type="text"
                           required
-                          value={signupForm.email}
-                          onChange={(e) => setSignupForm({ ...signupForm, email: e.target.value })}
-                          placeholder="patron@domain.com"
+                          maxLength={6}
+                          value={checkoutVerifyCode}
+                          onChange={(e) => setCheckoutVerifyCode(e.target.value.replace(/\D/g, ''))}
+                          placeholder="e.g. 123456"
+                          className="w-full tracking-widest text-center text-lg font-mono font-bold bg-white border border-[#DDD2C0] rounded-[3px] p-2.5 text-[#2B1A16] outline-none focus:border-[#9A8029]"
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={isVerifyingCheckout}
+                        className="w-full bg-[#9A8029] hover:bg-[#7F6A1F] text-white py-3.5 px-4 rounded-[4px] text-xs font-semibold uppercase tracking-[0.2em] transition-colors flex items-center justify-center gap-2 shadow-sm cursor-pointer mt-2 disabled:opacity-50"
+                      >
+                        {isVerifyingCheckout ? (
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <CheckCircle2 className="w-4 h-4" />
+                        )}
+                        <span>{isVerifyingCheckout ? 'Verifying...' : 'Verify Email & Unlock Checkout'}</span>
+                      </button>
+
+                      <div className="pt-2 text-center border-t border-[#DDD2C0]/40 flex items-center justify-between">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCheckoutSignupStep('form');
+                            setAuthError('');
+                          }}
+                          className="text-[11px] text-[#9A8029] hover:underline font-medium"
+                        >
+                          ← Edit Registration Details
+                        </button>
+                        <Link
+                          href={`/auth/verify-email?email=${encodeURIComponent(checkoutVerifyEmail)}`}
+                          className="text-[11px] text-[#2B1A16]/70 hover:text-[#2B1A16] underline"
+                        >
+                          Dedicated Verify Page →
+                        </Link>
+                      </div>
+                    </form>
+                  ) : (
+                    <form onSubmit={handleInlineSignup} className="space-y-3 font-sans">
+                      <div>
+                        <label className="block text-xs font-semibold text-[#2B1A16]/80 mb-1">
+                          Full Name *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={signupForm.name}
+                          onChange={(e) => setSignupForm({ ...signupForm, name: e.target.value })}
+                          placeholder="e.g. Gaurav Sharma"
                           className="w-full bg-white border border-[#DDD2C0] rounded-[3px] p-2.5 text-xs text-[#2B1A16] outline-none focus:border-[#9A8029]"
                         />
                       </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-semibold text-[#2B1A16]/80 mb-1">
+                            Email Address *
+                          </label>
+                          <input
+                            type="email"
+                            required
+                            value={signupForm.email}
+                            onChange={(e) => setSignupForm({ ...signupForm, email: e.target.value })}
+                            placeholder="patron@domain.com"
+                            className="w-full bg-white border border-[#DDD2C0] rounded-[3px] p-2.5 text-xs text-[#2B1A16] outline-none focus:border-[#9A8029]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-[#2B1A16]/80 mb-1">
+                            10-Digit Mobile Number *
+                          </label>
+                          <input
+                            type="tel"
+                            required
+                            maxLength={10}
+                            value={signupForm.phone}
+                            onChange={(e) =>
+                              setSignupForm({
+                                ...signupForm,
+                                phone: e.target.value.replace(/\D/g, ''),
+                              })
+                            }
+                            placeholder="9876543210"
+                            className="w-full bg-white border border-[#DDD2C0] rounded-[3px] p-2.5 text-xs text-[#2B1A16] outline-none focus:border-[#9A8029]"
+                          />
+                        </div>
+                      </div>
+
                       <div>
                         <label className="block text-xs font-semibold text-[#2B1A16]/80 mb-1">
-                          10-Digit Mobile Number *
+                          Create Account Password *
                         </label>
                         <input
-                          type="tel"
+                          type="password"
                           required
-                          maxLength={10}
-                          value={signupForm.phone}
-                          onChange={(e) =>
-                            setSignupForm({
-                              ...signupForm,
-                              phone: e.target.value.replace(/\D/g, ''),
-                            })
-                          }
-                          placeholder="9876543210"
+                          minLength={6}
+                          value={signupForm.password}
+                          onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })}
+                          placeholder="At least 6 characters"
                           className="w-full bg-white border border-[#DDD2C0] rounded-[3px] p-2.5 text-xs text-[#2B1A16] outline-none focus:border-[#9A8029]"
                         />
                       </div>
-                    </div>
 
-                    <div>
-                      <label className="block text-xs font-semibold text-[#2B1A16]/80 mb-1">
-                        Create Account Password *
-                      </label>
-                      <input
-                        type="password"
-                        required
-                        minLength={6}
-                        value={signupForm.password}
-                        onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })}
-                        placeholder="At least 6 characters"
-                        className="w-full bg-white border border-[#DDD2C0] rounded-[3px] p-2.5 text-xs text-[#2B1A16] outline-none focus:border-[#9A8029]"
-                      />
-                    </div>
-
-                    <button
-                      type="submit"
-                      className="w-full bg-[#9A8029] hover:bg-[#7F6A1F] text-white py-3.5 px-4 rounded-[4px] text-xs font-semibold uppercase tracking-[0.2em] transition-colors flex items-center justify-center gap-2 shadow-sm cursor-pointer mt-4"
-                    >
-                      <User className="w-4 h-4" />
-                      <span>Create Patron Account & Unlock Checkout</span>
-                    </button>
-                  </form>
+                      <button
+                        type="submit"
+                        className="w-full bg-[#9A8029] hover:bg-[#7F6A1F] text-white py-3.5 px-4 rounded-[4px] text-xs font-semibold uppercase tracking-[0.2em] transition-colors flex items-center justify-center gap-2 shadow-sm cursor-pointer mt-4"
+                      >
+                        <User className="w-4 h-4" />
+                        <span>Verify Email & Complete Registration</span>
+                      </button>
+                    </form>
+                  )
                 )}
               </div>
 

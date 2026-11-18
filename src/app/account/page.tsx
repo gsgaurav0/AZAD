@@ -484,9 +484,18 @@ export default function AccountPage() {
                   <span className="flex items-center gap-1">
                     <Mail className="w-3.5 h-3.5 text-[#9A8029]" />
                     {user.email}
-                    <span className="text-[10px] text-[#4C7A34] bg-[#4C7A34]/10 px-1.5 py-0.2 rounded font-bold">
-                      Verified
-                    </span>
+                    {user.isEmailVerified ? (
+                      <span className="text-[10px] text-[#4C7A34] bg-[#4C7A34]/10 px-1.5 py-0.2 rounded font-bold">
+                        Verified
+                      </span>
+                    ) : (
+                      <Link
+                        href={`/auth/verify-email?email=${encodeURIComponent(user.email)}`}
+                        className="text-[10px] text-amber-800 bg-amber-100 hover:bg-amber-200 px-1.5 py-0.2 rounded font-bold underline transition-colors"
+                      >
+                        Unverified • Verify Now
+                      </Link>
+                    )}
                   </span>
                   <span>•</span>
                   <span className="flex items-center gap-1">
@@ -694,9 +703,18 @@ export default function AccountPage() {
                         <span className="text-[#2B1A16]/60 uppercase text-[10px] font-bold">
                           Primary Email Address
                         </span>
-                        <span className="inline-flex items-center gap-1 text-[10px] bg-[#4C7A34]/15 text-[#4C7A34] px-1.5 py-0.5 rounded font-bold">
-                          <Check className="w-3 h-3" /> Authenticated
-                        </span>
+                        {user.isEmailVerified ? (
+                          <span className="inline-flex items-center gap-1 text-[10px] bg-[#4C7A34]/15 text-[#4C7A34] px-1.5 py-0.5 rounded font-bold">
+                            <Check className="w-3 h-3" /> Authenticated
+                          </span>
+                        ) : (
+                          <Link
+                            href={`/auth/verify-email?email=${encodeURIComponent(user.email)}`}
+                            className="inline-flex items-center gap-1 text-[10px] bg-amber-100 text-amber-800 hover:bg-amber-200 px-1.5 py-0.5 rounded font-bold transition-colors"
+                          >
+                            Unverified • Verify
+                          </Link>
+                        )}
                       </div>
                       <strong className="text-sm text-[#2B1A16]">{user.email}</strong>
                     </div>

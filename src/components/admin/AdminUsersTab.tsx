@@ -43,9 +43,15 @@ export default function AdminUsersTab({ onRefresh }: AdminUsersTabProps) {
   const fetchUsers = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('/api/admin/users');
+      const res = await fetch(`/api/admin/users?_t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          Pragma: 'no-cache',
+        },
+      });
       const data = await res.json();
-      if (data.success && Array.isArray(data.users) && data.users.length > 0) {
+      if (data.success && Array.isArray(data.users)) {
         setDbUsers(data.users);
       } else {
         // Fallback to local store registered users if database is empty/offline
@@ -70,15 +76,16 @@ export default function AdminUsersTab({ onRefresh }: AdminUsersTabProps) {
     fetchUsers();
   }, [registeredUsers]);
 
-  // Combine and deduplicate users
+  // Real Database users are the authoritative source of truth
   const allUsers = useMemo(() => {
-    const map = new Map<string, UserProfile>();
-    // Add local registered users
-    registeredUsers.forEach((u) => map.set(u.id || u.email, u));
-    if (currentUser) map.set(currentUser.id || currentUser.email, currentUser);
-    // Add database users
-    dbUsers.forEach((u) => map.set(u.id || u.email, u));
-    return Array.from(map.values());
+    if (dbUsers.length > 0) {
+      return dbUsers;
+    }
+    const combined = [...registeredUsers];
+    if (currentUser && !combined.some((u) => u.id === currentUser.id)) {
+      combined.unshift(currentUser);
+    }
+    return combined;
   }, [dbUsers, registeredUsers, currentUser]);
 
   // Filtered Users
@@ -102,8 +109,10 @@ export default function AdminUsersTab({ onRefresh }: AdminUsersTabProps) {
 
   // Key Metrics
   const totalUsersCount = allUsers.length;
-  const verifiedUsersCount = allUsers.filter((u) => u.isEmailVerified || u.isPhoneVerified).length;
-  const goldPatronsCount = allUsers.filter((u) => (u.memberTier || '').includes('Gold')).length;
+  const verifiedUsersCount = allUsers.filter(
+    (u) => Boolean(u.isEmailVerified || (u as any).is_email_verified || u.isPhoneVerified || (u as any).is_phone_verified)
+  ).length;
+  const goldPatronsCount = allUsers.filter((u) => (u.memberTier || (u as any).member_tier || '').includes('Gold')).length;
 
   const handleDeleteUser = async (userId: string, userName: string) => {
     if (!confirm(`Are you sure you want to delete patron account "${userName}"?`)) return;
@@ -119,6 +128,25 @@ export default function AdminUsersTab({ onRefresh }: AdminUsersTabProps) {
     } catch {
       setDbUsers((prev) => prev.filter((u) => u.id !== userId));
       addToast(`Removed "${userName}" from list.`, 'info');
+    }
+  };
+
+  const handleToggleVerifyEmail = async (userId: string, currentStatus: boolean, name: string) => {
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, isEmailVerified: !currentStatus }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        addToast(`Email verification status updated for "${name}".`, 'success');
+        fetchUsers();
+      } else {
+        addToast(data.error || 'Failed to update email verification.', 'error');
+      }
+    } catch {
+      addToast('Network error updating email verification.', 'error');
     }
   };
 
@@ -279,18 +307,35 @@ export default function AdminUsersTab({ onRefresh }: AdminUsersTabProps) {
                     </td>
 
                     <td className="py-3 px-4">
-                      <div className="space-y-1">
-                        <span
-                          className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-semibold ${
-                            u.isEmailVerified
-                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                              : 'bg-zinc-100 text-zinc-600'
-                          }`}
-                        >
-                          {u.isEmailVerified ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
-                          Email {u.isEmailVerified ? 'Verified' : 'Pending'}
-                        </span>
-                      </div>
+                      {(() => {
+                        const isEmailVer = Boolean(
+                          u.isEmailVerified === true ||
+                          (u as any).is_email_verified === true ||
+                          String(u.isEmailVerified) === 'true' ||
+                          String((u as any).is_email_verified) === 'true'
+                        );
+                        return (
+                          <div className="space-y-1">
+                            <button
+                              type="button"
+                              onClick={() => handleToggleVerifyEmail(u.id, isEmailVer, u.name)}
+                              title={isEmailVer ? 'Click to mark as pending' : 'Click to mark as verified'}
+                              className={`inline-flex items-center gap-1.5 text-[10px] px-2.5 py-0.5 rounded-full font-semibold transition-all hover:scale-105 cursor-pointer ${
+                                isEmailVer
+                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
+                                  : 'bg-zinc-100 text-zinc-600 border border-zinc-200 hover:bg-zinc-200'
+                              }`}
+                            >
+                              {isEmailVer ? (
+                                <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
+                              ) : (
+                                <XCircle className="w-3 h-3 text-zinc-400 shrink-0" />
+                              )}
+                              Email {isEmailVer ? 'Verified' : 'Pending'}
+                            </button>
+                          </div>
+                        );
+                      })()}
                     </td>
 
                     <td className="py-3 px-4">
@@ -309,6 +354,20 @@ export default function AdminUsersTab({ onRefresh }: AdminUsersTabProps) {
 
                     <td className="py-3 px-4 text-right">
                       <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const isEmailVer = Boolean(
+                              u.isEmailVerified === true ||
+                              (u as any).is_email_verified === true
+                            );
+                            handleToggleVerifyEmail(u.id, isEmailVer, u.name);
+                          }}
+                          className="p-1.5 rounded-lg border border-[#DDD2C0] bg-white text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300 transition-colors"
+                          title="Toggle / Confirm Email Verification"
+                        >
+                          <ShieldCheck className="w-3.5 h-3.5" />
+                        </button>
                         <button
                           type="button"
                           onClick={() => setSelectedUser(u)}
@@ -377,6 +436,22 @@ export default function AdminUsersTab({ onRefresh }: AdminUsersTabProps) {
                 <span className="font-semibold text-[#2B1A16]">{selectedUser.company || selectedUser.gstNumber || 'Individual Patron'}</span>
               </div>
               <div className="bg-white p-3 rounded-lg border border-[#DDD2C0]">
+                <span className="text-[#2B1A16]/60 text-[10px] uppercase font-bold block mb-1">Email Verification</span>
+                <span className={`font-semibold inline-flex items-center gap-1 ${Boolean(selectedUser.isEmailVerified || (selectedUser as any).is_email_verified) ? 'text-emerald-700' : 'text-zinc-500'}`}>
+                  {Boolean(selectedUser.isEmailVerified || (selectedUser as any).is_email_verified) ? (
+                    <>
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                      Verified
+                    </>
+                  ) : (
+                    <>
+                      <XCircle className="w-3.5 h-3.5 text-zinc-400" />
+                      Pending Verification
+                    </>
+                  )}
+                </span>
+              </div>
+              <div className="bg-white p-3 rounded-lg border border-[#DDD2C0] col-span-2">
                 <span className="text-[#2B1A16]/60 text-[10px] uppercase font-bold block mb-1">Member Tier</span>
                 <span className="font-semibold text-[#9A8029]">{selectedUser.memberTier || 'Gold Patron Member'}</span>
               </div>
