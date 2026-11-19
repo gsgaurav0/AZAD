@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createEmailToken } from '@/lib/email/tokens';
 import { sendEmail, renderPasswordResetEmailTemplate } from '@/lib/email/resend';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { getSiteBaseUrl } from '@/lib/siteUrl';
 
 export async function POST(request: Request) {
   try {
@@ -46,10 +47,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const origin =
-      process.env.NEXT_PUBLIC_SITE_URL ||
-      request.headers.get('origin') ||
-      'http://localhost:3000';
+    const origin = getSiteBaseUrl(request);
 
     const resetUrl = `${origin}/auth/reset-password?email=${encodeURIComponent(
       cleanEmail

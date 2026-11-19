@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createEmailToken } from '@/lib/email/tokens';
 import { sendEmail, renderVerificationEmailTemplate } from '@/lib/email/resend';
+import { getSiteBaseUrl } from '@/lib/siteUrl';
 
 export async function POST(request: Request) {
   try {
@@ -28,10 +29,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const origin =
-      process.env.NEXT_PUBLIC_SITE_URL ||
-      request.headers.get('origin') ||
-      'http://localhost:3000';
+    const origin = getSiteBaseUrl(request);
 
     const verifyUrl = `${origin}/auth/verify-email?email=${encodeURIComponent(
       cleanEmail

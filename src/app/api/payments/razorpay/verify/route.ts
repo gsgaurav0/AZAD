@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { verifyRazorpaySignature } from '@/lib/razorpay';
 import { buildCleanMilestoneHistory } from '@/lib/orderMilestones';
 import { sendEmail, renderOrderConfirmationEmailTemplate } from '@/lib/email/resend';
+import { getSiteBaseUrl } from '@/lib/siteUrl';
 
 export async function POST(request: Request) {
   try {
@@ -76,7 +77,7 @@ export async function POST(request: Request) {
 
     // 3. Dispatch order confirmation email via Resend
     if (existingOrder?.customer_email && existingOrder.customer_email.includes('@')) {
-      const origin = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+      const origin = getSiteBaseUrl(request);
       const trackingUrl = `${origin}/account?tab=orders&order=${orderId}`;
       sendEmail({
         to: existingOrder.customer_email,

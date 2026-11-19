@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { buildCleanMilestoneHistory, getLocationForStatus } from '@/lib/orderMilestones';
 import { sendEmail, renderOrderConfirmationEmailTemplate } from '@/lib/email/resend';
+import { getSiteBaseUrl } from '@/lib/siteUrl';
 
 interface CheckoutRequestBody {
   userId?: string;
@@ -156,25 +157,40 @@ export async function POST(request: Request) {
     const orderId = `MWK-${Math.floor(100000 + Math.random() * 900000)}`;
     const trackingNumber = `BLD-${Math.floor(10000000 + Math.random() * 90000000)}`;
     const isCod = body.paymentMethod === 'Cash on Delivery';
-    const initialStatus = isCod ? 'Placed' : 'Pending Payment';
-    const statusHistory = isCod ? buildCleanMilestoneHistory('Placed', body.address) : [];
-    const initialLocation = isCod ? getLocationForStatus('Placed', body.address) : 'Order Draft Created';
+    // PostgreSQL constraint 'orders_status_check' allows: 'Placed', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled'
+    const initialStatus = 'Placed';
+    const statusHistory = buildCleanMilestoneHistory('Placed', body.address);
+    const initialLocation = getLocationForStatus('Placed', body.address);
 
     // 6. Customer & User Identification (resilient session fallback)
     const customerName = body.customer?.name || body.address.name;
     const customerEmail = body.customer?.email || user?.email || '';
     const customerPhone = body.customer?.phone || body.address.phone;
 
-    let effectiveUserId: string | null = user?.id || body.userId || null;
-    if (!effectiveUserId && customerEmail) {
+    let effectiveUserId: string | null = null;
+    const candidateId = user?.id || body.userId;
+    if (candidateId) {
       try {
-        const { data: matchedProfile } = await adminSupabase
+        const { data: profileById } = await adminSupabase
           .from('profiles')
           .select('id')
-          .eq('email', customerEmail)
-          .single();
-        if (matchedProfile?.id) {
-          effectiveUserId = matchedProfile.id;
+          .eq('id', candidateId)
+          .maybeSingle();
+        if (profileById?.id) {
+          effectiveUserId = profileById.id;
+        }
+      } catch {}
+    }
+
+    if (!effectiveUserId && customerEmail) {
+      try {
+        const { data: profileByEmail } = await adminSupabase
+          .from('profiles')
+          .select('id')
+          .eq('email', customerEmail.toLowerCase().trim())
+          .maybeSingle();
+        if (profileByEmail?.id) {
+          effectiveUserId = profileByEmail.id;
         }
       } catch {}
     }
@@ -229,7 +245,7 @@ export async function POST(request: Request) {
 
     // Dispatch asynchronous order confirmation email via Resend (only for COD)
     if (isCod && customerEmail && customerEmail.includes('@')) {
-      const origin = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+      const origin = getSiteBaseUrl(request);
       const trackingUrl = `${origin}/account?tab=orders&order=${orderId}`;
       sendEmail({
         to: customerEmail,
