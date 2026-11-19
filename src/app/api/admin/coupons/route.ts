@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { DEFAULT_COUPONS } from '@/store/couponStore';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET() {
   try {
     const admin = createAdminClient();
@@ -15,8 +18,46 @@ export async function GET() {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Auto-seed if coupons table is empty
-    if (!data || data.length === 0) {
+    const mapped = (data || []).map((c: any) => ({
+      id: c.id,
+      code: c.code,
+      description: c.description || '',
+      discountType: c.discount_type || c.discountType || 'percentage',
+      discountValue: Number(c.discount_value ?? c.discountValue ?? 0),
+      minOrderValue: Number(c.min_order_value ?? c.minOrderValue ?? 0),
+      maxDiscount: c.max_discount ? Number(c.max_discount) : (c.maxDiscount ? Number(c.maxDiscount) : undefined),
+      usageLimit: c.usage_limit ?? c.usageLimit ?? undefined,
+      usageCount: Number(c.usage_count ?? c.usageCount ?? 0),
+      isActive: c.is_active !== undefined ? Boolean(c.is_active) : (c.isActive !== undefined ? Boolean(c.isActive) : true),
+      expiresAt: c.expires_at ? c.expires_at.split('T')[0] : (c.expiresAt ? c.expiresAt.split('T')[0] : undefined),
+      createdAt: c.created_at ? c.created_at.split('T')[0] : (c.createdAt ? c.createdAt.split('T')[0] : new Date().toISOString().split('T')[0]),
+    }));
+
+    return NextResponse.json(
+      { coupons: mapped },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        },
+      }
+    );
+  } catch (err: any) {
+    console.error('Admin coupons GET exception:', err);
+    return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500 });
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const action = searchParams.get('action');
+    const body = await request.json().catch(() => ({}));
+    const admin = createAdminClient();
+
+    // Explicit seed action
+    if (action === 'seed' || body.action === 'seed') {
       const seedCoupons = DEFAULT_COUPONS.map((c) => ({
         code: c.code.toUpperCase(),
         description: c.description,
@@ -35,37 +76,12 @@ export async function GET() {
         .upsert(seedCoupons, { onConflict: 'code' })
         .select('*');
 
-      if (!insertError && inserted) {
-        return NextResponse.json({ coupons: inserted, seeded: true });
+      if (insertError) {
+        return NextResponse.json({ error: insertError.message }, { status: 400 });
       }
+
+      return NextResponse.json({ success: true, seeded: true, count: inserted?.length || 0 });
     }
-
-    const mapped = (data || []).map((c: any) => ({
-      id: c.id,
-      code: c.code,
-      description: c.description || '',
-      discountType: c.discount_type,
-      discountValue: Number(c.discount_value),
-      minOrderValue: c.min_order_value ? Number(c.min_order_value) : 0,
-      maxDiscount: c.max_discount ? Number(c.max_discount) : undefined,
-      usageLimit: c.usage_limit || undefined,
-      usageCount: c.usage_count || 0,
-      isActive: c.is_active,
-      expiresAt: c.expires_at ? c.expires_at.split('T')[0] : undefined,
-      createdAt: c.created_at ? c.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
-    }));
-
-    return NextResponse.json({ coupons: mapped });
-  } catch (err: any) {
-    console.error('Admin coupons GET exception:', err);
-    return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500 });
-  }
-}
-
-export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    const admin = createAdminClient();
 
     const code = (body.code || '').trim().toUpperCase();
     if (!code) {
@@ -178,12 +194,24 @@ export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
+    const all = searchParams.get('all') === 'true';
+
+    const admin = createAdminClient();
+
+    // Bulk delete: delete all coupons
+    if (all || id === 'all') {
+      const { error } = await admin.from('coupons').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      if (error) {
+        console.error('Error deleting all coupons from Supabase:', error);
+        return NextResponse.json({ error: error.message }, { status: 400 });
+      }
+      return NextResponse.json({ success: true, message: 'All coupons deleted successfully.' });
+    }
 
     if (!id) {
       return NextResponse.json({ error: 'Coupon ID is required' }, { status: 400 });
     }
 
-    const admin = createAdminClient();
     const { error } = await admin.from('coupons').delete().eq('id', id);
 
     if (error) {

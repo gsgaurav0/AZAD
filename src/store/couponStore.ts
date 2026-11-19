@@ -57,6 +57,7 @@ interface CouponState {
   addCoupon: (coupon: Omit<Coupon, 'id' | 'usageCount' | 'createdAt'>) => Promise<Coupon>;
   updateCoupon: (id: string, updates: Partial<Coupon>) => Promise<void>;
   deleteCoupon: (id: string) => Promise<void>;
+  deleteAllCoupons: () => Promise<void>;
   toggleCouponActive: (id: string) => Promise<void>;
   incrementUsage: (code: string) => Promise<void>;
   resetToDefaults: () => Promise<void>;
@@ -84,8 +85,23 @@ export const useCouponStore = create<CouponState>()(
           const apiRes = await fetch('/api/admin/coupons');
           if (apiRes.ok) {
             const apiData = await apiRes.json();
-            if (apiData.coupons && apiData.coupons.length > 0) {
-              set({ coupons: apiData.coupons, isLoading: false });
+            if (Array.isArray(apiData.coupons)) {
+              const mapped: Coupon[] = apiData.coupons.map((c: any) => ({
+                id: c.id,
+                code: c.code,
+                description: c.description || '',
+                discountType: c.discountType || c.discount_type || 'percentage',
+                discountValue: Number(c.discountValue ?? c.discount_value ?? 0),
+                minOrderValue: Number(c.minOrderValue ?? c.min_order_value ?? 0),
+                maxDiscount: c.maxDiscount ? Number(c.maxDiscount) : (c.max_discount ? Number(c.max_discount) : undefined),
+                usageLimit: c.usageLimit ?? c.usage_limit ?? undefined,
+                usageCount: Number(c.usageCount ?? c.usage_count ?? 0),
+                isActive: c.isActive !== undefined ? Boolean(c.isActive) : (c.is_active !== undefined ? Boolean(c.is_active) : true),
+                expiresAt: c.expiresAt ? c.expiresAt.split('T')[0] : (c.expires_at ? c.expires_at.split('T')[0] : undefined),
+                createdAt: c.createdAt ? c.createdAt.split('T')[0] : (c.created_at ? c.created_at.split('T')[0] : new Date().toISOString().split('T')[0]),
+              }));
+
+              set({ coupons: mapped, isLoading: false });
               return;
             }
           }
@@ -97,20 +113,20 @@ export const useCouponStore = create<CouponState>()(
             .select('*')
             .order('created_at', { ascending: false });
 
-          if (!error && data && data.length > 0) {
+          if (!error && Array.isArray(data)) {
             const mapped: Coupon[] = data.map((c: any) => ({
               id: c.id,
               code: c.code,
               description: c.description || '',
-              discountType: c.discount_type,
-              discountValue: Number(c.discount_value),
-              minOrderValue: c.min_order_value ? Number(c.min_order_value) : 0,
-              maxDiscount: c.max_discount ? Number(c.max_discount) : undefined,
-              usageLimit: c.usage_limit || undefined,
-              usageCount: c.usage_count || 0,
-              isActive: c.is_active,
-              expiresAt: c.expires_at ? c.expires_at.split('T')[0] : undefined,
-              createdAt: c.created_at ? c.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
+              discountType: c.discount_type || c.discountType || 'percentage',
+              discountValue: Number(c.discount_value ?? c.discountValue ?? 0),
+              minOrderValue: Number(c.min_order_value ?? c.minOrderValue ?? 0),
+              maxDiscount: c.max_discount ? Number(c.max_discount) : (c.maxDiscount ? Number(c.maxDiscount) : undefined),
+              usageLimit: c.usage_limit ?? c.usageLimit ?? undefined,
+              usageCount: Number(c.usage_count ?? c.usageCount ?? 0),
+              isActive: c.is_active !== undefined ? Boolean(c.is_active) : (c.isActive !== undefined ? Boolean(c.isActive) : true),
+              expiresAt: c.expires_at ? c.expires_at.split('T')[0] : (c.expiresAt ? c.expiresAt.split('T')[0] : undefined),
+              createdAt: c.created_at ? c.created_at.split('T')[0] : (c.createdAt ? c.createdAt.split('T')[0] : new Date().toISOString().split('T')[0]),
             }));
 
             set({ coupons: mapped, isLoading: false });
@@ -182,11 +198,31 @@ export const useCouponStore = create<CouponState>()(
         }));
 
         try {
-          await fetch(`/api/admin/coupons?id=${encodeURIComponent(id)}`, {
+          const res = await fetch(`/api/admin/coupons?id=${encodeURIComponent(id)}`, {
             method: 'DELETE',
           });
+          if (!res.ok) {
+            get().fetchCoupons();
+          }
         } catch (err) {
           console.warn('Coupon API delete notice:', err);
+          get().fetchCoupons();
+        }
+      },
+
+      deleteAllCoupons: async () => {
+        set({ coupons: [] });
+
+        try {
+          const res = await fetch('/api/admin/coupons?all=true', {
+            method: 'DELETE',
+          });
+          if (!res.ok) {
+            get().fetchCoupons();
+          }
+        } catch (err) {
+          console.warn('Coupon API deleteAll notice:', err);
+          get().fetchCoupons();
         }
       },
 
@@ -211,7 +247,20 @@ export const useCouponStore = create<CouponState>()(
       },
 
       resetToDefaults: async () => {
-        set({ coupons: DEFAULT_COUPONS });
+        set({ isLoading: true });
+        try {
+          const res = await fetch('/api/admin/coupons?action=seed', {
+            method: 'POST',
+          });
+          if (res.ok) {
+            await get().fetchCoupons();
+          } else {
+            set({ coupons: DEFAULT_COUPONS, isLoading: false });
+          }
+        } catch (err) {
+          console.warn('Coupon API resetToDefaults notice:', err);
+          set({ coupons: DEFAULT_COUPONS, isLoading: false });
+        }
       },
 
       getCouponByCode: (code) => {

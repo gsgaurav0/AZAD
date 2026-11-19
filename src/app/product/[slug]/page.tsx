@@ -9,9 +9,6 @@ interface ProductPageProps {
 }
 
 async function findProduct(slugOrId: string): Promise<Product | null> {
-  const local = PRODUCTS.find((p) => p.slug === slugOrId || p.id === slugOrId);
-  if (local) return local;
-
   try {
     const admin = createAdminClient();
     const { data } = await admin

@@ -21,6 +21,7 @@ interface AdminProductsTabProps {
   onOpenAddModal: () => void;
   onOpenEditModal: (product: Product) => void;
   onDeleteProduct: (id: string) => void;
+  onDeleteAllProducts?: () => void;
   onToggleStock: (id: string) => void;
   onDuplicateProduct: (id: string) => void;
   onResetDefaults: () => void;
@@ -31,6 +32,7 @@ export default function AdminProductsTab({
   onOpenAddModal,
   onOpenEditModal,
   onDeleteProduct,
+  onDeleteAllProducts,
   onToggleStock,
   onDuplicateProduct,
   onResetDefaults,
@@ -39,6 +41,7 @@ export default function AdminProductsTab({
   const [selectedCategory, setSelectedCategory] = useState<Category | 'all'>('all');
   const [stockFilter, setStockFilter] = useState<'all' | 'in_stock' | 'out_of_stock'>('all');
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [isDeleteAllModalOpen, setIsDeleteAllModalOpen] = useState(false);
 
   // Filtered Products
   const filteredProducts = useMemo(() => {
@@ -136,6 +139,16 @@ export default function AdminProductsTab({
             <RotateCcw className="w-4 h-4" />
           </button>
 
+          {products.length > 0 && onDeleteAllProducts && (
+            <button
+              onClick={() => setIsDeleteAllModalOpen(true)}
+              title="Delete all products from store"
+              className="p-2.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs transition-colors shrink-0"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
+
           <button
             onClick={onOpenAddModal}
             className="bg-[#2B1A16] hover:bg-[#9A8029] text-white text-xs font-semibold uppercase tracking-wider px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-[0.99] w-full sm:w-auto shrink-0"
@@ -184,16 +197,46 @@ export default function AdminProductsTab({
         {filteredProducts.length === 0 ? (
           <div className="p-12 text-center">
             <Package className="w-12 h-12 text-[#DDD2C0] mx-auto mb-3" />
-            <h3 className="font-serif text-lg text-[#2B1A16] font-bold">No Products Found</h3>
-            <p className="text-xs text-[#2B1A16]/60 max-w-sm mx-auto mt-1 mb-4">
-              No catalog items match your search or filter. Try clearing filters or add a new piece.
-            </p>
-            <button
-              onClick={onOpenAddModal}
-              className="bg-[#2B1A16] hover:bg-[#9A8029] text-white text-xs px-4 py-2 rounded-xl font-semibold uppercase tracking-wider"
-            >
-              Add New Product
-            </button>
+            {products.length === 0 ? (
+              <>
+                <h3 className="font-serif text-lg text-[#2B1A16] font-bold">Catalog is Empty</h3>
+                <p className="text-xs text-[#2B1A16]/60 max-w-sm mx-auto mt-1 mb-4">
+                  All products have been deleted from your boutique. You can add new products or restore the default flagship collection.
+                </p>
+                <div className="flex items-center justify-center gap-3">
+                  <button
+                    onClick={onOpenAddModal}
+                    className="bg-[#2B1A16] hover:bg-[#9A8029] text-white text-xs px-4 py-2 rounded-xl font-semibold uppercase tracking-wider"
+                  >
+                    Add Product
+                  </button>
+                  <button
+                    onClick={onResetDefaults}
+                    className="border border-[#DDD2C0] bg-[#FAF8F5] hover:bg-[#EFE8DD] text-[#2B1A16] text-xs px-4 py-2 rounded-xl font-semibold flex items-center gap-1.5"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Restore Defaults</span>
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h3 className="font-serif text-lg text-[#2B1A16] font-bold">No Products Found</h3>
+                <p className="text-xs text-[#2B1A16]/60 max-w-sm mx-auto mt-1 mb-4">
+                  No catalog items match your search or filter. Try clearing filters or add a new piece.
+                </p>
+                <button
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSelectedCategory('all');
+                    setStockFilter('all');
+                  }}
+                  className="bg-[#2B1A16] hover:bg-[#9A8029] text-white text-xs px-4 py-2 rounded-xl font-semibold uppercase tracking-wider"
+                >
+                  Clear Filters
+                </button>
+              </>
+            )}
           </div>
         ) : (
           <>
@@ -491,6 +534,44 @@ export default function AdminProductsTab({
                 className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold uppercase tracking-wider shadow-sm"
               >
                 Confirm Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete All Products Confirmation Modal */}
+      {isDeleteAllModalOpen && (
+        <div className="fixed inset-0 z-50 bg-[#2B1A16]/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white border border-[#E5E0D8] max-w-md w-full rounded-2xl p-6 shadow-2xl">
+            <div className="flex items-center gap-3 text-rose-600 mb-3">
+              <AlertCircle className="w-6 h-6" />
+              <h4 className="font-serif text-lg font-bold text-[#2B1A16]">
+                Delete All Products?
+              </h4>
+            </div>
+            <p className="text-xs text-[#2B1A16]/80 leading-relaxed mb-4">
+              Are you sure you want to permanently delete <strong className="text-[#2B1A16]">all {products.length} products</strong> from the store and Supabase database?
+              <br /><br />
+              This action cannot be undone, although you can restore default flagship products at any time using the Reset Defaults button.
+            </p>
+            <div className="flex justify-end gap-2.5">
+              <button
+                onClick={() => setIsDeleteAllModalOpen(false)}
+                className="px-4 py-2 rounded-xl border border-[#DDD2C0] hover:bg-[#FAF8F5] text-xs font-semibold text-[#2B1A16]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (onDeleteAllProducts) {
+                    onDeleteAllProducts();
+                  }
+                  setIsDeleteAllModalOpen(false);
+                }}
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold uppercase tracking-wider shadow-sm"
+              >
+                Delete Everything
               </button>
             </div>
           </div>

@@ -31,6 +31,7 @@ export default function AdminCouponsTab() {
     addCoupon,
     updateCoupon,
     deleteCoupon,
+    deleteAllCoupons,
     toggleCouponActive,
     resetToDefaults,
   } = useCouponStore();
@@ -46,6 +47,7 @@ export default function AdminCouponsTab() {
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
   const [couponToDelete, setCouponToDelete] = useState<Coupon | null>(null);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   // Form State
@@ -271,12 +273,24 @@ export default function AdminCouponsTab() {
             <button
               type="button"
               onClick={() => setShowResetConfirm(true)}
-              className="px-3.5 py-2 rounded-xl bg-white hover:bg-[#FAF8F5] border border-[#DDD2C0] text-[#2B1A16]/70 hover:text-[#2B1A16] text-xs font-semibold flex items-center gap-1.5 transition-colors"
+              className="px-3 py-2 rounded-xl bg-white hover:bg-[#FAF8F5] border border-[#DDD2C0] text-[#2B1A16]/70 hover:text-[#2B1A16] text-xs font-semibold flex items-center gap-1.5 transition-colors"
               title="Reset to default store coupons"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Reset Defaults</span>
             </button>
+
+            {coupons.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setShowDeleteAllConfirm(true)}
+                className="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                title="Delete all promo codes"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Delete All</span>
+              </button>
+            )}
 
             <button
               type="button"
@@ -342,10 +356,49 @@ export default function AdminCouponsTab() {
       {/* Coupons Table & Cards Container */}
       <div className="bg-white border border-[#E5E0D8] rounded-2xl overflow-hidden shadow-xs">
         {filteredCoupons.length === 0 ? (
-          <div className="p-12 text-center text-[#2B1A16]/60 space-y-2">
+          <div className="p-12 text-center text-[#2B1A16]/60 space-y-3">
             <Tag className="w-10 h-10 text-[#9A8029]/50 mx-auto" />
-            <h4 className="font-serif text-lg font-bold text-[#2B1A16]">No Coupons Found</h4>
-            <p className="text-xs">Try adjusting your filters or click &ldquo;Create Promo Code&rdquo; above.</p>
+            {coupons.length === 0 ? (
+              <>
+                <h4 className="font-serif text-lg font-bold text-[#2B1A16]">No Active Coupons in Store</h4>
+                <p className="text-xs max-w-sm mx-auto">
+                  Your store currently has no promotional discount vouchers. You can create a custom promo code or restore the default promotional vouchers.
+                </p>
+                <div className="flex items-center justify-center gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={handleOpenAddModal}
+                    className="bg-[#2B1A16] hover:bg-[#9A8029] text-white text-xs px-4 py-2 rounded-xl font-semibold uppercase tracking-wider"
+                  >
+                    Create Promo Code
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowResetConfirm(true)}
+                    className="border border-[#DDD2C0] bg-[#FAF8F5] hover:bg-[#EFE8DD] text-[#2B1A16] text-xs px-4 py-2 rounded-xl font-semibold flex items-center gap-1.5"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Reset Defaults</span>
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h4 className="font-serif text-lg font-bold text-[#2B1A16]">No Coupons Found</h4>
+                <p className="text-xs">Try adjusting your filters or click &ldquo;Create Promo Code&rdquo; above.</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setStatusFilter('all');
+                    setTypeFilter('all');
+                  }}
+                  className="bg-[#2B1A16] hover:bg-[#9A8029] text-white text-xs px-4 py-2 rounded-xl font-semibold uppercase tracking-wider"
+                >
+                  Clear Filters
+                </button>
+              </>
+            )}
           </div>
         ) : (
           <>
@@ -394,11 +447,13 @@ export default function AdminCouponsTab() {
                       {/* Discount Value */}
                       <td className="p-4">
                         <div className="font-mono text-sm font-bold text-[#9A8029]">
-                          {c.discountType === 'percentage' ? `${c.discountValue}% OFF` : `₹${c.discountValue.toLocaleString('en-IN')} OFF`}
+                          {c.discountType === 'percentage'
+                            ? `${c.discountValue ?? 0}% OFF`
+                            : `₹${Number(c.discountValue ?? 0).toLocaleString('en-IN')} OFF`}
                         </div>
                         {c.discountType === 'percentage' && c.maxDiscount && (
                           <span className="text-[10px] text-[#2B1A16]/50 block">
-                            Capped at ₹{c.maxDiscount.toLocaleString('en-IN')}
+                            Capped at ₹{Number(c.maxDiscount).toLocaleString('en-IN')}
                           </span>
                         )}
                       </td>
@@ -408,7 +463,7 @@ export default function AdminCouponsTab() {
                         {c.minOrderValue && c.minOrderValue > 0 ? (
                           <div>
                             <span className="font-mono text-[11px] font-semibold text-[#2B1A16]">
-                              ₹{c.minOrderValue.toLocaleString('en-IN')}
+                              ₹{Number(c.minOrderValue).toLocaleString('en-IN')}
                             </span>
                             <span className="text-[10px] text-[#2B1A16]/50 block">Minimum Subtotal</span>
                           </div>
@@ -543,8 +598,8 @@ export default function AdminCouponsTab() {
                   <div>
                     <div className="font-mono text-base font-bold text-[#9A8029]">
                       {c.discountType === 'percentage'
-                        ? `${c.discountValue}% OFF`
-                        : `₹${c.discountValue.toLocaleString('en-IN')} FLAT OFF`}
+                        ? `${c.discountValue ?? 0}% OFF`
+                        : `₹${Number(c.discountValue ?? 0).toLocaleString('en-IN')} FLAT OFF`}
                     </div>
                     <p className="text-xs text-[#2B1A16]/75 mt-0.5 leading-relaxed">
                       {c.description}
@@ -555,7 +610,7 @@ export default function AdminCouponsTab() {
                     <div>
                       <span className="text-[10px] uppercase font-semibold text-[#2B1A16]/40 block">Min Subtotal</span>
                       <span className="font-mono font-bold text-[#2B1A16]">
-                        {c.minOrderValue ? `₹${c.minOrderValue.toLocaleString('en-IN')}` : 'None'}
+                        {c.minOrderValue ? `₹${Number(c.minOrderValue).toLocaleString('en-IN')}` : 'None'}
                       </span>
                     </div>
                     <div>
@@ -890,7 +945,7 @@ export default function AdminCouponsTab() {
               </h4>
             </div>
             <p className="text-xs text-[#2B1A16]/80 leading-relaxed mb-4">
-              This will restore the 5 default promo codes (MEWAK10, WELCOME50, STUDIO20, VIP5000, AUDIO25) and reset redemptions.
+              This will restore the default promo codes (MEWAK10, WELCOME50, VIP1000) into Supabase and reset store vouchers.
             </p>
             <div className="flex justify-end gap-2.5">
               <button
@@ -902,14 +957,55 @@ export default function AdminCouponsTab() {
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  resetToDefaults();
+                onClick={async () => {
+                  await resetToDefaults();
                   addToast('Restored default promo codes', 'info');
                   setShowResetConfirm(false);
                 }}
                 className="px-4 py-2 rounded-xl bg-[#2B1A16] hover:bg-[#9A8029] text-white text-xs font-semibold uppercase tracking-wider"
               >
                 Confirm Reset
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete All Coupons Confirmation Modal */}
+      {showDeleteAllConfirm && (
+        <div className="fixed inset-0 z-50 bg-[#2B1A16]/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white border border-[#E5E0D8] max-w-md w-full rounded-2xl p-6 shadow-2xl">
+            <div className="flex items-center gap-3 text-rose-600 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center">
+                <AlertCircle className="w-5 h-5" />
+              </div>
+              <h4 className="font-serif text-lg font-bold text-[#2B1A16]">
+                Delete All Coupons?
+              </h4>
+            </div>
+            <p className="text-xs text-[#2B1A16]/80 leading-relaxed mb-4">
+              Are you sure you want to permanently delete <strong className="text-[#2B1A16]">all {coupons.length} promo codes</strong> from your store and Supabase database?
+              <br /><br />
+              Customers will no longer be able to apply these codes at checkout, though you can restore default vouchers at any time.
+            </p>
+            <div className="flex justify-end gap-2.5">
+              <button
+                type="button"
+                onClick={() => setShowDeleteAllConfirm(false)}
+                className="px-4 py-2 rounded-xl border border-[#DDD2C0] hover:bg-[#FAF8F5] text-xs font-semibold text-[#2B1A16]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  await deleteAllCoupons();
+                  addToast('All promo codes permanently deleted', 'info');
+                  setShowDeleteAllConfirm(false);
+                }}
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold uppercase tracking-wider shadow-sm"
+              >
+                Delete Everything
               </button>
             </div>
           </div>

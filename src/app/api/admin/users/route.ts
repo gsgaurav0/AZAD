@@ -67,10 +67,10 @@ export async function GET() {
 
       // Auto-heal synchronization if out of sync
       if (isEmailVerified && !p.is_email_verified) {
-        Promise.resolve(admin.from('profiles').update({ is_email_verified: true }).eq('id', p.id)).catch(() => {});
+        admin.from('profiles').update({ is_email_verified: true }).eq('id', p.id).then(() => {}, () => {});
       }
       if (isEmailVerified && !authConfirmedById[p.id] && p.id) {
-        admin.auth.admin.updateUserById(p.id, { email_confirm: true }).catch(() => {});
+        admin.auth.admin.updateUserById(p.id, { email_confirm: true }).then(() => {}, () => {});
       }
 
       return {

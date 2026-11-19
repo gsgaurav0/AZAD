@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { PRODUCTS } from '@/data/products';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const DEFAULT_CATEGORIES = [
   {
     id: 'headphones',
@@ -59,8 +62,88 @@ export async function GET() {
       return NextResponse.json({ error: prodErr.message }, { status: 500 });
     }
 
-    // Auto-seed default catalog if empty
-    if (!productsData || productsData.length === 0) {
+    // Query reviews to attach to products
+    const { data: reviewsData } = await admin.from('reviews').select('*');
+    const reviewsByProd: Record<string, any[]> = {};
+    (reviewsData || []).forEach((r: any) => {
+      if (!reviewsByProd[r.product_id]) reviewsByProd[r.product_id] = [];
+      reviewsByProd[r.product_id].push({
+        id: r.id,
+        userName: r.user_name,
+        rating: r.rating,
+        title: r.title,
+        comment: r.comment,
+        verified: r.verified,
+        helpfulCount: r.helpful_count || 0,
+        date: new Date(r.created_at).toLocaleDateString('en-GB'),
+      });
+    });
+
+    const mapped = (productsData || []).map((p: any) => ({
+      id: p.id,
+      name: p.name,
+      slug: p.slug,
+      subtitle: p.subtitle || '',
+      category: p.category,
+      subcategory: p.subcategory || 'Hardware',
+      price: Number(p.price),
+      originalPrice: Number(p.original_price ?? p.price),
+      original_price: Number(p.original_price ?? p.price),
+      discountPercent: p.discount_percent ?? 0,
+      discount_percent: p.discount_percent ?? 0,
+      isNew: Boolean(p.is_new),
+      is_new: Boolean(p.is_new),
+      isTrending: Boolean(p.is_trending),
+      is_trending: Boolean(p.is_trending),
+      isFeatured: Boolean(p.is_featured),
+      is_featured: Boolean(p.is_featured),
+      inStock: p.in_stock !== undefined ? Boolean(p.in_stock) : true,
+      in_stock: p.in_stock !== undefined ? Boolean(p.in_stock) : true,
+      occasion: p.occasion || 'Work',
+      rating: Number(p.rating ?? 5.0),
+      reviewCount: p.review_count ?? (reviewsByProd[p.id]?.length ?? 0),
+      review_count: p.review_count ?? (reviewsByProd[p.id]?.length ?? 0),
+      colors: Array.isArray(p.colors) ? p.colors : [],
+      sizes: Array.isArray(p.sizes) ? p.sizes : [],
+      images: Array.isArray(p.images) ? p.images : [],
+      fabric: p.fabric || '',
+      fit: p.fit || '',
+      care: Array.isArray(p.care) ? p.care : [],
+      description: p.description || '',
+      details: Array.isArray(p.details) ? p.details : [],
+      returns: p.returns || '',
+      reviews: reviewsByProd[p.id] || [],
+      created_at: p.created_at,
+      updated_at: p.updated_at,
+    }));
+
+    return NextResponse.json(
+      { products: mapped },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          Pragma: 'no-cache',
+          Expires: '0',
+        },
+      }
+    );
+  } catch (err: any) {
+    console.error('Admin products GET exception:', err);
+    return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500 });
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const action = searchParams.get('action');
+    const body = await request.json().catch(() => ({}));
+    const admin = createAdminClient();
+
+    // Explicit seed action triggered by admin
+    if (action === 'seed' || body?.action === 'seed') {
+      await ensureCategories(admin);
+
       const seedRows = PRODUCTS.map((p) => ({
         id: p.id,
         slug: p.slug,
@@ -94,44 +177,13 @@ export async function GET() {
         .upsert(seedRows, { onConflict: 'id' })
         .select('*');
 
-      if (!insertError && inserted) {
-        return NextResponse.json({ products: inserted, seeded: true });
+      if (insertError) {
+        console.error('Error seeding products:', insertError);
+        return NextResponse.json({ error: insertError.message }, { status: 400 });
       }
+
+      return NextResponse.json({ success: true, products: inserted, seeded: true });
     }
-
-    // Query reviews to attach to products
-    const { data: reviewsData } = await admin.from('reviews').select('*');
-    const reviewsByProd: Record<string, any[]> = {};
-    (reviewsData || []).forEach((r: any) => {
-      if (!reviewsByProd[r.product_id]) reviewsByProd[r.product_id] = [];
-      reviewsByProd[r.product_id].push({
-        id: r.id,
-        userName: r.user_name,
-        rating: r.rating,
-        title: r.title,
-        comment: r.comment,
-        verified: r.verified,
-        helpfulCount: r.helpful_count || 0,
-        date: new Date(r.created_at).toLocaleDateString('en-GB'),
-      });
-    });
-
-    const mapped = (productsData || []).map((p: any) => ({
-      ...p,
-      reviews: reviewsByProd[p.id] || [],
-    }));
-
-    return NextResponse.json({ products: mapped });
-  } catch (err: any) {
-    console.error('Admin products GET exception:', err);
-    return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500 });
-  }
-}
-
-export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    const admin = createAdminClient();
 
     const id = body.id || `mewak-${Date.now()}`;
     const rawCategory = (body.category || 'headphones').toLowerCase().trim();
@@ -295,12 +347,35 @@ export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
+    const all = searchParams.get('all') === 'true';
+
+    const admin = createAdminClient();
+
+    // Bulk delete: delete all products
+    if (all || id === 'all') {
+      // First delete dependent items to avoid any foreign key blocking
+      try { await admin.from('reviews').delete().neq('id', '00000000-0000-0000-0000-000000000000'); } catch {}
+      try { await admin.from('cart_items').delete().neq('id', '00000000-0000-0000-0000-000000000000'); } catch {}
+      try { await admin.from('wishlist_items').delete().neq('id', '00000000-0000-0000-0000-000000000000'); } catch {}
+
+      const { error } = await admin.from('products').delete().neq('id', '___non_existent___');
+      if (error) {
+        console.error('Error deleting all products:', error);
+        return NextResponse.json({ error: error.message }, { status: 400 });
+      }
+
+      return NextResponse.json({ success: true, message: 'All products deleted successfully.' });
+    }
 
     if (!id) {
       return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
     }
 
-    const admin = createAdminClient();
+    // Delete dependent reviews, cart, wishlist items for this specific product
+    try { await admin.from('reviews').delete().eq('product_id', id); } catch {}
+    try { await admin.from('cart_items').delete().eq('product_id', id); } catch {}
+    try { await admin.from('wishlist_items').delete().eq('product_id', id); } catch {}
+
     const { error } = await admin.from('products').delete().eq('id', id);
 
     if (error) {

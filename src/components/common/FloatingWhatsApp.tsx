@@ -36,8 +36,8 @@ export default function FloatingWhatsApp() {
   return (
     <div
       className={`fixed ${
-        isPDP ? 'bottom-20' : 'bottom-18 md:bottom-8'
-      } right-4 md:right-6 z-40 flex flex-col items-end`}
+        isPDP ? 'bottom-22' : 'bottom-16 md:bottom-8'
+      } right-3.5 md:right-6 z-40 flex flex-col items-end`}
     >
       {/* Popover Bubble */}
       {isOpen && (
@@ -59,7 +59,7 @@ export default function FloatingWhatsApp() {
           <button
             type="button"
             onClick={handleOpenWhatsApp}
-            className="w-full bg-[#4C7A34] hover:bg-[#3D632A] text-white py-2 px-3 rounded-[3px] font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
+            className="w-full bg-[#4C7A34] hover:bg-[#3D632A] text-white py-2 px-3 rounded-[3px] font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
           >
             <MessageCircle className="w-3.5 h-3.5" />
             Start Chat
@@ -71,12 +71,12 @@ export default function FloatingWhatsApp() {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="group relative flex items-center gap-2 bg-[#2B1A16] hover:bg-[#9A8029] text-[#EFE8DD] p-3 rounded-full shadow-lg border border-[#DDD2C0]/40 transition-all duration-300 hover:scale-105"
+        className="group relative flex items-center gap-2 bg-[#2B1A16] hover:bg-[#9A8029] text-[#EFE8DD] p-2.5 sm:p-3 rounded-full shadow-xl border border-[#DDD2C0]/40 transition-all duration-300 hover:scale-105 cursor-pointer"
         aria-label="Contact Concierge via WhatsApp"
       >
-        <span className="absolute -top-1 -right-1 w-3 h-3 bg-[#4C7A34] rounded-full border-2 border-white animate-ping" />
-        <span className="absolute -top-1 -right-1 w-3 h-3 bg-[#4C7A34] rounded-full border-2 border-white" />
-        <MessageCircle className="w-6 h-6 text-[#9A8029] group-hover:text-white transition-colors" />
+        <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#4C7A34] rounded-full border-2 border-white animate-ping" />
+        <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#4C7A34] rounded-full border-2 border-white" />
+        <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 text-[#9A8029] group-hover:text-white transition-colors" />
         <span className="hidden md:inline-block text-xs font-semibold tracking-wider pr-1 uppercase">
           Stylist
         </span>

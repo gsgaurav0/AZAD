@@ -88,6 +88,7 @@ export default function AdminPage() {
     addProduct,
     updateProduct,
     deleteProduct,
+    deleteAllProducts,
     toggleStock,
     duplicateProduct,
     resetToDefaults,
@@ -211,6 +212,11 @@ export default function AdminPage() {
     const item = products.find((p) => p.id === id);
     deleteProduct(id);
     addToast(`Removed "${item?.name || 'Product'}" from catalog`, 'info');
+  };
+
+  const handleDeleteAllProducts = async () => {
+    await deleteAllProducts();
+    addToast('All products deleted from catalog and database', 'info');
   };
 
   const handleToggleStock = (id: string) => {
@@ -715,6 +721,7 @@ export default function AdminPage() {
               onOpenAddModal={handleOpenAddProduct}
               onOpenEditModal={handleOpenEditProduct}
               onDeleteProduct={handleDeleteProduct}
+              onDeleteAllProducts={handleDeleteAllProducts}
               onToggleStock={handleToggleStock}
               onDuplicateProduct={handleDuplicateProduct}
               onResetDefaults={handleResetCatalog}

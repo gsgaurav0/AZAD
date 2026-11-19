@@ -13,6 +13,7 @@ interface ProductState {
   addProduct: (product: Omit<Product, 'id' | 'reviews'> & { id?: string }) => Promise<Product>;
   updateProduct: (id: string, updates: Partial<Product>) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
+  deleteAllProducts: () => Promise<void>;
   toggleStock: (id: string) => Promise<void>;
   duplicateProduct: (id: string) => Promise<Product | null>;
   resetToDefaults: () => Promise<void>;
@@ -51,11 +52,11 @@ export const useProductStore = create<ProductState>()(
         set({ isLoading: true });
 
         try {
-          // Attempt admin API endpoint (auto-seeds if empty)
+          // Attempt admin API endpoint
           const apiRes = await fetch('/api/admin/products');
           if (apiRes.ok) {
             const apiData = await apiRes.json();
-            if (apiData.products && apiData.products.length > 0) {
+            if (Array.isArray(apiData.products)) {
               const mapped: Product[] = apiData.products.map((p: any) => ({
                 id: p.id,
                 name: p.name,
@@ -107,7 +108,7 @@ export const useProductStore = create<ProductState>()(
             .select('*, reviews(*)')
             .order('created_at', { ascending: false });
 
-          if (!error && data && data.length > 0) {
+          if (!error && Array.isArray(data)) {
             const mapped: Product[] = data.map((p: any) => ({
               id: p.id,
               name: p.name,
@@ -272,11 +273,36 @@ export const useProductStore = create<ProductState>()(
 
         // Delete directly in Supabase via server API
         try {
-          await fetch(`/api/admin/products?id=${encodeURIComponent(id)}`, {
+          const res = await fetch(`/api/admin/products?id=${encodeURIComponent(id)}`, {
             method: 'DELETE',
           });
+          if (!res.ok) {
+            console.error('Failed to delete product from database, refetching...');
+            await get().fetchProducts();
+          }
         } catch (err) {
           console.warn('API product DELETE notice:', err);
+          await get().fetchProducts();
+        }
+
+        notifyCatalogChange();
+      },
+
+      deleteAllProducts: async () => {
+        set({ products: [] });
+
+        // Delete all products directly in Supabase via server API
+        try {
+          const res = await fetch('/api/admin/products?all=true', {
+            method: 'DELETE',
+          });
+          if (!res.ok) {
+            console.error('Failed to delete all products from database, refetching...');
+            await get().fetchProducts();
+          }
+        } catch (err) {
+          console.warn('API product deleteAll notice:', err);
+          await get().fetchProducts();
         }
 
         notifyCatalogChange();
@@ -316,7 +342,20 @@ export const useProductStore = create<ProductState>()(
       },
 
       resetToDefaults: async () => {
-        set({ products: PRODUCTS });
+        set({ isLoading: true });
+        try {
+          const res = await fetch('/api/admin/products?action=seed', {
+            method: 'POST',
+          });
+          if (res.ok) {
+            await get().fetchProducts();
+          } else {
+            set({ products: PRODUCTS, isLoading: false });
+          }
+        } catch (err) {
+          console.warn('API resetToDefaults notice:', err);
+          set({ products: PRODUCTS, isLoading: false });
+        }
         notifyCatalogChange();
       },
 

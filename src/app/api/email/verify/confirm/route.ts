@@ -56,7 +56,11 @@ export async function POST(request: Request) {
         );
         if (existing) {
           userId = existing.id;
-          await admin.auth.admin.updateUserById(userId, { email_confirm: true }).catch(() => {});
+          try {
+            await admin.auth.admin.updateUserById(userId, { email_confirm: true });
+          } catch (e) {
+            console.warn('Update user confirm notice:', e);
+          }
         }
       } else if (authData?.user) {
         userId = authData.user.id;
@@ -119,9 +123,10 @@ export async function POST(request: Request) {
           .from('profiles')
           .update({
             is_email_verified: true,
+            email: cleanEmail,
             updated_at: new Date().toISOString(),
           })
-          .eq('email', cleanEmail);
+          .ilike('email', cleanEmail);
 
         const { data: userList } = await admin.auth.admin.listUsers();
         const existingAuthUser = userList?.users?.find(
@@ -129,9 +134,13 @@ export async function POST(request: Request) {
         );
         if (existingAuthUser) {
           userId = existingAuthUser.id;
-          await admin.auth.admin.updateUserById(existingAuthUser.id, {
-            email_confirm: true,
-          });
+          try {
+            await admin.auth.admin.updateUserById(existingAuthUser.id, {
+              email_confirm: true,
+            });
+          } catch (e) {
+            console.warn('Update user confirm notice:', e);
+          }
         }
       } catch (dbErr) {
         console.warn('Supabase profile verification update notice:', dbErr);
@@ -145,7 +154,7 @@ export async function POST(request: Request) {
     const { data: finalProfile } = await admin
       .from('profiles')
       .select('*')
-      .eq('email', cleanEmail)
+      .ilike('email', cleanEmail)
       .maybeSingle();
 
     return NextResponse.json({
