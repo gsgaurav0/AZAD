@@ -17,21 +17,33 @@ export async function POST(request: Request) {
       );
     }
 
-    // Optional check: verify user exists in Supabase
-    let patronName = 'Patron';
+    // Check if account exists in Supabase Auth or Profiles
+    const admin = createAdminClient();
+    const { data: usersData, error: listErr } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+    const targetUser = usersData?.users?.find(
+      (u) => u.email?.toLowerCase() === cleanEmail
+    );
+
+    if (!targetUser) {
+      return NextResponse.json(
+        { success: false, error: 'No patron account found with this email address. Please create a profile first.' },
+        { status: 404 }
+      );
+    }
+
+    let patronName = targetUser.user_metadata?.name || 'Patron';
     try {
-      const admin = createAdminClient();
       const { data: profile } = await admin
         .from('profiles')
         .select('name')
-        .eq('email', cleanEmail)
+        .eq('id', targetUser.id)
         .maybeSingle();
 
       if (profile && profile.name) {
         patronName = profile.name;
       }
     } catch {
-      // Continue gracefully even if DB profile lookup fails
+      // Continue gracefully
     }
 
     // Generate reset token (enforces 30s resend cooldown)

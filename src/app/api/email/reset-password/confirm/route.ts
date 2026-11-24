@@ -34,31 +34,38 @@ export async function POST(request: Request) {
     }
 
     // Update password in Supabase Auth
-    try {
-      const admin = createAdminClient();
-      
-      // Look up user by email in auth.users
-      const { data: usersData, error: listErr } = await admin.auth.admin.listUsers();
-      if (!listErr && usersData && usersData.users) {
-        const targetUser = usersData.users.find(
-          (u) => u.email?.toLowerCase() === cleanEmail
-        );
+    const admin = createAdminClient();
+    
+    // Look up user by email in auth.users
+    const { data: usersData, error: listErr } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+    if (listErr || !usersData?.users) {
+      return NextResponse.json(
+        { success: false, error: listErr?.message || 'Database error looking up patron account.' },
+        { status: 500 }
+      );
+    }
 
-        if (targetUser) {
-          const { error: updateErr } = await admin.auth.admin.updateUserById(targetUser.id, {
-            password: newPassword,
-          });
-          if (updateErr) {
-            console.error('Supabase admin updateUserById error:', updateErr);
-            return NextResponse.json(
-              { success: false, error: updateErr.message || 'Failed to update user password.' },
-              { status: 400 }
-            );
-          }
-        }
-      }
-    } catch (dbErr) {
-      console.warn('Supabase password reset update notice:', dbErr);
+    const targetUser = usersData.users.find(
+      (u) => u.email?.toLowerCase() === cleanEmail
+    );
+
+    if (!targetUser) {
+      return NextResponse.json(
+        { success: false, error: 'No registered patron account found with this email address.' },
+        { status: 404 }
+      );
+    }
+
+    const { error: updateErr } = await admin.auth.admin.updateUserById(targetUser.id, {
+      password: newPassword,
+    });
+
+    if (updateErr) {
+      console.error('Supabase admin updateUserById error:', updateErr);
+      return NextResponse.json(
+        { success: false, error: updateErr.message || 'Failed to update user password.' },
+        { status: 400 }
+      );
     }
 
     // Invalidate token

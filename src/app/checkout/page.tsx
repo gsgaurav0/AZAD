@@ -51,7 +51,6 @@ export default function CheckoutPage() {
     addAddress,
     placeOrder,
     login,
-    loginWithOtp,
     signup,
     verifyAndCompleteSignup,
   } = useAuthStore();
@@ -63,12 +62,8 @@ export default function CheckoutPage() {
 
   // Auth Gate State (when unauthenticated)
   const [authTab, setAuthTab] = useState<'login' | 'signup'>('login');
-  const [loginMethod, setLoginMethod] = useState<'password' | 'otp'>('password');
   const [authIdentifier, setAuthIdentifier] = useState('');
   const [authPassword, setAuthPassword] = useState('');
-  const [authOtp, setAuthOtp] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
-  const [generatedOtp, setGeneratedOtp] = useState('');
   const [authError, setAuthError] = useState('');
 
   // Signup form state
@@ -134,49 +129,22 @@ export default function CheckoutPage() {
     savedAddresses.find((a) => a.id === selectedAddressId) || savedAddresses[0];
 
   // Auth Gate Handlers
-  const handleSendOtp = () => {
-    const clean = authIdentifier.trim();
-    if (!clean) {
-      setAuthError('Please enter your email or 10-digit mobile number.');
-      return;
-    }
-    const code = Math.floor(1000 + Math.random() * 9000).toString();
-    setGeneratedOtp(code);
-    setOtpSent(true);
-    setAuthError('');
-    useAuthStore.getState().sendOtp(clean).catch(() => {});
-    addToast(`Verification code dispatched to ${clean}.`, 'info');
-  };
-
   const handleInlineLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
 
-    if (!authIdentifier.trim()) {
-      setAuthError('Please provide your registered mobile number or email address.');
+    const cleanEmail = authIdentifier.trim().toLowerCase();
+    if (!cleanEmail) {
+      setAuthError('Please provide your registered email address.');
       return;
     }
 
-    if (loginMethod === 'otp') {
-      if (!otpSent) {
-        handleSendOtp();
-        return;
-      }
-      if (authOtp.trim() !== generatedOtp) {
-        setAuthError('Invalid verification code. Please check and enter the valid code.');
-        return;
-      }
-    } else {
-      if (!authPassword) {
-        setAuthError('Please enter your password.');
-        return;
-      }
+    if (!authPassword) {
+      setAuthError('Please enter your password.');
+      return;
     }
 
-    const res =
-      loginMethod === 'otp'
-        ? await loginWithOtp(authIdentifier, authOtp)
-        : await login(authIdentifier, authPassword);
+    const res = await login(cleanEmail, authPassword);
 
     if (!res.success) {
       setAuthError(res.error || 'Authentication failed. Please verify credentials.');
@@ -722,116 +690,41 @@ export default function CheckoutPage() {
                 {/* SIGN IN TAB */}
                 {authTab === 'login' && (
                   <form onSubmit={handleInlineLogin} className="space-y-4 font-sans">
-                    {/* Method Toggle: Password vs Instant OTP */}
-                    <div className="flex items-center justify-between text-xs pb-2 border-b border-[#DDD2C0]">
-                      <span className="text-[#2B1A16]/70 font-medium">Authentication Type:</span>
-                      <div className="flex gap-4">
-                        <label className="flex items-center gap-1.5 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="loginMethod"
-                            checked={loginMethod === 'password'}
-                            onChange={() => {
-                              setLoginMethod('password');
-                              setAuthError('');
-                            }}
-                            className="accent-[#9A8029]"
-                          />
-                          <span className="font-semibold text-[#2B1A16]">Password</span>
-                        </label>
-                        <label className="flex items-center gap-1.5 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="loginMethod"
-                            checked={loginMethod === 'otp'}
-                            onChange={() => {
-                              setLoginMethod('otp');
-                              setAuthError('');
-                            }}
-                            className="accent-[#9A8029]"
-                          />
-                          <span className="font-semibold text-[#9A8029]">Instant OTP</span>
-                        </label>
-                      </div>
-                    </div>
-
                     <div>
                       <label className="block text-xs font-semibold text-[#2B1A16]/80 mb-1">
-                        Mobile Number or Email Address *
+                        Email Address *
                       </label>
                       <input
-                        type="text"
+                        type="email"
                         required
                         value={authIdentifier}
                         onChange={(e) => setAuthIdentifier(e.target.value)}
-                        placeholder="e.g. 9876543210 or patron@email.com"
+                        placeholder="e.g. patron@domain.com"
                         className="w-full bg-white border border-[#DDD2C0] rounded-[3px] p-2.5 text-xs text-[#2B1A16] outline-none focus:border-[#9A8029]"
                       />
                     </div>
 
-                    {loginMethod === 'password' ? (
-                      <div>
-                        <div className="flex justify-between items-center mb-1">
-                          <label className="block text-xs font-semibold text-[#2B1A16]/80">
-                            Account Password *
-                          </label>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setLoginMethod('otp');
-                              handleSendOtp();
-                            }}
-                            className="text-[11px] text-[#9A8029] hover:underline"
-                          >
-                            Forgot? Use Instant OTP
-                          </button>
-                        </div>
-                        <input
-                          type="password"
-                          required
-                          value={authPassword}
-                          onChange={(e) => setAuthPassword(e.target.value)}
-                          placeholder="Enter your patron password"
-                          className="w-full bg-white border border-[#DDD2C0] rounded-[3px] p-2.5 text-xs text-[#2B1A16] outline-none focus:border-[#9A8029]"
-                        />
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="block text-xs font-semibold text-[#2B1A16]/80">
+                          Account Password *
+                        </label>
+                        <Link
+                          href="/auth/reset-password"
+                          className="text-[11px] text-[#9A8029] hover:underline"
+                        >
+                          Forgot password?
+                        </Link>
                       </div>
-                    ) : (
-                      <div className="space-y-3">
-                        <div className="flex gap-2">
-                          <div className="flex-1">
-                            <label className="block text-xs font-semibold text-[#2B1A16]/80 mb-1">
-                              4-Digit Verification Code *
-                            </label>
-                            <input
-                              type="text"
-                              maxLength={4}
-                              value={authOtp}
-                              onChange={(e) => setAuthOtp(e.target.value)}
-                              placeholder="Enter 4-digit code"
-                              className="w-full bg-white border border-[#DDD2C0] rounded-[3px] p-2.5 text-xs text-[#2B1A16] outline-none tracking-widest font-mono text-center font-bold"
-                            />
-                          </div>
-                          <div className="flex items-end">
-                            <button
-                              type="button"
-                              onClick={handleSendOtp}
-                              className="bg-[#EFE8DD] hover:bg-[#DDD2C0] text-[#2B1A16] text-xs font-semibold px-4 py-2.5 rounded-[3px] border border-[#DDD2C0] transition-colors whitespace-nowrap"
-                            >
-                              {otpSent ? 'Resend Code' : 'Send Code'}
-                            </button>
-                          </div>
-                        </div>
-
-                        {otpSent && (
-                          <div className="p-2.5 bg-[#9A8029]/10 rounded-[3px] text-[11px] text-[#9A8029] flex items-center gap-2">
-                            <Sparkles className="w-3.5 h-3.5 shrink-0" />
-                            <span>
-                              Verification code dispatched to <strong>{authIdentifier}</strong>
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                      <input
+                        type="password"
+                        required
+                        value={authPassword}
+                        onChange={(e) => setAuthPassword(e.target.value)}
+                        placeholder="Enter your patron password"
+                        className="w-full bg-white border border-[#DDD2C0] rounded-[3px] p-2.5 text-xs text-[#2B1A16] outline-none focus:border-[#9A8029]"
+                      />
+                    </div>
 
                     <button
                       type="submit"
