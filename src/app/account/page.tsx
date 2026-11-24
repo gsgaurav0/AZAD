@@ -44,6 +44,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
 import { Address, Order, OrderStatus } from '@/types';
 import { uploadFileToSupabase } from '@/lib/supabase/storage';
+import ConfirmModal from '@/components/common/ConfirmModal';
 
 const AVATAR_PRESETS = [
   'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
@@ -108,6 +109,7 @@ export default function AccountPage() {
   const [showPhoneVerifyModal, setShowPhoneVerifyModal] = useState(false);
   const [showPasswordChangeModal, setShowPasswordChangeModal] = useState(false);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [addressIdToDelete, setAddressIdToDelete] = useState<string | null>(null);
   const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
@@ -1344,13 +1346,8 @@ export default function AccountPage() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => {
-                            if (confirm('Delete this delivery destination?')) {
-                              deleteAddress(addr.id);
-                              addToast('Address deleted.', 'info');
-                            }
-                          }}
-                          className="text-[#B3402F] hover:underline flex items-center gap-1"
+                          onClick={() => setAddressIdToDelete(addr.id)}
+                          className="text-[#B3402F] hover:underline flex items-center gap-1 cursor-pointer"
                         >
                           <Trash2 className="w-3 h-3" /> Delete
                         </button>
@@ -2493,6 +2490,24 @@ export default function AccountPage() {
           </div>
         </div>
       )}
+
+      {/* Luxury Animated Confirm Modal for Address Deletion */}
+      <ConfirmModal
+        isOpen={Boolean(addressIdToDelete)}
+        title="Delete Delivery Destination"
+        message="Are you sure you want to remove this delivery address from your patron address book?"
+        confirmText="Delete Address"
+        cancelText="Cancel"
+        isDestructive={true}
+        onConfirm={() => {
+          if (addressIdToDelete) {
+            deleteAddress(addressIdToDelete);
+            addToast('Address deleted.', 'info');
+            setAddressIdToDelete(null);
+          }
+        }}
+        onCancel={() => setAddressIdToDelete(null)}
+      />
     </div>
   );
 }

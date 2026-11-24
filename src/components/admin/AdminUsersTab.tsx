@@ -25,6 +25,7 @@ import {
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
 import { UserProfile } from '@/types';
+import ConfirmModal from '@/components/common/ConfirmModal';
 
 interface AdminUsersTabProps {
   onRefresh?: () => void;
@@ -44,6 +45,10 @@ export default function AdminUsersTab({ onRefresh }: AdminUsersTabProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | 'customer' | 'admin'>('all');
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
+
+  // Animated Confirm Modal States
+  const [userToDelete, setUserToDelete] = useState<UserProfile | null>(null);
+  const [isPurgeConfirmOpen, setIsPurgeConfirmOpen] = useState(false);
 
   // Edit User State inside Dossier
   const [isEditing, setIsEditing] = useState(false);
@@ -138,17 +143,21 @@ export default function AdminUsersTab({ onRefresh }: AdminUsersTabProps) {
   // ==============================================================================
   // CRUD Action 1: DELETE USER
   // ==============================================================================
-  const handleDeleteUser = async (user: UserProfile) => {
+  const handleRequestDelete = (user: UserProfile) => {
+    setUserToDelete(user);
+  };
+
+  const executeDeleteUser = async () => {
+    if (!userToDelete) return;
+    const user = userToDelete;
     const displayName = user.name || user.email || 'this patron';
-    if (!confirm(`Are you sure you want to delete patron account "${displayName}"? This will permanently remove their profile and credentials.`)) {
-      return;
-    }
 
     // Optimistic removal from UI and localStorage immediately
     setDbUsers((prev) => prev.filter((u) => u.id !== user.id && (!user.email || u.email !== user.email)));
     adminDeleteUser(user.id);
     if (user.email) adminDeleteUser(user.email);
     if (selectedUser?.id === user.id) setSelectedUser(null);
+    setUserToDelete(null);
 
     try {
       const res = await fetch('/api/admin/users', {
@@ -354,9 +363,11 @@ export default function AdminUsersTab({ onRefresh }: AdminUsersTabProps) {
   // Action 6: PURGE STALE TEST PATRONS FROM LOCAL STORAGE
   // ==============================================================================
   const handlePurgeStaleTestData = () => {
-    if (!confirm('This will purge any local mock/demo test patrons stored in browser storage and sync cleanly with Supabase. Proceed?')) {
-      return;
-    }
+    setIsPurgeConfirmOpen(true);
+  };
+
+  const executePurgeStaleTestData = () => {
+    setIsPurgeConfirmOpen(false);
     adminClearTestUsers();
     fetchUsers();
     addToast('Stale test accounts purged. Synchronized with live database.', 'info');
@@ -609,7 +620,7 @@ export default function AdminUsersTab({ onRefresh }: AdminUsersTabProps) {
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleDeleteUser(u)}
+                            onClick={() => handleRequestDelete(u)}
                             className="p-1.5 rounded-lg border border-[#DDD2C0] bg-white text-rose-600 hover:bg-rose-50 hover:border-rose-300 transition-colors cursor-pointer"
                             title="Delete Patron Account"
                           >
@@ -795,8 +806,8 @@ export default function AdminUsersTab({ onRefresh }: AdminUsersTabProps) {
                     )}
                     <button
                       type="button"
-                      onClick={() => handleDeleteUser(selectedUser)}
-                      className="text-[11px] text-rose-600 hover:underline font-semibold flex items-center gap-1 ml-2"
+                      onClick={() => selectedUser && handleRequestDelete(selectedUser)}
+                      className="text-[11px] text-rose-600 hover:underline font-semibold flex items-center gap-1 ml-2 cursor-pointer"
                     >
                       <Trash2 className="w-3 h-3" />
                       Delete Account
@@ -950,6 +961,33 @@ export default function AdminUsersTab({ onRefresh }: AdminUsersTabProps) {
           </div>
         </div>
       )}
+
+      {/* ========================================================================= */}
+      {/* LUXURY ANIMATED CONFIRM MODALS (REPLACING BROWSER NATIVE DIALOGS) */}
+      {/* ========================================================================= */}
+      <ConfirmModal
+        isOpen={Boolean(userToDelete)}
+        title="Delete Patron Account"
+        message={`Are you sure you want to delete patron account "${userToDelete?.name || userToDelete?.email}"? This will permanently remove their profile and credentials from the database.`}
+        confirmText="Delete Account"
+        cancelText="Cancel"
+        isDestructive={true}
+        variant="danger"
+        onConfirm={executeDeleteUser}
+        onCancel={() => setUserToDelete(null)}
+      />
+
+      <ConfirmModal
+        isOpen={isPurgeConfirmOpen}
+        title="Purge Stale Test Data"
+        message="This will purge legacy local mock/demo test patrons stored in browser storage and synchronize cleanly with your live Supabase database. Proceed?"
+        confirmText="Purge Stale Accounts"
+        cancelText="Cancel"
+        isDestructive={true}
+        variant="warning"
+        onConfirm={executePurgeStaleTestData}
+        onCancel={() => setIsPurgeConfirmOpen(false)}
+      />
     </div>
   );
 }

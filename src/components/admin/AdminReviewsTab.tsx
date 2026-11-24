@@ -19,6 +19,7 @@ import {
 import { useProductStore } from '@/store/productStore';
 import { useUIStore } from '@/store/uiStore';
 import { Review, Product } from '@/types';
+import ConfirmModal from '@/components/common/ConfirmModal';
 
 interface FlattenedReview {
   review: Review;
@@ -33,6 +34,7 @@ export default function AdminReviewsTab() {
   const [selectedProductId, setSelectedProductId] = useState<string>('all');
   const [ratingFilter, setRatingFilter] = useState<number | 'all'>('all');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [reviewToDelete, setReviewToDelete] = useState<{ productId: string; reviewId: string; author: string } | null>(null);
 
   // New review form
   const [targetProduct, setTargetProduct] = useState<string>(products[0]?.id || '');
@@ -330,13 +332,8 @@ export default function AdminReviewsTab() {
                   <div className="flex items-center gap-2 self-end sm:self-center">
                     <button
                       type="button"
-                      onClick={() => {
-                        if (window.confirm(`Delete review from "${review.userName}"?`)) {
-                          deleteReview(product.id, review.id);
-                          addToast(`Removed review from ${product.name}`, 'info');
-                        }
-                      }}
-                      className="px-2.5 py-1 text-xs text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-lg flex items-center gap-1 transition-colors"
+                      onClick={() => setReviewToDelete({ productId: product.id, reviewId: review.id, author: review.userName })}
+                      className="px-2.5 py-1 text-xs text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-lg flex items-center gap-1 transition-colors cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                       <span>Delete Review</span>
@@ -474,6 +471,24 @@ export default function AdminReviewsTab() {
           </div>
         </div>
       )}
+
+      {/* Luxury Animated Confirm Modal for Review Deletion */}
+      <ConfirmModal
+        isOpen={Boolean(reviewToDelete)}
+        title="Delete Customer Review"
+        message={`Are you sure you want to delete the review by "${reviewToDelete?.author}"?`}
+        confirmText="Delete Review"
+        cancelText="Cancel"
+        isDestructive={true}
+        onConfirm={() => {
+          if (reviewToDelete) {
+            deleteReview(reviewToDelete.productId, reviewToDelete.reviewId);
+            addToast(`Removed review from catalog`, 'info');
+            setReviewToDelete(null);
+          }
+        }}
+        onCancel={() => setReviewToDelete(null)}
+      />
     </div>
   );
 }

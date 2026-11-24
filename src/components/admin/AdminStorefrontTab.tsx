@@ -33,6 +33,7 @@ import { useCMSStore, DEFAULT_CMS_DATA } from '@/store/cmsStore';
 import { useProductStore } from '@/store/productStore';
 import { useUIStore } from '@/store/uiStore';
 import { StorefrontCMS } from '@/types/cms';
+import ConfirmModal from '@/components/common/ConfirmModal';
 
 export default function AdminStorefrontTab() {
   const {
@@ -71,16 +72,20 @@ export default function AdminStorefrontTab() {
   const [activeSection, setActiveSection] = useState<string>('bento');
   const [showJsonModal, setShowJsonModal] = useState(false);
   const [jsonInput, setJsonInput] = useState('');
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
 
   const toggleAccordion = (id: string) => {
     setActiveSection((curr) => (curr === id ? '' : id));
   };
 
   const handleReset = () => {
-    if (window.confirm('Reset all storefront sections back to studio default templates?')) {
-      resetToDefaults();
-      addToast('All storefront sections restored to default layout', 'info');
-    }
+    setIsResetConfirmOpen(true);
+  };
+
+  const executeReset = () => {
+    setIsResetConfirmOpen(false);
+    resetToDefaults();
+    addToast('All storefront sections restored to default layout', 'info');
   };
 
   const handleExport = () => {
@@ -2100,6 +2105,19 @@ export default function AdminStorefrontTab() {
           </div>
         </div>
       )}
+
+      {/* Luxury Animated Confirm Modal for Storefront Reset */}
+      <ConfirmModal
+        isOpen={isResetConfirmOpen}
+        title="Reset Storefront Layout"
+        message="Are you sure you want to restore all storefront sections back to studio default templates? Any unpublished changes will be replaced."
+        confirmText="Reset Sections"
+        cancelText="Cancel"
+        isDestructive={true}
+        variant="warning"
+        onConfirm={executeReset}
+        onCancel={() => setIsResetConfirmOpen(false)}
+      />
     </div>
   );
 }

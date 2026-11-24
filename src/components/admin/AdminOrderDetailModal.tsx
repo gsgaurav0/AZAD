@@ -17,6 +17,7 @@ import {
   Package,
 } from 'lucide-react';
 import { Order, OrderStatus } from '@/types';
+import ConfirmModal from '@/components/common/ConfirmModal';
 
 interface AdminOrderDetailModalProps {
   order: Order | null;
@@ -39,13 +40,16 @@ export default function AdminOrderDetailModal({
   const [trackingNumber, setTrackingNumber] = useState(order?.trackingNumber || '');
   const [isRefunding, setIsRefunding] = useState(false);
   const [refundMsg, setRefundMsg] = useState('');
+  const [isRefundConfirmOpen, setIsRefundConfirmOpen] = useState(false);
 
   if (!isOpen || !order) return null;
 
-  const handleProcessRefund = async () => {
-    if (!confirm(`Are you sure you want to process a full refund of ₹${order.total} for Order #${order.id}?`)) {
-      return;
-    }
+  const handleProcessRefund = () => {
+    setIsRefundConfirmOpen(true);
+  };
+
+  const executeProcessRefund = async () => {
+    setIsRefundConfirmOpen(false);
     setIsRefunding(true);
     setRefundMsg('');
     try {
@@ -64,11 +68,11 @@ export default function AdminOrderDetailModal({
         setRefundMsg(data.message || 'Refund successfully processed.');
         onUpdateStatus(order.id, 'Refunded', 'Refund processed via Razorpay gateway.');
       } else {
-        alert(data.error || 'Failed to process refund.');
+        setRefundMsg(data.error || 'Failed to process refund.');
       }
     } catch (err: any) {
       setIsRefunding(false);
-      alert(err.message || 'Error processing refund.');
+      setRefundMsg(err.message || 'Network error processing refund.');
     }
   };
 
@@ -439,6 +443,19 @@ export default function AdminOrderDetailModal({
           </button>
         </div>
       </div>
+
+      {/* Luxury Animated Confirm Modal for Razorpay Refund */}
+      <ConfirmModal
+        isOpen={isRefundConfirmOpen}
+        title="Confirm Order Refund"
+        message={`Are you sure you want to process a full refund of ₹${order.total.toLocaleString()} for Order #${order.id}?`}
+        confirmText="Issue Full Refund"
+        cancelText="Cancel"
+        isDestructive={true}
+        variant="warning"
+        onConfirm={executeProcessRefund}
+        onCancel={() => setIsRefundConfirmOpen(false)}
+      />
     </div>
   );
 }

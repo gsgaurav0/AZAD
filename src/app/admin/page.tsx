@@ -24,8 +24,10 @@ import {
   DollarSign,
   LayoutDashboard,
   Users,
+  KeyRound,
 } from 'lucide-react';
 import Logo from '@/components/common/Logo';
+import ConfirmModal from '@/components/common/ConfirmModal';
 import { useProductStore } from '@/store/productStore';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
@@ -35,7 +37,7 @@ import { useCMSStore } from '@/store/cmsStore';
 import { useIsMounted } from '@/hooks/useIsMounted';
 import { Product, Order, OrderStatus } from '@/types';
 
-import AdminAuthGate from '@/components/admin/AdminAuthGate';
+import AdminAuthGate, { AdminUserData } from '@/components/admin/AdminAuthGate';
 import AdminProductsTab from '@/components/admin/AdminProductsTab';
 import AdminOrdersTab from '@/components/admin/AdminOrdersTab';
 import AdminUsersTab from '@/components/admin/AdminUsersTab';
@@ -60,21 +62,50 @@ export default function AdminPage() {
     return false;
   });
 
-  const handleAuthenticated = () => {
+  const [adminUser, setAdminUser] = useState<AdminUserData | null>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = sessionStorage.getItem('mewak_superadmin_user');
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch {}
+      }
+    }
+    return null;
+  });
+
+  const handleAuthenticated = (user: AdminUserData) => {
     setIsAuthenticated(true);
+    setAdminUser(user);
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('mewak_superadmin_auth', 'true');
+      sessionStorage.setItem('mewak_superadmin_user', JSON.stringify(user));
     }
-    addToast('Authenticated to Superadmin Command Center', 'success');
+    addToast(`Authenticated as ${user.name || user.email}`, 'success');
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
+    setAdminUser(null);
     if (typeof window !== 'undefined') {
       sessionStorage.removeItem('mewak_superadmin_auth');
+      sessionStorage.removeItem('mewak_superadmin_user');
     }
     addToast('Superadmin session locked', 'info');
   };
+
+  // Change Password Modal State
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+  const [changePassForm, setChangePassForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
+  const [changePassError, setChangePassError] = useState('');
+
+  // Catalog Reset Confirm State
+  const [isResetCatalogConfirmOpen, setIsResetCatalogConfirmOpen] = useState(false);
 
   // Active Tab & Mobile Drawer
   type AdminTab = 'products' | 'orders' | 'users' | 'coupons' | 'inquiries' | 'reviews' | 'sections' | 'analytics';
@@ -232,9 +263,61 @@ export default function AdminPage() {
   };
 
   const handleResetCatalog = () => {
-    if (window.confirm('Reset catalog back to initial 24 high-end electronics items?')) {
-      resetToDefaults();
-      addToast('Restored catalog to 24 default flagship products', 'info');
+    setIsResetCatalogConfirmOpen(true);
+  };
+
+  const executeResetCatalog = () => {
+    setIsResetCatalogConfirmOpen(false);
+    resetToDefaults();
+    addToast('Restored catalog to 24 default flagship products', 'info');
+  };
+
+  const handleChangePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setChangePassError('');
+
+    if (!changePassForm.currentPassword) {
+      setChangePassError('Please enter your current administrator password.');
+      return;
+    }
+
+    if (changePassForm.newPassword.length < 6) {
+      setChangePassError('New password must contain at least 6 characters.');
+      return;
+    }
+
+    if (changePassForm.newPassword !== changePassForm.confirmPassword) {
+      setChangePassError('New passwords do not match. Please re-enter.');
+      return;
+    }
+
+    setIsSavingPassword(true);
+
+    try {
+      const email = adminUser?.email || 'ss3573509@gmail.com';
+      const res = await fetch('/api/admin/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          currentPassword: changePassForm.currentPassword,
+          newPassword: changePassForm.newPassword,
+        }),
+      });
+
+      const data = await res.json();
+      setIsSavingPassword(false);
+
+      if (data.success) {
+        setIsChangePasswordOpen(false);
+        setChangePassForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+        addToast('Administrator security password successfully updated in Supabase database.', 'success');
+      } else {
+        setChangePassError(data.error || 'Failed to update administrator password.');
+      }
+    } catch {
+      setIsSavingPassword(false);
+      setChangePassError('Network error updating password. Please try again.');
     }
   };
 
@@ -390,6 +473,34 @@ export default function AdminPage() {
 
           {/* Quick Actions Right */}
           <div className="flex items-center gap-2">
+            {/* Admin Identity Badge */}
+            {adminUser && (
+              <div className="hidden sm:flex items-center gap-1.5 bg-[#9A8029]/10 border border-[#9A8029]/30 px-3 py-1.5 rounded-xl text-xs">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#9A8029]" />
+                <span className="font-semibold text-[#2B1A16] max-w-[120px] truncate">
+                  {adminUser.name || 'GAURAV'}
+                </span>
+                <span className="text-[10px] uppercase font-bold text-[#9A8029] bg-white px-1.5 py-0.5 rounded shadow-2xs">
+                  Admin
+                </span>
+              </div>
+            )}
+
+            {/* Change Password Trigger */}
+            <button
+              type="button"
+              onClick={() => {
+                setChangePassError('');
+                setChangePassForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                setIsChangePasswordOpen(true);
+              }}
+              className="bg-[#FAF8F5] hover:bg-[#EFE8DD] text-[#2B1A16] text-xs px-2.5 sm:px-3 py-2 rounded-xl border border-[#DDD2C0] transition-colors flex items-center gap-1.5 font-semibold cursor-pointer"
+              title="Change Administrator Password"
+            >
+              <KeyRound className="w-3.5 h-3.5 text-[#9A8029]" />
+              <span className="hidden md:inline">Change Password</span>
+            </button>
+
             <Link
               href="/"
               target="_blank"
@@ -402,7 +513,7 @@ export default function AdminPage() {
 
             <button
               onClick={handleLogout}
-              className="p-2 rounded-xl text-[#2B1A16]/60 hover:text-rose-600 hover:bg-rose-50 border border-[#DDD2C0] transition-colors"
+              className="p-2 rounded-xl text-[#2B1A16]/60 hover:text-rose-600 hover:bg-rose-50 border border-[#DDD2C0] transition-colors cursor-pointer"
               title="Lock Session"
             >
               <Lock className="w-4 h-4" />
@@ -863,6 +974,137 @@ export default function AdminPage() {
           onCreateOrder={handleCreateOrder}
         />
       )}
+
+      {/* ========================================================================= */}
+      {/* CHANGE ADMIN PASSWORD MODAL */}
+      {/* ========================================================================= */}
+      {isChangePasswordOpen && (
+        <div className="fixed inset-0 z-50 bg-[#2B1A16]/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-[#FBF7F0] border border-[#DDD2C0] rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 font-sans animate-scaleUp">
+            <div className="flex items-start justify-between border-b border-[#DDD2C0] pb-3">
+              <div>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-[#9A8029] font-bold">
+                  SECURITY CREDENTIALS
+                </span>
+                <h3 className="font-serif text-xl font-bold text-[#2B1A16] mt-0.5">
+                  Update Administrator Password
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsChangePasswordOpen(false)}
+                className="p-1.5 rounded-lg text-[#2B1A16]/60 hover:text-[#2B1A16] hover:bg-[#EFE8DD] cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {changePassError && (
+              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl font-medium">
+                {changePassError}
+              </div>
+            )}
+
+            <form onSubmit={handleChangePasswordSubmit} className="space-y-3.5 text-xs">
+              <div>
+                <label className="block text-[11px] font-bold text-[#2B1A16]/70 mb-1">
+                  Administrator Account
+                </label>
+                <input
+                  type="text"
+                  disabled
+                  value={adminUser?.email || 'ss3573509@gmail.com'}
+                  className="w-full bg-[#EFE8DD]/50 border border-[#DDD2C0] rounded-lg p-2.5 text-xs text-[#2B1A16]/60 cursor-not-allowed font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-[#2B1A16]/70 mb-1">
+                  Current Password *
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={changePassForm.currentPassword}
+                  onChange={(e) => {
+                    setChangePassForm({ ...changePassForm, currentPassword: e.target.value });
+                    setChangePassError('');
+                  }}
+                  placeholder="Enter current admin password"
+                  className="w-full bg-white border border-[#DDD2C0] rounded-lg p-2.5 text-xs text-[#2B1A16] outline-none focus:border-[#9A8029]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-[#2B1A16]/70 mb-1">
+                  New Password * (min 6 characters)
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={changePassForm.newPassword}
+                  onChange={(e) => {
+                    setChangePassForm({ ...changePassForm, newPassword: e.target.value });
+                    setChangePassError('');
+                  }}
+                  placeholder="Enter strong new password"
+                  className="w-full bg-white border border-[#DDD2C0] rounded-lg p-2.5 text-xs text-[#2B1A16] outline-none focus:border-[#9A8029]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-[#2B1A16]/70 mb-1">
+                  Confirm New Password *
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={changePassForm.confirmPassword}
+                  onChange={(e) => {
+                    setChangePassForm({ ...changePassForm, confirmPassword: e.target.value });
+                    setChangePassError('');
+                  }}
+                  placeholder="Re-enter new password"
+                  className="w-full bg-white border border-[#DDD2C0] rounded-lg p-2.5 text-xs text-[#2B1A16] outline-none focus:border-[#9A8029]"
+                />
+              </div>
+
+              <div className="pt-3 flex justify-end gap-2 border-t border-[#DDD2C0]">
+                <button
+                  type="button"
+                  onClick={() => setIsChangePasswordOpen(false)}
+                  className="px-4 py-2 rounded-lg border border-[#DDD2C0] text-xs font-semibold text-[#2B1A16] hover:bg-white cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSavingPassword}
+                  className="px-5 py-2 rounded-lg bg-[#2B1A16] hover:bg-[#9A8029] text-xs font-semibold text-[#EFE8DD] flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  <KeyRound className="w-3.5 h-3.5 text-[#9A8029]" />
+                  {isSavingPassword ? 'Updating...' : 'Update Password'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* CATALOG RESET CONFIRM MODAL */}
+      {/* ========================================================================= */}
+      <ConfirmModal
+        isOpen={isResetCatalogConfirmOpen}
+        title="Reset Catalog to Defaults"
+        message="Are you sure you want to restore the catalog back to the initial 24 high-end electronics items? Any custom products will be reset."
+        confirmText="Reset Catalog"
+        cancelText="Cancel"
+        isDestructive={true}
+        variant="warning"
+        onConfirm={executeResetCatalog}
+        onCancel={() => setIsResetCatalogConfirmOpen(false)}
+      />
     </div>
   );
 }
