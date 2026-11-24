@@ -294,7 +294,12 @@ export default function AdminPage() {
     setIsSavingPassword(true);
 
     try {
-      const email = adminUser?.email || 'ss3573509@gmail.com';
+      const email = adminUser?.email;
+      if (!email) {
+        setChangePassError('Administrator session not found. Please log in again.');
+        setIsSavingPassword(false);
+        return;
+      }
       const res = await fetch('/api/admin/auth/change-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -478,7 +483,7 @@ export default function AdminPage() {
               <div className="hidden sm:flex items-center gap-1.5 bg-[#9A8029]/10 border border-[#9A8029]/30 px-3 py-1.5 rounded-xl text-xs">
                 <ShieldCheck className="w-3.5 h-3.5 text-[#9A8029]" />
                 <span className="font-semibold text-[#2B1A16] max-w-[120px] truncate">
-                  {adminUser.name || 'GAURAV'}
+                  {adminUser.name || 'Administrator'}
                 </span>
                 <span className="text-[10px] uppercase font-bold text-[#9A8029] bg-white px-1.5 py-0.5 rounded shadow-2xs">
                   Admin
@@ -1013,7 +1018,7 @@ export default function AdminPage() {
                 <input
                   type="text"
                   disabled
-                  value={adminUser?.email || 'ss3573509@gmail.com'}
+                  value={adminUser?.email || ''}
                   className="w-full bg-[#EFE8DD]/50 border border-[#DDD2C0] rounded-lg p-2.5 text-xs text-[#2B1A16]/60 cursor-not-allowed font-medium"
                 />
               </div>

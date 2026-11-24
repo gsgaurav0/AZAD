@@ -939,7 +939,7 @@ insert into public.reviews (
   product_id, user_name, rating, title, comment, verified, helpful_count, status
 ) values (
   'azd-a01',
-  'Gaurav Khanna',
+  'Vikram Malhotra',
   5,
   'Eliminated 3 messy cables on my desk',
   'Heavy solid aluminum build stays put when grabbing the phone. Charges phone, watch, and buds overnight with zero warmth or coil whine.',

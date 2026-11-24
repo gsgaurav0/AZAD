@@ -817,7 +817,7 @@ export default function CheckoutPage() {
                           required
                           value={signupForm.name}
                           onChange={(e) => setSignupForm({ ...signupForm, name: e.target.value })}
-                          placeholder="e.g. Gaurav Sharma"
+                          placeholder="e.g. Alexander Vance"
                           className="w-full bg-white border border-[#DDD2C0] rounded-[3px] p-2.5 text-xs text-[#2B1A16] outline-none focus:border-[#9A8029]"
                         />
                       </div>

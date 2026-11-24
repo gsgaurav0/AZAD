@@ -118,7 +118,7 @@ export default function AdminAuthGate({ onAuthenticated }: AdminAuthGateProps) {
                   setEmail(e.target.value);
                   setErrorMessage('');
                 }}
-                placeholder="e.g. ss3573509@gmail.com"
+                placeholder="admin@mewak.org"
                 className="w-full bg-[#FAF8F5] border border-[#DDD2C0] focus:border-[#9A8029] focus:bg-white rounded-xl pl-10 pr-4 py-3 text-sm text-[#2B1A16] placeholder-[#2B1A16]/40 outline-none transition-all"
                 autoFocus
               />

@@ -936,7 +936,7 @@ export const PRODUCTS: Product[] = [
     reviews: [
       {
         id: 'rev-a01',
-        userName: 'Gaurav Khanna',
+        userName: 'Vikram Malhotra',
         rating: 5,
         date: '27 Oct 2026',
         title: 'Eliminated 3 messy cables on my desk',
