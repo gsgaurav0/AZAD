@@ -49,6 +49,7 @@ import AdminCouponsTab from '@/components/admin/AdminCouponsTab';
 import AdminProductModal from '@/components/admin/AdminProductModal';
 import AdminOrderDetailModal from '@/components/admin/AdminOrderDetailModal';
 import AdminCreateOrderModal from '@/components/admin/AdminCreateOrderModal';
+import AdminHealthModal from '@/components/admin/AdminHealthModal';
 
 export default function AdminPage() {
   const isMounted = useIsMounted();
@@ -106,6 +107,10 @@ export default function AdminPage() {
 
   // Catalog Reset Confirm State
   const [isResetCatalogConfirmOpen, setIsResetCatalogConfirmOpen] = useState(false);
+
+  // Database Health Modal State
+  const [isHealthModalOpen, setIsHealthModalOpen] = useState(false);
+  const [dbLatency, setDbLatency] = useState<number | null>(null);
 
   // Active Tab & Mobile Drawer
   type AdminTab = 'products' | 'orders' | 'users' | 'coupons' | 'inquiries' | 'reviews' | 'sections' | 'analytics';
@@ -672,10 +677,15 @@ export default function AdminPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-[11px] font-mono px-3 py-1 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold inline-flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setIsHealthModalOpen(true)}
+                className="text-[11px] font-mono px-3 py-1 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                title="View Database Telemetry & Run Health Diagnostic"
+              >
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                All Services Healthy
-              </span>
+                Database Healthy {dbLatency ? `(${dbLatency}ms)` : ''}
+              </button>
             </div>
           </div>
 
@@ -1109,6 +1119,15 @@ export default function AdminPage() {
         variant="warning"
         onConfirm={executeResetCatalog}
         onCancel={() => setIsResetCatalogConfirmOpen(false)}
+      />
+
+      {/* ========================================================================= */}
+      {/* DATABASE HEALTH & TELEMETRY MODAL */}
+      {/* ========================================================================= */}
+      <AdminHealthModal
+        isOpen={isHealthModalOpen}
+        onClose={() => setIsHealthModalOpen(false)}
+        onCheckCompleted={(res) => setDbLatency(res.latencyMs)}
       />
     </div>
   );
