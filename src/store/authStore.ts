@@ -76,6 +76,9 @@ interface AuthState {
   updateProfile: (profile: Partial<UserProfile>) => Promise<void>;
   deleteProfileField: (field: keyof UserProfile) => Promise<void>;
   deleteAccount: () => Promise<void>;
+  adminDeleteUser: (userIdOrEmail: string) => void;
+  adminUpdateUser: (userIdOrEmail: string, updates: Partial<UserProfile>) => void;
+  adminClearTestUsers: () => void;
   changePasswordWithVerification: (currentPass: string, newPass: string) => Promise<{ success: boolean; error?: string }>;
   changeEmailWithVerification: (newEmail: string, verificationCode: string) => Promise<{ success: boolean; error?: string }>;
   changePhoneWithVerification: (newPhone: string, verificationCode: string) => Promise<{ success: boolean; error?: string }>;
@@ -647,6 +650,30 @@ export const useAuthStore = create<AuthState>()(
           returns: [],
           registeredUsers: state.registeredUsers.filter((u) => u.id !== currentId),
         }));
+      },
+
+      adminDeleteUser: (userIdOrEmail: string) => {
+        const clean = userIdOrEmail.trim().toLowerCase();
+        set((state) => ({
+          registeredUsers: state.registeredUsers.filter(
+            (u) => u.id !== userIdOrEmail && u.email.toLowerCase() !== clean
+          ),
+        }));
+      },
+
+      adminUpdateUser: (userIdOrEmail: string, updates: Partial<UserProfile>) => {
+        const clean = userIdOrEmail.trim().toLowerCase();
+        set((state) => ({
+          registeredUsers: state.registeredUsers.map((u) =>
+            u.id === userIdOrEmail || u.email.toLowerCase() === clean
+              ? { ...u, ...updates }
+              : u
+          ),
+        }));
+      },
+
+      adminClearTestUsers: () => {
+        set({ registeredUsers: [] });
       },
 
       changePasswordWithVerification: async (currentPass, newPass) => {
